@@ -27,7 +27,7 @@ Complete all the TODOs applicable for your implementation and then create an iss
   <!-- x-release-please-start-version -->
 
 <!-- TODO: update with your SDK repo and the latest release version
-  <a href="https://github.com/open-feature/my-sdk/releases/tag/v0.0.1">
+  <a href="https://github.com/open-feature/cpp-sdk/releases/tag/v0.0.1">
     <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.0.1&color=blue&style=for-the-badge" />
   </a>  
 -->
@@ -83,7 +83,7 @@ Complete all the TODOs applicable for your implementation and then create an iss
 ### Providers
 
 [Providers](https://openfeature.dev/docs/reference/concepts/provider) are an abstraction between a flag management system and the OpenFeature SDK.
-Look [here](https://openfeature.dev/ecosystem?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider&instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=<!--TODO: your language-->) for a complete list of available providers.
+Look [here](https://openfeature.dev/ecosystem?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider&instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=cpp) for a complete list of available providers.
 If the provider you're looking for hasn't been created yet, see the [develop a provider](#develop-a-provider) section to learn how to build it yourself.
 
 Once you've added a provider as a dependency, it can be registered with OpenFeature like this:
@@ -105,7 +105,7 @@ If the flag management system you're using supports targeting, you can provide t
 ### Hooks
 
 [Hooks](https://openfeature.dev/docs/reference/concepts/hooks) allow for custom logic to be added at well-defined points of the flag evaluation life-cycle.
-Look [here](https://openfeature.dev/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Hook&instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=<!--TODO: your language-->) for a complete list of available hooks.
+Look [here](https://openfeature.dev/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Hook&instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=cpp) for a complete list of available hooks.
 If the hook you're looking for hasn't been created yet, see the [develop a hook](#develop-a-hook) section to learn how to build it yourself.
 
 Once you've added a hook as a dependency, it can be registered at the global, client, or flag invocation level.
@@ -162,7 +162,7 @@ This should only be called when your application is in the process of shutting d
 ### Develop a provider
 
 To develop a provider, you need to create a new project and include the OpenFeature SDK as a dependency.
-This can be a new repository or included in [the existing contrib repository](https://github.com/open-feature/<!--TODO: your language-->-sdk-contrib) available under the OpenFeature organization.
+This can be a new repository or included in [the existing contrib repository](https://github.com/open-feature/cpp-sdk-contrib) available under the OpenFeature organization.
 You’ll then need to write the provider by implementing the `FeatureProvider` interface exported by the OpenFeature SDK.
 
 <!-- TODO: code example of provider implementation -->
@@ -172,7 +172,7 @@ You’ll then need to write the provider by implementing the `FeatureProvider` i
 ### Develop a hook
 
 To develop a hook, you need to create a new project and include the OpenFeature SDK as a dependency.
-This can be a new repository or included in [the existing contrib repository](https://github.com/open-feature/<!--TODO: your language-->-sdk-contrib) available under the OpenFeature organization.
+This can be a new repository or included in [the existing contrib repository](https://github.com/open-feature/cpp-sdk-contrib) available under the OpenFeature organization.
 Implement your own hook by conforming to the `Hook interface`.
 To satisfy the interface, all methods (`Before`/`After`/`Finally`/`Error`) need to be defined.
 To avoid defining empty functions, make use of the `UnimplementedHook` struct (which already implements all the empty functions).

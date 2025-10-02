@@ -1,9 +1,4 @@
 
-<!-- TODO: This is a template SDK README.md.
-It's structured to fit nicely into openfeature.dev, which is configured to include SDK READMEs.
-Complete all the TODOs applicable for your implementation and then create an issue in https://github.com/open-feature/openfeature.dev
--->
-
 <!-- markdownlint-disable MD033 -->
 <!-- x-hide-in-docs-start -->
 <p align="center">
@@ -18,20 +13,13 @@ Complete all the TODOs applicable for your implementation and then create an iss
 <!-- x-hide-in-docs-end -->
 <!-- The 'github-badges' class is used in the docs -->
 <p align="center" class="github-badges">
-<!-- TODO: update this with the version of the SDK your implementation supports -->
 
-  <a href="https://github.com/open-feature/spec/releases/tag/v0.7.0">
-    <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.7.0&color=yellow&style=for-the-badge" />
+  <a href="https://github.com/open-feature/spec/releases/tag/v0.2.0">
+    <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.2.0&color=yellow&style=for-the-badge" />
   </a>
-  <!-- TODO: update the Release Please config to include the readme -->
-  <!-- x-release-please-start-version -->
-
-<!-- TODO: update with your SDK repo and the latest release version
   <a href="https://github.com/open-feature/cpp-sdk/releases/tag/v0.0.1">
     <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.0.1&color=blue&style=for-the-badge" />
   </a>  
--->
-
   <!-- x-release-please-end -->
   <br/>
   <a href="https://bestpractices.coreinfrastructure.org/projects/6601">

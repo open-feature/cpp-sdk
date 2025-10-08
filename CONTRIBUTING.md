@@ -14,7 +14,7 @@ If there are changes needed to enable vendor specific behaviour in code or other
 
 ### Testing
 
-Any contributions are expected to include unit tests. 
+Any contributions are expected to include unit tests.
 
 #### Unit tests
 

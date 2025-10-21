@@ -15,7 +15,7 @@ enum class ErrorCode {
     kTYPE_MISMATCH,          // The type of the flag value does not match the expected type.
     kTARGETING_KEY_MISSING,  // The provider requires a targeting key and one was not provided in the `evaluation context`.
     kINVALID_CONTEXT,        // The `evaluation context` does not meet provider requirements.
-    kPROVIDDER_FATAL,        // The provider has entered an irrecoverable error state.
+    kPROVIDER_FATAL,        // The provider has entered an irrecoverable error state.
     kGENERAL                 // The error was for a reason not enumerated above.
 };
 

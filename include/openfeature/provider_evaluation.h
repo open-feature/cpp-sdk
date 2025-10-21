@@ -21,7 +21,7 @@ class ProviderEvaluation {
         virtual Reason GetReason() const = 0; 
         virtual ErrorCode GetErrorCode() const = 0;
         virtual std::string GetErrorMessage() const = 0;
-        virtual FlagMetadata GetFlagMetadata() const = 0;
+        virtual const FlagMetadata& GetFlagMetadata() const = 0;
 };
 }  // namespace openfeature
 

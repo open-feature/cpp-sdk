@@ -18,11 +18,8 @@ class FeatureProvider{
   virtual ~FeatureProvider() = default;
   virtual Metadata GetMetadata() const = 0;
   virtual std::unique_ptr<ProviderEvaluation<bool>> GetBooleanEvaluation(const std::string& flag, bool defaultValue, const EvaluationContext& ctx) = 0;
-  virtual std::unique_ptr<ProviderEvaluation<std::string>> GetStringEvaluation(const std::string& flag, const std::string& defaultValue, const EvaluationContext& ctx) = 0;
-  virtual std::unique_ptr<ProviderEvaluation<double>> GetDoubleEvaluation(const std::string& flag, double defaultValue, const EvaluationContext& ctx) = 0;
-  virtual std::unique_ptr<ProviderEvaluation<int64_t>> GetIntEvaluation(const std::string& flag, int64_t defaultValue, const EvaluationContext& ctx) = 0;
-  virtual void Initialize(const EvaluationContext& ctx) = 0;
-  virtual void Shutdown() = 0;
+
+  //TODO: Add other flag types (e.g. string, int, float, object)
 };
 
 } // namespace openfeature

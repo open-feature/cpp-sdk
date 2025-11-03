@@ -13,6 +13,7 @@ class StateHandler {
   virtual void Init(const EvaluationContext& ctx) = 0;
   virtual void Shutdown() = 0;
 };
+
 } // namespace openfeature
 
 #endif CPP_SDK_INCLUDE_OPENFEATURE_STATE_HANDLER_H_

@@ -12,4 +12,4 @@ struct Metadata{
 
 }  // namespace openfeature
 
-#endif  CPP_SDK_INCLUDE_OPENFEATURE_METADATA_H_
+#endif CPP_SDK_INCLUDE_OPENFEATURE_METADATA_H_

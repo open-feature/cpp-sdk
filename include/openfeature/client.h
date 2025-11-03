@@ -25,6 +25,7 @@ class Client: public Features {
 
         // TODO: Add methods to add and get Hooks
 };
+
 } // namespace openfeature
 
 #endif CPP_SDK_INCLUDE_OPENFEATURE_CLIENT_H_

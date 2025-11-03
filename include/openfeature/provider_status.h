@@ -3,7 +3,7 @@
 
 namespace openfeature {
 
-enum class ProviderStatus{
+enum class ProviderStatus {
     kNotReady,      // The provider has not been initialized.
     kReady,         // The provider has been initialized, and is able to reliably resolve flag values.
     kError,        // The provider is initialized but is not able to reliably resolve flag values.
@@ -15,4 +15,4 @@ enum class ProviderStatus{
 
 } // namespace openfeature
 
-#endif  CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_STATUS_H_
+#endif CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_STATUS_H_

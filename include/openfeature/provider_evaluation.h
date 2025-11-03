@@ -23,6 +23,7 @@ class ProviderEvaluation {
         virtual std::string GetErrorMessage() const = 0;
         virtual const FlagMetadata& GetFlagMetadata() const = 0;
 };
+
 }  // namespace openfeature
 
-#endif  CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_EVALUATION_H_
+#endif CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_EVALUATION_H_

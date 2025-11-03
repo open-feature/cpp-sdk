@@ -4,18 +4,20 @@
 #include "openfeature/evaluation_context.h"
 
 #include <string>
+#include <string_view>
 
 namespace openfeature {
 
 class Features {
     public:
         virtual ~Features() = default;
-        virtual bool GetBooleanValue(const std::string& flag_key, bool default_value) = 0;
-        virtual bool GetBooleanValue(const std::string& flag_key, bool default_value, const EvaluationContext& ctx) = 0;
+        virtual bool GetBooleanValue(std::string_view flag_key, bool default_value) = 0;
+        virtual bool GetBooleanValue(std::string_view flag_key, bool default_value, const EvaluationContext& ctx) = 0;
 
         // TODO: Add other flag types (e.g. string, int, float, object)
         // TODO: Add detailed evaluation methods
 };
+
 } // namespace openfeature
 
 #endif CPP_SDK_INCLUDE_OPENFEATURE_FEATURES_H_

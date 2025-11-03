@@ -17,11 +17,11 @@ class FeatureProvider{
  public:
   virtual ~FeatureProvider() = default;
   virtual Metadata GetMetadata() const = 0;
-  virtual std::unique_ptr<ProviderEvaluation<bool>> GetBooleanEvaluation(const std::string& flag, bool default_value, const EvaluationContext& ctx) = 0;
+  virtual std::unique_ptr<ProviderEvaluation<bool>> GetBooleanEvaluation(std::string_view flag, bool default_value, const EvaluationContext& ctx) = 0;
 
   //TODO: Add other flag types (e.g. string, int, float, object)
 };
 
 } // namespace openfeature
 
-#endif  CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_H_
+#endif CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_H_

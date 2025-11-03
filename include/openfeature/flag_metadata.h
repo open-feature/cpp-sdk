@@ -17,6 +17,7 @@ using FlagMetadataValue = std::variant<bool, std::string, double, int64_t>;
 struct FlagMetadata{
     std::unordered_map<std::string, FlagMetadataValue> data;
 };
+
 }  // namespace openfeature
 
-#endif  CPP_SDK_INCLUDE_OPENFEATURE_FLAG_METADATA_H_
+#endif CPP_SDK_INCLUDE_OPENFEATURE_FLAG_METADATA_H_

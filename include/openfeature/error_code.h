@@ -22,4 +22,5 @@ enum class ErrorCode {
 // TODO: Implement a function to convert ErrorCode to string representation if needed.
 
 } // namespace openfeature
+
 #endif CPP_SDK_INCLUDE_OPENFEATURE_ERROR_CODE_H_

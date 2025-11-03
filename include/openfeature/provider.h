@@ -17,7 +17,7 @@ class FeatureProvider{
  public:
   virtual ~FeatureProvider() = default;
   virtual Metadata GetMetadata() const = 0;
-  virtual std::unique_ptr<ProviderEvaluation<bool>> GetBooleanEvaluation(const std::string& flag, bool defaultValue, const EvaluationContext& ctx) = 0;
+  virtual std::unique_ptr<ProviderEvaluation<bool>> GetBooleanEvaluation(const std::string& flag, bool default_value, const EvaluationContext& ctx) = 0;
 
   //TODO: Add other flag types (e.g. string, int, float, object)
 };

@@ -5,7 +5,7 @@ namespace openfeature {
 
 enum class ProviderStatus{
     kNotReady,      // The provider has not been initialized.
-    kReday,         // The provider has been initialized, and is able to reliably resolve flag values.
+    kReady,         // The provider has been initialized, and is able to reliably resolve flag values.
     kError,        // The provider is initialized but is not able to reliably resolve flag values.
     kStale,        // The provider's cached state is no longer valid and may not be up-to-date with the source of truth.
     kFatal         // The provider has entered an irrecoverable error state.

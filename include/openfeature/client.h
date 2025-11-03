@@ -18,7 +18,7 @@ class Client: public Features {
         virtual EvaluationContext GetEvaluationContext() = 0;
 
         // Set the client-level evaluation context.
-        virtual void SetEvaluationContext(EvaluationContext& ctx) = 0;
+        virtual void SetEvaluationContext(const EvaluationContext& ctx) = 0;
 
         // Returns the current status of the associated provider.
         virtual ProviderStatus GetProviderStatus() = 0;

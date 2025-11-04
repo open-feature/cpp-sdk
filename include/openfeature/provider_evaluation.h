@@ -24,6 +24,6 @@ class ProviderEvaluation {
         virtual const FlagMetadata& GetFlagMetadata() const = 0;
 };
 
-}  // namespace openfeature
+} // namespace openfeature
 
 #endif CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_EVALUATION_H_

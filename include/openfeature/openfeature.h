@@ -29,14 +29,14 @@ class OpenFeature{
         virtual void SetProviderAndWait(std::shared_ptr<FeatureProvider> provider, std::chrono::milliseconds timeout) = 0;
 
         // Sets a named provider and blocks until it successfully initializes.
-        virtual void SetProviderAndWait(const std::string& domain, std::shared_ptr<FeatureProvider> provider) = 0;
+        virtual void SetProviderAndWait(std::string_view domain, std::shared_ptr<FeatureProvider> provider) = 0;
         
         // Sets a named provider and blocks until it initializes or a timeout occurs.
-        virtual void SetProviderAndWait(const std::string& domain,  std::shared_ptr<FeatureProvider> provider, std::chrono::milliseconds timeout) = 0;
+        virtual void SetProviderAndWait(std::string_view domain,  std::shared_ptr<FeatureProvider> provider, std::chrono::milliseconds timeout) = 0;
 
         virtual std::shared_ptr<Client> GetClient() = 0;
 
-        virtual std::shared_ptr<Client> GetClient(const std::string& domain) = 0;
+        virtual std::shared_ptr<Client> GetClient(std::string_view domain) = 0;
 
         // Sets the global evaluation context.
         virtual void SetEvaluationContext(const EvaluationContext& ctx) = 0;
@@ -45,7 +45,7 @@ class OpenFeature{
         virtual Metadata GetProviderMetadata() = 0;
 
         // Gets the metadata for a provider bound to a specific domain.
-        virtual Metadata GetProviderMetadata(const std::string& domain) = 0;
+        virtual Metadata GetProviderMetadata(std::string_view domain) = 0;
 
         // Shuts down all providers and resets the API to its initial state.
         virtual void Shutdown() = 0;

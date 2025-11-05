@@ -12,7 +12,7 @@
 
 namespace openfeature {
 
-class OpenFeature{
+class OpenFeature {
     public:
         virtual ~OpenFeature() = default;
 
@@ -41,14 +41,13 @@ class OpenFeature{
         // Sets the global evaluation context.
         virtual void SetEvaluationContext(const EvaluationContext& ctx) = 0;
 
-        // Gets the metadata for the default provider.
-        virtual Metadata GetProviderMetadata() = 0;
-
         // Gets the metadata for a provider bound to a specific domain.
-        virtual Metadata GetProviderMetadata(std::string_view domain) = 0;
+        virtual Metadata GetProviderMetadata(std::string_view domain="") = 0;
 
         // Shuts down all providers and resets the API to its initial state.
         virtual void Shutdown() = 0;
+
+        // TODO: Add methods to add and get Hooks
 };
 
 } // namespace openfeature

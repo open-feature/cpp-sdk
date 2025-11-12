@@ -3,7 +3,6 @@
 
 #include "openfeature/evaluation_context.h"
 
-#include <string>
 #include <string_view>
 
 namespace openfeature {

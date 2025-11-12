@@ -1,5 +1,5 @@
 #ifndef CPP_SDK_INCLUDE_OPENFEATURE_EVALUATION_CONTEXT_H_
-#define CPP_SDK_INCLUDE_OPENFEATURE_EVALUATION_CONTEXT_H_ 
+#define CPP_SDK_INCLUDE_OPENFEATURE_EVALUATION_CONTEXT_H_
 
 namespace openfeature {
 
@@ -11,6 +11,6 @@ class EvaluationContext {
 
 };
 
-}  // namespace openfeature
+} // namespace openfeature
 
 #endif CPP_SDK_INCLUDE_OPENFEATURE_EVALUATION_CONTEXT_H_

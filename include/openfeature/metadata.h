@@ -1,5 +1,5 @@
 #ifndef CPP_SDK_INCLUDE_OPENFEATURE_METADATA_H_
-#define CPP_SDK_INCLUDE_OPENFEATURE_METADATA_H_ 
+#define CPP_SDK_INCLUDE_OPENFEATURE_METADATA_H_
 
 #include <string>
 
@@ -10,6 +10,6 @@ struct Metadata{
     std::string name;
 };
 
-}  // namespace openfeature
+} // namespace openfeature
 
 #endif CPP_SDK_INCLUDE_OPENFEATURE_METADATA_H_

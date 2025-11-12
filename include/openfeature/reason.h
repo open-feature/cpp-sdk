@@ -1,7 +1,5 @@
 #ifndef CPP_SDK_INCLUDE_OPENFEATURE_REASON_H_
-#define CPP_SDK_INCLUDE_OPENFEATURE_REASON_H_ 
-
-#include <string>
+#define CPP_SDK_INCLUDE_OPENFEATURE_REASON_H_
 
 namespace openfeature {
 

@@ -3,10 +3,10 @@
 
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
+#include "openfeature/metadata.h"
 #include "openfeature/provider.h"
 
 #include <chrono>
-#include <string>
 #include <string_view>
 #include <memory>
 
@@ -32,7 +32,7 @@ class OpenFeature {
         virtual void SetProviderAndWait(std::string_view domain, std::shared_ptr<FeatureProvider> provider) = 0;
         
         // Sets a named provider and blocks until it initializes or a timeout occurs.
-        virtual void SetProviderAndWait(std::string_view domain,  std::shared_ptr<FeatureProvider> provider, std::chrono::milliseconds timeout) = 0;
+        virtual void SetProviderAndWait(std::string_view domain, std::shared_ptr<FeatureProvider> provider, std::chrono::milliseconds timeout) = 0;
 
         virtual std::shared_ptr<Client> GetClient() = 0;
 

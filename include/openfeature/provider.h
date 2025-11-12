@@ -1,12 +1,12 @@
 #ifndef CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_H_
-#define CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_H_ 
+#define CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_H_
 
 #include "openfeature/provider_evaluation.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
 
 #include <memory>
-#include <string>
+#include <string_view>
 
 namespace openfeature {
 

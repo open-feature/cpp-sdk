@@ -1,5 +1,5 @@
 #ifndef CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_EVALUATION_H_
-#define CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_EVALUATION_H_ 
+#define CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_EVALUATION_H_
 
 #include "openfeature/error_code.h"
 #include "openfeature/flag_metadata.h"

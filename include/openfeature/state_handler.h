@@ -5,8 +5,9 @@
 
 namespace openfeature {
 
-// A Provider can opt in for this behavior by implementing this interface and the FeatureProvider interface.
-// The StateHandler interface provides lifecycle methods for initializing and shutting down provider state.
+// A Provider can opt in for this behavior by implementing this interface and
+// the FeatureProvider interface. The StateHandler interface provides lifecycle
+// methods for initializing and shutting down provider state.
 class StateHandler {
  public:
   virtual ~StateHandler() = default;
@@ -14,6 +15,6 @@ class StateHandler {
   virtual void Shutdown() = 0;
 };
 
-} // namespace openfeature
+}  // namespace openfeature
 
 #endif CPP_SDK_INCLUDE_OPENFEATURE_STATE_HANDLER_H_

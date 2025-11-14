@@ -4,7 +4,10 @@ cc_library(
     name = "openfeature_cpp_sdk",
 
     # Source files from the src/ directory
-    srcs = glob(["src/**/*.cpp"]),
+    srcs = glob(
+        ["src/**/*.cpp"],
+        allow_empty = True,
+    ),
 
     # Header files from the include/ directory
     hdrs = glob(["include/**/*.h"]),

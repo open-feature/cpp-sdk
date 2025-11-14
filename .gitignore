@@ -1,1 +1,3 @@
 .vscode/
+MODULE.bazel.lock
+bazel*

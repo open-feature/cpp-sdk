@@ -1,0 +1,17 @@
+name: clang-format
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - name: Run clang-format
+      uses: jidicula/clang-format-action@v4.16.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        check-path: 'include'
+        clang_format_version: 21

@@ -1,8 +1,7 @@
-package(default_visibility = ["//visibility:public"])
-
 cc_library(
     name = "openfeature_cpp_sdk",
 
+    # TODO: Remove recursive glob and replace with individual Bazel packages
     # Source files from the src/ directory
     srcs = glob(
         ["src/**/*.cpp"],
@@ -16,4 +15,5 @@ cc_library(
     # include search path for any target that depends on this one.
     # So, users can do #include "my_header.h" instead of #include "include/my_header.h"
     includes = ["include"],
+    visibility = ["//visibility:public"],
 )

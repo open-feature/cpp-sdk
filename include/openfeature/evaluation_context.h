@@ -11,4 +11,4 @@ class EvaluationContext {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_EVALUATION_CONTEXT_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_EVALUATION_CONTEXT_H_

@@ -28,4 +28,4 @@ enum class Reason {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_REASON_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_REASON_H_

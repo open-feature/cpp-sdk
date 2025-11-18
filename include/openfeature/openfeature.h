@@ -59,4 +59,4 @@ class OpenFeature {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_OPENFEATURE_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_OPENFEATURE_H_

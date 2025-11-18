@@ -28,4 +28,4 @@ class Client : public Features {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_CLIENT_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_CLIENT_H_

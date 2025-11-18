@@ -6,7 +6,7 @@
 
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
-#include "openfeature/provider_evaluation.h"
+#include "openfeature/resolution_details.h"
 
 namespace openfeature {
 
@@ -18,7 +18,7 @@ class FeatureProvider {
  public:
   virtual ~FeatureProvider() = default;
   virtual Metadata GetMetadata() const = 0;
-  virtual std::unique_ptr<ProviderEvaluation<bool>> GetBooleanEvaluation(
+  virtual std::unique_ptr<BoolResolutionDetails> GetBooleanEvaluation(
       std::string_view flag, bool default_value,
       const EvaluationContext& ctx) = 0;
 
@@ -27,4 +27,4 @@ class FeatureProvider {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_H_

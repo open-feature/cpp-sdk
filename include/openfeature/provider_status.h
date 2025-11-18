@@ -19,4 +19,4 @@ enum class ProviderStatus {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_STATUS_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_STATUS_H_

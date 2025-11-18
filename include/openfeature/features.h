@@ -21,4 +21,4 @@ class Features {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_FEATURES_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_FEATURES_H_

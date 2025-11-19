@@ -2,8 +2,21 @@ name: clang-format-and-lint
 
 on:
   pull_request:
-    branches: [ "main" ]
-    paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc', '**.hh', '**CMakeLists.txt', 'meson.build', '**.cmake']
+    branches: ["main"]
+    paths:
+      [
+        "**.c",
+        "**.cpp",
+        "**.h",
+        "**.hpp",
+        "**.cxx",
+        "**.hxx",
+        "**.cc",
+        "**.hh",
+        "**CMakeLists.txt",
+        "meson.build",
+        "**.cmake",
+      ]
 
 jobs:
   clang-format-and-lint:
@@ -20,7 +33,6 @@ jobs:
           # Share repository cache between workflows.
           repository-cache: true
 
-      # ... optionally setup build env to create a compilation database
       - name: Build compilation database
         run: bazel run @hedron_compile_commands//:refresh_all
 
@@ -29,9 +41,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          style: 'file'  # disable clang-format checks. (1)
-          tidy-checks: '' # Use .clang-tidy config file. (2)
+          style: "file" # Use .clang-format config file.
+          tidy-checks: "" # Use .clang-tidy config file.
 
       - name: Fail fast?!
-        if: steps.linter.outputs.clang-tidy-checks-failed > 0
+        if: steps.linter.outputs.checks-failed > 0
         run: exit 1

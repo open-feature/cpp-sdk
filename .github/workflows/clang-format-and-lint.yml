@@ -1,0 +1,49 @@
+name: clang-format-and-lint
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      [
+        "**.c",
+        "**.cpp",
+        "**.h",
+        "**.hpp",
+        "**.cxx",
+        "**.hxx",
+        "**.cc",
+        "**.hh",
+        "**CMakeLists.txt",
+        "meson.build",
+        "**.cmake",
+      ]
+
+jobs:
+  clang-format-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          # Avoid downloading Bazel every time.
+          bazelisk-cache: true
+          # Store build cache per workflow.
+          disk-cache: ${{ github.workflow }}
+          # Share repository cache between workflows.
+          repository-cache: true
+
+      - name: Build compilation database
+        run: bazel run @hedron_compile_commands//:refresh_all
+
+      - uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          style: "file" # Use .clang-format config file.
+          tidy-checks: "" # Use .clang-tidy config file.
+
+      - name: Fail fast?!
+        if: steps.linter.outputs.checks-failed > 0
+        run: exit 1

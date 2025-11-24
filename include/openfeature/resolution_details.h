@@ -2,6 +2,7 @@
 #define CPP_SDK_INCLUDE_OPENFEATURE_RESOLUTION_DETAILS_H_
 
 #include <any>
+#include <optional>
 #include <string>
 
 #include "openfeature/error_code.h"
@@ -16,23 +17,25 @@ namespace openfeature {
 template <typename T>
 class ResolutionDetails {
  public:
-  ResolutionDetails(T value, Reason reason, std::string variant,
-                    const FlagMetadata& flag_metadata, ErrorCode error_code,
-                    std::string error_message);
+  ResolutionDetails(T value, Reason reason, std::optional<std::string> variant,
+                    const FlagMetadata& flag_metadata,
+                    std::optional<ErrorCode> error_code = std::nullopt,
+                    std::optional<std::string> error_message = std::nullopt);
+
   ~ResolutionDetails() = default;
   T GetValue() const;
-  std::string GetVariant() const;
+  std::optional<std::string> GetVariant() const;
   Reason GetReason() const;
-  ErrorCode GetErrorCode() const;
-  std::string GetErrorMessage() const;
+  std::optional<ErrorCode> GetErrorCode() const;
+  std::optional<std::string> GetErrorMessage() const;
   const FlagMetadata& GetFlagMetadata() const;
 
  private:
   T value_;
-  ErrorCode error_code_;
-  std::string error_message_;
+  std::optional<ErrorCode> error_code_;
+  std::optional<std::string> error_message_;
   Reason reason_;
-  std::string variant_;
+  std::optional<std::string> variant_;
   FlagMetadata flag_metadata_;
 };
 

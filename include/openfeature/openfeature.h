@@ -41,12 +41,22 @@ class OpenFeature {
                                   std::shared_ptr<FeatureProvider> provider,
                                   std::chrono::milliseconds timeout) = 0;
 
+  // If the domain is empty then GetProvider returns the default provider
+  // otherwise it returns the provider for the domain. If this domain has no
+  // provider bound, it returns the default provider.
+  virtual std::shared_ptr<FeatureProvider> GetProvider(
+      std::string_view domain = "") = 0;
+
   virtual std::shared_ptr<Client> GetClient() = 0;
 
   virtual std::shared_ptr<Client> GetClient(std::string_view domain) = 0;
 
   // Sets the global evaluation context.
   virtual void SetEvaluationContext(const EvaluationContext& ctx) = 0;
+
+  // Gets the global evaluation context
+  virtual EvaluationContext GetEvaluationContext(
+      std::shared_mutex& mutex, const EvaluationContext& ctx_src) = 0;
 
   // Gets the metadata for a provider bound to a specific domain.
   virtual Metadata GetProviderMetadata(std::string_view domain = "") = 0;

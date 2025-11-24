@@ -3,11 +3,10 @@
 namespace openfeature {
 
 template <typename T>
-ResolutionDetails<T>::ResolutionDetails(T value, Reason reason,
-                                        std::string variant,
-                                        const FlagMetadata& flag_metadata,
-                                        ErrorCode error_code,
-                                        std::string error_message)
+ResolutionDetails<T>::ResolutionDetails(
+    T value, Reason reason, std::optional<std::string> variant,
+    const FlagMetadata& flag_metadata, std::optional<ErrorCode> error_code,
+    std::optional<std::string> error_message)
     : value_(std::move(value)),
       error_code_(error_code),
       error_message_(std::move(error_message)),
@@ -21,7 +20,7 @@ T ResolutionDetails<T>::GetValue() const {
 }
 
 template <typename T>
-std::string ResolutionDetails<T>::GetVariant() const {
+std::optional<std::string> ResolutionDetails<T>::GetVariant() const {
   return variant_;
 }
 
@@ -31,12 +30,12 @@ Reason ResolutionDetails<T>::GetReason() const {
 }
 
 template <typename T>
-ErrorCode ResolutionDetails<T>::GetErrorCode() const {
+std::optional<ErrorCode> ResolutionDetails<T>::GetErrorCode() const {
   return error_code_;
 }
 
 template <typename T>
-std::string ResolutionDetails<T>::GetErrorMessage() const {
+std::optional<std::string> ResolutionDetails<T>::GetErrorMessage() const {
   return error_message_;
 }
 

@@ -12,10 +12,16 @@
 
 namespace openfeature {
 
+// This class implements the FeatureProvider interface and returns the supplied
+// default flag value.
 class NoopProvider : public FeatureProvider {
  public:
   NoopProvider();
+
+  // Metadata returns the metadata of the provider
   Metadata GetMetadata() const override;
+
+  // BooleanEvaluation returns a boolean flag.
   std::unique_ptr<BoolResolutionDetails> GetBooleanEvaluation(
       std::string_view flag, bool default_value,
       const EvaluationContext& ctx) override;

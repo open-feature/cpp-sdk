@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <memory>
+#include <shared_mutex>
 #include <string_view>
 
 #include "openfeature/client.h"

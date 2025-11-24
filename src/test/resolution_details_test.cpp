@@ -9,7 +9,8 @@ TEST(ResolutionDetailsTest, AccessesFieldsAfterInitialization) {
   const Reason expected_reason = Reason::kTargetingMatch;
   const std::optional<std::string> expected_variant = "on-variant";
   const std::optional<ErrorCode> expected_error_code = ErrorCode::kParseError;
-  const std::optional<std::string> expected_error_message = "Failed to parse data";
+  const std::optional<std::string> expected_error_message =
+      "Failed to parse data";
 
   const FlagMetadata expected_flag_metadata{};
 

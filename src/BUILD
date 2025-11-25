@@ -12,7 +12,7 @@ cc_library(
     name = "noop_provider",
     srcs = ["noop_provider.cpp"],
     deps = [
-        ":interfaces",
+        ":resolution_details",
         "//include:openfeature_headers",
     ],
 )
@@ -20,7 +20,7 @@ cc_library(
 cc_library(
     name = "openfeature_cpp_sdk",
     deps = [
-        ":interfaces",
+        ":resolution_details",
         ":noop_provider",
     ],
 )

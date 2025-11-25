@@ -17,4 +17,4 @@ class StateHandler {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_STATE_HANDLER_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_STATE_HANDLER_H_

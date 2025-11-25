@@ -29,4 +29,4 @@ enum class ErrorCode {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_ERROR_CODE_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_ERROR_CODE_H_

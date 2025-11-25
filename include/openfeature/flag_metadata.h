@@ -20,4 +20,4 @@ struct FlagMetadata {
 
 }  // namespace openfeature
 
-#endif CPP_SDK_INCLUDE_OPENFEATURE_FLAG_METADATA_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_FLAG_METADATA_H_

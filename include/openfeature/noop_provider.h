@@ -16,9 +16,9 @@ namespace openfeature {
 // default flag value.
 class NoopProvider : public FeatureProvider {
  public:
-  NoopProvider();
+  NoopProvider() = default;
 
-  // Metadata returns the metadata of the provider
+  // Metadata returns the metadata of the provider.
   Metadata GetMetadata() const override;
 
   // BooleanEvaluation returns a boolean flag.

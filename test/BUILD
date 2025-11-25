@@ -5,7 +5,6 @@ cc_test(
     deps = [
         # We reference the library defined in the parent 'src' package
         "//src:resolution_details",
-        
         # Google Test dependency remains the same
         "@googletest//:gtest_main",
     ],

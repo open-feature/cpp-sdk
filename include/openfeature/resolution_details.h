@@ -39,7 +39,7 @@ class ResolutionDetails {
   FlagMetadata flag_metadata_;
 };
 
-// Type aliases for common types
+// Type aliases for common types.
 using BoolResolutionDetails = ResolutionDetails<bool>;
 using StringResolutionDetails = ResolutionDetails<std::string>;
 using IntResolutionDetails = ResolutionDetails<int64_t>;

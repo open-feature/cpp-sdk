@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include <optional>
+
 using namespace openfeature;
 
 TEST(ResolutionDetailsTest, AccessesFieldsAfterInitialization) {
@@ -18,7 +20,7 @@ TEST(ResolutionDetailsTest, AccessesFieldsAfterInitialization) {
                                 expected_variant, expected_flag_metadata,
                                 expected_error_code, expected_error_message);
 
-  ASSERT_EQ(details.GetValue(), expected_value);
+  EXPECT_EQ(details.GetValue(), expected_value);
   ASSERT_EQ(details.GetReason(), expected_reason);
   ASSERT_EQ(details.GetVariant(), expected_variant);
   ASSERT_EQ(details.GetErrorCode(), expected_error_code);

@@ -4,6 +4,7 @@
 #include <memory>
 #include <string_view>
 
+#include "absl/status/status.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
 #include "openfeature/resolution_details.h"
@@ -21,6 +22,10 @@ class FeatureProvider {
   virtual std::unique_ptr<BoolResolutionDetails> GetBooleanEvaluation(
       std::string_view flag, bool default_value,
       const EvaluationContext& ctx) = 0;
+  virtual absl::Status Init(const EvaluationContext& ctx) {
+    return absl::OkStatus();
+  }
+  virtual absl::Status Shutdown() { return absl::OkStatus(); }
 
   // TODO: Add other flag types (e.g. string, int, float, object)
 };

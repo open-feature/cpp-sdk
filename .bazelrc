@@ -1,0 +1,6 @@
+# Disable header-only parsing to avoid generating header-only
+# compile actions that some tools (like hedron's compile-commands
+# extractor) can't handle. This prevents running into errors such
+# as "No source files found in compile args" when running
+# `bazel run @hedron_compile_commands//:refresh_all`.
+build --features=-parse_headers

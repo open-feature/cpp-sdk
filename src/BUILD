@@ -16,11 +16,27 @@ cc_library(
         "//include:openfeature_headers",
     ],
 )
+
+cc_library(
+    name = "feature_provider_status_manager",
+    srcs = ["feature_provider_status_manager.cpp"],
+    deps = [
+        "//include:openfeature_headers",
+        "@abseil-cpp//absl/log:log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/synchronization",
+    ],
+)
+
 # Main SDK library
 cc_library(
     name = "openfeature_cpp_sdk",
     deps = [
         ":resolution_details",
         ":noop_provider",
+        ":feature_provider_status_manager",
     ],
 )
+

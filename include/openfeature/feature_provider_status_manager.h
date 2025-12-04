@@ -2,10 +2,9 @@
 #define CPP_SDK_INCLUDE_OPENFEATURE_FEATURE_PROVIDER_STATUS_MANAGER_H_
 
 #include <memory>
+#include <mutex>
 
-#include "absl/base/thread_annotations.h"
 #include "absl/status/statusor.h"
-#include "absl/synchronization/mutex.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/provider.h"
 #include "openfeature/provider_status.h"
@@ -33,11 +32,9 @@ class FeatureProviderStatusManager {
 
   // Sets the current status of the provider.
   void SetStatus(ProviderStatus status);
-  ABSL_LOCKS_EXCLUDED(status_mutex_);
 
   // Gets the current status of the provider.
   ProviderStatus GetStatus() const;
-  ABSL_LOCKS_EXCLUDED(status_mutex_);
 
   // Returns the underlying feature provider.
   std::shared_ptr<FeatureProvider> GetProvider() const;
@@ -48,8 +45,8 @@ class FeatureProviderStatusManager {
 
   std::shared_ptr<FeatureProvider> provider_;
 
-  mutable absl::Mutex status_mutex_;
-  ProviderStatus status_ ABSL_GUARDED_BY(status_mutex_);
+  mutable std::mutex status_mutex_;
+  ProviderStatus status_;
 };
 
 }  // namespace openfeature

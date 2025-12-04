@@ -2,26 +2,43 @@
 
 #include <gtest/gtest.h>
 
+#include "absl/status/status.h"
+
 using namespace openfeature;
 
-// Test to verify the metadata returned by the provider.
-TEST(NoopProviderTest, ShouldReturnProviderNameForMetadata) {
+class NoopProviderTest : public ::testing::Test {
+ protected:
   NoopProvider provider;
+  EvaluationContext ctx;
+};
+
+// Test to verify the metadata returned by the provider.
+TEST_F(NoopProviderTest, ShouldReturnProviderNameForMetadata) {
   const Metadata metadata = provider.GetMetadata();
   EXPECT_EQ(metadata.name, "Noop Provider");
 }
 
-class NoopProviderBooleanTest : public ::testing::Test,
+// Test to verify the Init method returns an OK status.
+TEST_F(NoopProviderTest, InitShouldReturnOkStatus) {
+  const absl::Status status = provider.Init(ctx);
+  EXPECT_EQ(status, absl::OkStatus());
+}
+
+// Test to verify the Shutdown method returns an OK status.
+TEST_F(NoopProviderTest, ShutdownShouldReturnOkStatus) {
+  const absl::Status status = provider.Shutdown();
+  EXPECT_EQ(status, absl::OkStatus());
+}
+
+class NoopProviderBooleanTest : public NoopProviderTest,
                                 public ::testing::WithParamInterface<bool> {};
 
 // Test to verify the boolean evaluation returns the default value.
 TEST_P(NoopProviderBooleanTest, BooleanEvaluationShouldReturnDefaultValue) {
-  NoopProvider provider;
   const bool defaultValue = GetParam();
 
   const std::unique_ptr<BoolResolutionDetails> details =
-      provider.GetBooleanEvaluation("my-bool-flag", defaultValue,
-                                    EvaluationContext{});
+      provider.GetBooleanEvaluation("my-bool-flag", defaultValue, ctx);
 
   EXPECT_EQ(details->GetValue(), defaultValue);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);

@@ -19,16 +19,17 @@ using ::testing::WithParamInterface;
 class FeatureProviderStatusManagerTest : public Test {
  protected:
   void SetUp() override {
-    mock_provider = std::make_shared<MockFeatureProvider>();
-    auto result = FeatureProviderStatusManager::Create(mock_provider);
+    mock_provider_ = std::make_shared<MockFeatureProvider>();
+    absl::StatusOr<std::unique_ptr<FeatureProviderStatusManager>> result =
+        FeatureProviderStatusManager::Create(mock_provider_);
     ASSERT_TRUE(result.ok());
-    manager = std::move(result).value();
-    ASSERT_NE(manager, nullptr);
+    manager_ = std::move(result).value();
+    ASSERT_NE(manager_, nullptr);
   }
 
-  std::shared_ptr<MockFeatureProvider> mock_provider;
-  std::unique_ptr<FeatureProviderStatusManager> manager;
-  EvaluationContext ctx;
+  std::shared_ptr<MockFeatureProvider> mock_provider_;
+  std::unique_ptr<FeatureProviderStatusManager> manager_;
+  EvaluationContext ctx_;
 };
 
 TEST_F(FeatureProviderStatusManagerTest, CreateWithNullProviderReturnsError) {
@@ -38,8 +39,8 @@ TEST_F(FeatureProviderStatusManagerTest, CreateWithNullProviderReturnsError) {
 }
 
 TEST_F(FeatureProviderStatusManagerTest, CreateWithValidProviderSucceeds) {
-  EXPECT_EQ(manager->GetStatus(), ProviderStatus::kNotReady);
-  EXPECT_EQ(manager->GetProvider(), mock_provider);
+  EXPECT_EQ(manager_->GetStatus(), ProviderStatus::kNotReady);
+  EXPECT_EQ(manager_->GetProvider(), mock_provider_);
 }
 
 class FeatureProviderStatusManagerInitTest
@@ -49,14 +50,14 @@ class FeatureProviderStatusManagerInitTest
 TEST_P(FeatureProviderStatusManagerInitTest, InitSetsCorrectStatus) {
   auto [provider_init_status, expected_manager_status] = GetParam();
 
-  EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(provider_init_status));
-  manager->Init(ctx);
-  EXPECT_EQ(manager->GetStatus(), expected_manager_status);
+  EXPECT_CALL(*mock_provider_, Init(_)).WillOnce(Return(provider_init_status));
+  manager_->Init(ctx_);
+  EXPECT_EQ(manager_->GetStatus(), expected_manager_status);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     InitStatusTests, FeatureProviderStatusManagerInitTest,
-    ::testing::Values(
+    testing::Values(
         std::make_tuple(absl::OkStatus(), ProviderStatus::kReady),
         std::make_tuple(absl::InternalError("Initialization failed"),
                         ProviderStatus::kError)));
@@ -67,22 +68,21 @@ class FeatureProviderStatusManagerShutdownTest
 
 TEST_P(FeatureProviderStatusManagerShutdownTest,
        ShutdownAlwaysSetsStatusToNotReady) {
-  manager->SetStatus(ProviderStatus::kReady);
+  manager_->SetStatus(ProviderStatus::kReady);
   auto provider_shutdown_status = GetParam();
-  EXPECT_CALL(*mock_provider, Shutdown())
+  EXPECT_CALL(*mock_provider_, Shutdown())
       .WillOnce(Return(provider_shutdown_status));
-  manager->Shutdown();
-  EXPECT_EQ(manager->GetStatus(), ProviderStatus::kNotReady);
+  manager_->Shutdown();
+  EXPECT_EQ(manager_->GetStatus(), ProviderStatus::kNotReady);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ShutdownStatusTests, FeatureProviderStatusManagerShutdownTest,
-    ::testing::Values(absl::OkStatus(),
-                      absl::InternalError("Shutdown failed")));
+    testing::Values(absl::OkStatus(), absl::InternalError("Shutdown failed")));
 
 TEST_F(FeatureProviderStatusManagerTest, SetStatusAndGetStatusWorkCorrectly) {
   // Verify initial status from SetUp.
-  ASSERT_EQ(manager->GetStatus(), ProviderStatus::kNotReady);
+  ASSERT_EQ(manager_->GetStatus(), ProviderStatus::kNotReady);
 
   // Define a list of statuses to test.
   const std::vector<ProviderStatus> statuses_to_test = {
@@ -91,20 +91,20 @@ TEST_F(FeatureProviderStatusManagerTest, SetStatusAndGetStatusWorkCorrectly) {
 
   // Iterate and test each status.
   for (const auto& status : statuses_to_test) {
-    manager->SetStatus(status);
-    EXPECT_EQ(manager->GetStatus(), status);
+    manager_->SetStatus(status);
+    EXPECT_EQ(manager_->GetStatus(), status);
   }
 }
 
 TEST_F(FeatureProviderStatusManagerTest, GetProviderReturnsCorrectProvider) {
   // The GetProvider method should return the same instance of the provider
   // regardless of the manager's status.
-  EXPECT_EQ(manager->GetProvider(), mock_provider);
-  manager->SetStatus(ProviderStatus::kReady);
-  EXPECT_EQ(manager->GetProvider(), mock_provider);
+  EXPECT_EQ(manager_->GetProvider(), mock_provider_);
+  manager_->SetStatus(ProviderStatus::kReady);
+  EXPECT_EQ(manager_->GetProvider(), mock_provider_);
 }
 
 int main(int argc, char** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+  testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

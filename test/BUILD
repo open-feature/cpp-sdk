@@ -1,6 +1,5 @@
 cc_test(
     name = "resolution_details_test",
-    # Path is relative to cpp-sdk/test/
     srcs = ["resolution_details_test.cpp"],
     deps = [
         "//src:resolution_details",
@@ -21,7 +20,6 @@ cc_library(
 
 cc_test(
     name = "feature_provider_status_manager_test",
-    # Path is relative to cpp-sdk/test/
     srcs = ["feature_provider_status_manager_test.cpp"],
     deps = [
         ":mock_feature_provider",

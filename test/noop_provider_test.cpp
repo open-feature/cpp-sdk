@@ -8,25 +8,25 @@ using namespace openfeature;
 
 class NoopProviderTest : public ::testing::Test {
  protected:
-  NoopProvider provider;
-  EvaluationContext ctx;
+  NoopProvider provider_;
+  EvaluationContext ctx_;
 };
 
 // Test to verify the metadata returned by the provider.
 TEST_F(NoopProviderTest, ShouldReturnProviderNameForMetadata) {
-  const Metadata metadata = provider.GetMetadata();
+  const Metadata metadata = provider_.GetMetadata();
   EXPECT_EQ(metadata.name, "Noop Provider");
 }
 
 // Test to verify the Init method returns an OK status.
 TEST_F(NoopProviderTest, InitShouldReturnOkStatus) {
-  const absl::Status status = provider.Init(ctx);
+  const absl::Status status = provider_.Init(ctx_);
   EXPECT_EQ(status, absl::OkStatus());
 }
 
 // Test to verify the Shutdown method returns an OK status.
 TEST_F(NoopProviderTest, ShutdownShouldReturnOkStatus) {
-  const absl::Status status = provider.Shutdown();
+  const absl::Status status = provider_.Shutdown();
   EXPECT_EQ(status, absl::OkStatus());
 }
 
@@ -38,7 +38,7 @@ TEST_P(NoopProviderBooleanTest, BooleanEvaluationShouldReturnDefaultValue) {
   const bool defaultValue = GetParam();
 
   const std::unique_ptr<BoolResolutionDetails> details =
-      provider.GetBooleanEvaluation("my-bool-flag", defaultValue, ctx);
+      provider_.GetBooleanEvaluation("my-bool-flag", defaultValue, ctx_);
 
   EXPECT_EQ(details->GetValue(), defaultValue);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);

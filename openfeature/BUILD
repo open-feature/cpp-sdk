@@ -78,6 +78,20 @@ cc_library(
 )
 
 cc_library(
+    name = "provider_repository",
+    srcs = ["provider_repository.cpp"],
+    hdrs = ["provider_repository.h"],
+    deps = [
+         "@abseil-cpp//absl/status",
+        ":evaluation_context",
+        ":feature_provider_status_manager",
+        ":provider",
+        ":provider_status",
+        ":noop_provider",
+    ],
+)
+
+cc_library(
     name = "provider_status",
     hdrs = ["provider_status.h"],
 )

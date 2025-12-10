@@ -36,12 +36,12 @@ class ProviderRepository {
 
   // Set the default provider.
   void SetProvider(std::shared_ptr<FeatureProvider> provider,
-                   EvaluationContext ctx, bool waitForInit);
+                   const EvaluationContext& ctx, bool waitForInit);
 
   // Add a provider for a domain.
   void SetProvider(std::string_view domain,
                    std::shared_ptr<FeatureProvider> provider,
-                   EvaluationContext ctx, bool waitForInit);
+                   const EvaluationContext& ctx, bool waitForInit);
 
   // Fetch the status of a provider for a domain.
   // If the domain is not set, return the default provider status.
@@ -54,13 +54,13 @@ class ProviderRepository {
  private:
   void PrepareAndInitializeProvider(
       const std::optional<std::string> domain,
-      std::shared_ptr<FeatureProvider> new_provider, EvaluationContext ctx,
-      bool waitForInit);
+      std::shared_ptr<FeatureProvider> new_provider,
+      const EvaluationContext& ctx, bool waitForInit);
 
   void InitializeProvider(
       std::shared_ptr<FeatureProviderStatusManager> new_status_manager,
       std::shared_ptr<FeatureProviderStatusManager> old_status_manager,
-      EvaluationContext ctx);
+      const EvaluationContext& ctx);
 
   void ShutdownOldProvider(
       std::shared_ptr<FeatureProviderStatusManager> old_status_manager);

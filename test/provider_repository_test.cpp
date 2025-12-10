@@ -186,6 +186,17 @@ TEST_F(ProviderRepositoryTest, SetProviderWithFailedInitSetsErrorStatus) {
   EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kError);
 }
 
+// Test that getting status after shutdown does not crash and returns a safe
+// value.
+TEST_F(ProviderRepositoryTest, GetProviderStatusAfterShutdownReturnsNotReady) {
+  ASSERT_NE(repo.GetProvider(), nullptr);
+  ASSERT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
+
+  repo.Shutdown();
+
+  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kNotReady);
+}
+
 // Test to verify the old provider is shutdown after a new one is ready.
 TEST_F(ProviderRepositoryTest, OldProviderIsShutdownAfterNewOneIsReady) {
   std::shared_ptr<MockFeatureProvider> mock_provider1 =

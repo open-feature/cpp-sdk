@@ -50,7 +50,8 @@ std::shared_ptr<FeatureProvider> ProviderRepository::GetProvider(
 }
 
 void ProviderRepository::SetProvider(std::shared_ptr<FeatureProvider> provider,
-                                     EvaluationContext ctx, bool waitForInit) {
+                                     const EvaluationContext& ctx,
+                                     bool waitForInit) {
   if (!provider) {
     std::cerr << "Provider cannot be null" << std::endl;
     return;
@@ -61,7 +62,8 @@ void ProviderRepository::SetProvider(std::shared_ptr<FeatureProvider> provider,
 
 void ProviderRepository::SetProvider(std::string_view domain,
                                      std::shared_ptr<FeatureProvider> provider,
-                                     EvaluationContext ctx, bool waitForInit) {
+                                     const EvaluationContext& ctx,
+                                     bool waitForInit) {
   if (!provider) {
     std::cerr << "Provider cannot be null" << std::endl;
     return;
@@ -77,7 +79,11 @@ void ProviderRepository::SetProvider(std::string_view domain,
 }
 
 ProviderStatus ProviderRepository::GetProviderStatus(std::string_view domain) {
-  return GetFeatureProviderStatusManager(domain)->GetStatus();
+  auto manager = GetFeatureProviderStatusManager(domain);
+  if (manager) {
+    return manager->GetStatus();
+  }
+  return ProviderStatus::kNotReady;
 }
 
 void ProviderRepository::Shutdown() {
@@ -98,7 +104,7 @@ void ProviderRepository::Shutdown() {
 
 void ProviderRepository::PrepareAndInitializeProvider(
     const std::optional<std::string> domain,
-    std::shared_ptr<FeatureProvider> new_provider, EvaluationContext ctx,
+    std::shared_ptr<FeatureProvider> new_provider, const EvaluationContext& ctx,
     bool waitForInit) {
   std::shared_ptr<FeatureProviderStatusManager> new_status_manager;
   std::shared_ptr<FeatureProviderStatusManager> old_status_manager;
@@ -146,7 +152,7 @@ void ProviderRepository::PrepareAndInitializeProvider(
 void ProviderRepository::InitializeProvider(
     std::shared_ptr<FeatureProviderStatusManager> new_status_manager,
     std::shared_ptr<FeatureProviderStatusManager> old_status_manager,
-    EvaluationContext ctx) {
+    const EvaluationContext& ctx) {
   if (new_status_manager->GetStatus() == ProviderStatus::kNotReady) {
     new_status_manager->Init(ctx);
   }

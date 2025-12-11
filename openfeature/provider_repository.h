@@ -2,11 +2,14 @@
 #define CPP_SDK_INCLUDE_OPENFEATURE_PROVIDER_REPOSITORY_H_
 
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <shared_mutex>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <unordered_map>
+#include <vector>
 
 #include "absl/status/status.h"
 #include "openfeature/evaluation_context.h"
@@ -16,6 +19,10 @@
 
 namespace openfeature {
 
+// ProviderRepository holds a default provider and allows for registering named
+// providers associated with specific domains. The repository is responsible for
+// the initialization and shutdown of providers and provides thread-safe access
+// to them.
 class ProviderRepository {
  public:
   ProviderRepository();
@@ -27,12 +34,12 @@ class ProviderRepository {
   // If the domain is empty, fetch status manager for the default provider.
   // Otherwise, fetch the status manager for a specific provider.
   std::shared_ptr<FeatureProviderStatusManager> GetFeatureProviderStatusManager(
-      std::string_view domain = "");
+      std::string_view domain = "") const;
 
   // If the domain is empty then GetProvider returns the default
   // FeatureProvider. Otherwise it returns the FeatureProvider for the
   // domain.
-  std::shared_ptr<FeatureProvider> GetProvider(std::string_view domain = "");
+  std::shared_ptr<FeatureProvider> GetProvider(std::string_view domain = "") const;
 
   // Set the default provider.
   void SetProvider(std::shared_ptr<FeatureProvider> provider,
@@ -46,9 +53,11 @@ class ProviderRepository {
   // Fetch the status of a provider for a domain.
   // If the domain is not set, return the default provider status.
   // If not found, return the default.
-  ProviderStatus GetProviderStatus(std::string_view domain = "");
+  ProviderStatus GetProviderStatus(std::string_view domain = "") const;
 
-  // Shuts down all registered providers and clears the repository.
+  // Wait for any pending initialization threads to complete before shutting
+  // down providers. Afterwards, shuts down all registered providers and
+  // clears the repository.
   void Shutdown();
 
  private:
@@ -76,6 +85,9 @@ class ProviderRepository {
       provider_manager_;
   std::shared_ptr<FeatureProviderStatusManager> default_manager_;
   mutable std::shared_mutex repo_mutex_;
+
+  std::vector<std::thread> initialization_threads_;
+  std::mutex threads_mutex_;
 };
 
 }  // namespace openfeature

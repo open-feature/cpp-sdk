@@ -1,15 +1,13 @@
 #include "openfeature/provider_repository.h"
 
 #include <iostream>
-#include <mutex>
-#include <thread>
 
+#include "absl/status/statusor.h"
 #include "openfeature/noop_provider.h"
 
 namespace openfeature {
 
 ProviderRepository::ProviderRepository() {
-  // Initialize with a NoopProvider by default, which is always ready.
   auto noop_provider = std::make_shared<NoopProvider>();
   auto status_manager = FeatureProviderStatusManager::Create(noop_provider);
   if (status_manager.ok()) {
@@ -22,25 +20,23 @@ ProviderRepository::ProviderRepository() {
 ProviderRepository::~ProviderRepository() { Shutdown(); }
 
 std::shared_ptr<FeatureProviderStatusManager>
-ProviderRepository::GetFeatureProviderStatusManager(std::string_view domain) {
+ProviderRepository::GetFeatureProviderStatusManager(std::string_view domain) const {
   std::shared_lock<std::shared_mutex> lock(repo_mutex_);
 
   if (domain.empty()) {
     return default_manager_;
   }
 
-  // Look up domain in map.
   auto it = provider_manager_.find(std::string(domain));
   if (it != provider_manager_.end()) {
     return it->second;
   }
 
-  // Fallback to default if no provider was found.
   return default_manager_;
 }
 
-std::shared_ptr<FeatureProvider> ProviderRepository::GetProvider(
-    std::string_view domain) {
+std::shared_ptr<FeatureProvider> ProviderRepository::GetProvider (
+    std::string_view domain) const{
   auto manager = GetFeatureProviderStatusManager(domain);
 
   if (manager) {
@@ -78,7 +74,7 @@ void ProviderRepository::SetProvider(std::string_view domain,
                                waitForInit);
 }
 
-ProviderStatus ProviderRepository::GetProviderStatus(std::string_view domain) {
+ProviderStatus ProviderRepository::GetProviderStatus(std::string_view domain) const{
   auto manager = GetFeatureProviderStatusManager(domain);
   if (manager) {
     return manager->GetStatus();
@@ -87,6 +83,16 @@ ProviderStatus ProviderRepository::GetProviderStatus(std::string_view domain) {
 }
 
 void ProviderRepository::Shutdown() {
+  {
+    std::lock_guard<std::mutex> lock(threads_mutex_);
+    for (auto& thread : initialization_threads_) {
+      if (thread.joinable()) {
+        thread.join();
+      }
+    }
+    initialization_threads_.clear();
+  }
+
   std::unique_lock<std::shared_mutex> lock(repo_mutex_);
 
   if (default_manager_) {
@@ -95,6 +101,7 @@ void ProviderRepository::Shutdown() {
   }
 
   for (auto& pair : provider_manager_) {
+    // Check if the provider is still active before shutting down.
     if (pair.second->GetStatus() != ProviderStatus::kNotReady) {
       pair.second->Shutdown();
     }
@@ -139,13 +146,14 @@ void ProviderRepository::PrepareAndInitializeProvider(
     }
   }  // Release the lock before running initialization logic.
 
-  // Decide whether to initialize sync or async.
   if (waitForInit) {
     InitializeProvider(new_status_manager, old_status_manager, ctx);
   } else {
-    std::thread([this, new_status_manager, old_status_manager, ctx] {
-      InitializeProvider(new_status_manager, old_status_manager, ctx);
-    }).detach();
+    std::lock_guard<std::mutex> lock(threads_mutex_);
+    initialization_threads_.emplace_back(
+        [this, new_status_manager, old_status_manager, ctx] {
+          InitializeProvider(new_status_manager, old_status_manager, ctx);
+        });
   }
 }
 

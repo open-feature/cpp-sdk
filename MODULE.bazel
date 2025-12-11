@@ -12,5 +12,5 @@ git_override(
     remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
     # Not official but well established fork with a fix to header only libraries
     # https://github.com/hedronvision/bazel-compile-commands-extractor/pull/219
-    commit = "02d15621b528efd877f5d5657c4b738523a0eb17",
+    commit = "abb61a688167623088f8768cc9264798df6a9d10",
 )

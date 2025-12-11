@@ -5,7 +5,6 @@
 
 #include <chrono>
 #include <future>
-#include <thread>
 
 #include "mocks/mock_feature_provider.h"
 #include "openfeature/noop_provider.h"
@@ -269,6 +268,51 @@ TEST_F(ProviderRepositoryTest, ShutdownAllProviders) {
 
   repo.Shutdown();
   EXPECT_EQ(repo.GetFeatureProviderStatusManager(), nullptr);
+}
+
+// Test to verify that Shutdown waits for asynchronous initialization to finish.
+TEST_F(ProviderRepositoryTest, ShutdownWaitsForAsyncInitializationToComplete) {
+  std::shared_ptr<MockFeatureProvider> mock_provider =
+      std::make_shared<MockFeatureProvider>();
+
+  std::promise<void> init_started_promise;
+  std::future<void> init_started_future = init_started_promise.get_future();
+
+  std::promise<void> init_can_complete_promise;
+  std::future<void> init_can_complete_future =
+      init_can_complete_promise.get_future();
+
+  // Mock the Init() call.
+  EXPECT_CALL(*mock_provider, Init(_)).WillOnce([&](const auto&) {
+    init_started_promise.set_value();
+    init_can_complete_future.get();
+    return absl::OkStatus();
+  });
+
+  EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
+
+  repo.SetProvider(mock_provider, ctx, false);
+
+  // Wait until the background thread is confirmed to be inside the Init()
+  // method.
+  init_started_future.wait();
+
+  // Run Shutdown() to verify that it blocks until init is allowed to complete.
+  auto shutdown_future =
+      std::async(std::launch::async, [&]() { repo.Shutdown(); });
+
+  // We expect it to time out because the Init() is still blocked.
+  auto status = shutdown_future.wait_for(std::chrono::milliseconds(100));
+  ASSERT_EQ(status, std::future_status::timeout)
+      << "Shutdown() did not wait for initialization to complete.";
+
+  // Unblock Init().
+  init_can_complete_promise.set_value();
+
+  // Shutdown should complete promptly.
+  shutdown_future.get();
+
+  SUCCEED() << "Shutdown() correctly waited for the async task.";
 }
 
 // Test that setting an existing provider in a new location reuses the manager.

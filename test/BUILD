@@ -36,3 +36,13 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "provider_repository_test",
+    srcs = ["provider_repository_test.cpp"],
+    deps = [
+        ":mock_feature_provider",
+        "//openfeature:provider_repository",
+        "@googletest//:gtest_main",
+    ],
+)

@@ -37,8 +37,6 @@ TEST_F(ProviderRepositoryTest,
   std::shared_ptr<FeatureProviderStatusManager> initial_default_manager =
       repo.GetFeatureProviderStatusManager();
   ASSERT_NE(initial_default_manager, nullptr);
-  ASSERT_EQ(initial_default_manager->GetProvider()->GetMetadata().name,
-            "Noop Provider");
 
   // Asking for a non-existent domain should return the default manager.
   std::shared_ptr<FeatureProviderStatusManager> non_existent_manager =

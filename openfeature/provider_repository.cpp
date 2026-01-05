@@ -8,8 +8,10 @@
 namespace openfeature {
 
 ProviderRepository::ProviderRepository() {
-  auto noop_provider = std::make_shared<NoopProvider>();
-  auto status_manager = FeatureProviderStatusManager::Create(noop_provider);
+  std::shared_ptr<openfeature::NoopProvider> noop_provider =
+      std::make_shared<NoopProvider>();
+  absl::StatusOr<std::unique_ptr<FeatureProviderStatusManager>> status_manager =
+      FeatureProviderStatusManager::Create(noop_provider);
   if (status_manager.ok()) {
     std::unique_lock<std::shared_mutex> lock(repo_mutex_);
     default_manager_ = std::move(status_manager.value());
@@ -38,7 +40,8 @@ ProviderRepository::GetFeatureProviderStatusManager(
 
 std::shared_ptr<FeatureProvider> ProviderRepository::GetProvider(
     std::string_view domain) const {
-  auto manager = GetFeatureProviderStatusManager(domain);
+  std::shared_ptr<FeatureProviderStatusManager> manager =
+      GetFeatureProviderStatusManager(domain);
 
   if (manager) {
     return manager->GetProvider();
@@ -48,36 +51,37 @@ std::shared_ptr<FeatureProvider> ProviderRepository::GetProvider(
 
 void ProviderRepository::SetProvider(std::shared_ptr<FeatureProvider> provider,
                                      const EvaluationContext& ctx,
-                                     bool waitForInit) {
+                                     bool wait_for_init) {
   if (!provider) {
     std::cerr << "Provider cannot be null" << std::endl;
     return;
   }
   PrepareAndInitializeProvider(std::nullopt, std::move(provider), ctx,
-                               waitForInit);
+                               wait_for_init);
 }
 
 void ProviderRepository::SetProvider(std::string_view domain,
                                      std::shared_ptr<FeatureProvider> provider,
                                      const EvaluationContext& ctx,
-                                     bool waitForInit) {
+                                     bool wait_for_init) {
   if (!provider) {
     std::cerr << "Provider cannot be null" << std::endl;
     return;
   }
 
   if (domain.empty()) {
-    SetProvider(std::move(provider), ctx, waitForInit);
+    SetProvider(std::move(provider), ctx, wait_for_init);
     return;
   }
 
   PrepareAndInitializeProvider(std::string(domain), std::move(provider), ctx,
-                               waitForInit);
+                               wait_for_init);
 }
 
 ProviderStatus ProviderRepository::GetProviderStatus(
     std::string_view domain) const {
-  auto manager = GetFeatureProviderStatusManager(domain);
+  std::shared_ptr<FeatureProviderStatusManager> manager =
+      GetFeatureProviderStatusManager(domain);
   if (manager) {
     return manager->GetStatus();
   }
@@ -87,7 +91,7 @@ ProviderStatus ProviderRepository::GetProviderStatus(
 void ProviderRepository::Shutdown() {
   {
     std::lock_guard<std::mutex> lock(threads_mutex_);
-    for (auto& thread : initialization_threads_) {
+    for (std::thread& thread : initialization_threads_) {
       if (thread.joinable()) {
         thread.join();
       }
@@ -102,7 +106,9 @@ void ProviderRepository::Shutdown() {
     default_manager_.reset();
   }
 
-  for (auto& pair : provider_manager_) {
+  for (std::pair<const std::string,
+                 std::shared_ptr<FeatureProviderStatusManager>>& pair :
+       provider_manager_) {
     // Check if the provider is still active before shutting down.
     if (pair.second->GetStatus() != ProviderStatus::kNotReady) {
       pair.second->Shutdown();
@@ -114,16 +120,18 @@ void ProviderRepository::Shutdown() {
 void ProviderRepository::PrepareAndInitializeProvider(
     const std::optional<std::string> domain,
     std::shared_ptr<FeatureProvider> new_provider, const EvaluationContext& ctx,
-    bool waitForInit) {
+    bool wait_for_init) {
   std::shared_ptr<FeatureProviderStatusManager> new_status_manager;
   std::shared_ptr<FeatureProviderStatusManager> old_status_manager;
 
   {  // Scoping for the unique_lock.
     std::unique_lock<std::shared_mutex> lock(repo_mutex_);
 
-    auto existing_manager = GetExistingStatusManagerForProvider(new_provider);
+    std::shared_ptr<FeatureProviderStatusManager> existing_manager =
+        GetExistingStatusManagerForProvider(new_provider);
     if (!existing_manager) {
-      auto manager = FeatureProviderStatusManager::Create(new_provider);
+      absl::StatusOr<std::unique_ptr<FeatureProviderStatusManager>> manager =
+          FeatureProviderStatusManager::Create(new_provider);
       if (!manager.ok()) {
         std::cerr << "Failed to create FeatureProviderStatusManager: "
                   << manager.status() << std::endl;
@@ -148,7 +156,7 @@ void ProviderRepository::PrepareAndInitializeProvider(
     }
   }  // Release the lock before running initialization logic.
 
-  if (waitForInit) {
+  if (wait_for_init) {
     InitializeProvider(new_status_manager, old_status_manager, ctx);
   } else {
     std::lock_guard<std::mutex> lock(threads_mutex_);

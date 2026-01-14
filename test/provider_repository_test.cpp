@@ -183,15 +183,24 @@ TEST_F(ProviderRepositoryTest, SetProviderWithFailedInitSetsErrorStatus) {
   EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kError);
 }
 
-// Test that getting status after shutdown does not crash and returns a safe
-// value.
-TEST_F(ProviderRepositoryTest, GetProviderStatusAfterShutdownReturnsNotReady) {
-  ASSERT_NE(repo.GetProvider(), nullptr);
-  ASSERT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
+// Test that Shutdown resets the repository to its initial
+// state.
+TEST_F(ProviderRepositoryTest, ShutdownResetsToReadyNoopProvider) {
+  // Set a mock provider to ensure we're not in the initial state.
+  auto mock_provider = std::make_shared<MockFeatureProvider>();
+  EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
+  repo.SetProvider(mock_provider, ctx, true);
+  ASSERT_EQ(repo.GetProvider(), mock_provider);
 
+  // Expect the mock provider to be shut down.
+  EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
   repo.Shutdown();
 
-  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kNotReady);
+  // After shutdown, the repository should be reset to the default NoopProvider.
+  auto provider = repo.GetProvider();
+  ASSERT_NE(provider, nullptr);
+  EXPECT_NE(dynamic_cast<NoopProvider*>(provider.get()), nullptr);
+  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
 }
 
 // Test to verify the old provider is shutdown after a new one is ready.
@@ -264,8 +273,24 @@ TEST_F(ProviderRepositoryTest, ShutdownAllProviders) {
   EXPECT_CALL(*mock_named_1, Shutdown()).WillOnce(Return(absl::OkStatus()));
   EXPECT_CALL(*mock_named_2, Shutdown()).WillOnce(Return(absl::OkStatus()));
 
+  // Keep a reference to the old manager.
+  std::shared_ptr<FeatureProviderStatusManager> old_manager =
+      repo.GetFeatureProviderStatusManager();
+
   repo.Shutdown();
-  EXPECT_EQ(repo.GetFeatureProviderStatusManager(), nullptr);
+
+  // Assert that a new default manager has been created and it's not the old
+  // one.
+  std::shared_ptr<FeatureProviderStatusManager> new_manager =
+      repo.GetFeatureProviderStatusManager();
+  ASSERT_NE(new_manager, nullptr);
+
+  ASSERT_NE(new_manager, old_manager);
+
+  // Assert that the new provider is the default NoopProvider.
+  std::shared_ptr<FeatureProvider> new_provider = new_manager->GetProvider();
+  ASSERT_NE(new_provider, nullptr);
+  EXPECT_NE(dynamic_cast<NoopProvider*>(new_provider.get()), nullptr);
 }
 
 // Test to verify that Shutdown waits for asynchronous initialization to finish.

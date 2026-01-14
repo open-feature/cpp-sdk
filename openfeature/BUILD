@@ -3,6 +3,25 @@ package(
 )
 
 cc_library(
+    name = "client_api",
+    srcs = ["client_api.cpp"],
+    hdrs = ["client_api.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":client",
+        ":evaluation_context",
+        ":features",
+        ":flag_metadata",
+        ":metadata",
+        ":openfeature_api",
+        ":provider",
+        ":provider_status",
+        ":reason",
+        ":resolution_details",
+    ],
+)
+
+cc_library(
     name = "client",
     hdrs = ["client.h"],
     include_prefix = "openfeature",
@@ -71,6 +90,22 @@ cc_library(
         ":metadata",
         ":provider",
         ":resolution_details",
+    ],
+)
+
+cc_library(
+    name = "openfeature_api",
+    srcs = ["openfeature_api.cpp"],
+    hdrs = ["openfeature_api.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":client",
+        ":client_api",
+        ":evaluation_context",
+        ":metadata",
+        ":openfeature",
+        ":provider",
+        ":provider_repository",
     ],
 )
 

@@ -10,6 +10,16 @@ cc_library(
 )
 
 cc_test(
+    name = "client_api_test",
+    srcs = ["client_api_test.cpp"],
+    deps = [
+        ":mock_feature_provider",
+        "//openfeature:client_api",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "feature_provider_status_manager_test",
     srcs = ["feature_provider_status_manager_test.cpp"],
     deps = [
@@ -43,6 +53,16 @@ cc_test(
     deps = [
         ":mock_feature_provider",
         "//openfeature:provider_repository",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "openfeature_api_test",
+    srcs = ["openfeature_api_test.cpp"],
+    deps = [
+        ":mock_feature_provider",
+        "//openfeature:openfeature_api",
         "@googletest//:gtest_main",
     ],
 )

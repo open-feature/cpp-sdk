@@ -12,9 +12,10 @@ cc_library(
         ":evaluation_context",
         ":features",
         ":flag_metadata",
+        ":global_context_manager",
         ":metadata",
-        ":openfeature_api",
         ":provider",
+        ":provider_repository",
         ":provider_status",
         ":reason",
         ":resolution_details",
@@ -75,6 +76,16 @@ cc_library(
 )
 
 cc_library(
+    name = "global_context_manager",
+    srcs = ["global_context_manager.cpp"],
+    hdrs = ["global_context_manager.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":evaluation_context",
+    ],
+)
+
+cc_library(
     name = "metadata",
     hdrs = ["metadata.h"],
     include_prefix = "openfeature",
@@ -92,7 +103,6 @@ cc_library(
         ":resolution_details",
     ],
 )
-
 cc_library(
     name = "openfeature_api",
     srcs = ["openfeature_api.cpp"],
@@ -102,6 +112,7 @@ cc_library(
         ":client",
         ":client_api",
         ":evaluation_context",
+        ":global_context_manager",
         ":metadata",
         ":openfeature",
         ":provider",

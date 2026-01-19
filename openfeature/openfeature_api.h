@@ -7,6 +7,7 @@
 
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
+#include "openfeature/global_context_manager.h"
 #include "openfeature/metadata.h"
 #include "openfeature/openfeature.h"
 #include "openfeature/provider.h"
@@ -74,8 +75,6 @@ class OpenFeatureAPI : public OpenFeature {
 
  private:
   ProviderRepository provider_repository_;
-  EvaluationContext evaluation_context_;
-  mutable std::shared_mutex context_mutex_;
 
   OpenFeatureAPI();
 };

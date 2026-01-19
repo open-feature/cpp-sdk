@@ -3,13 +3,12 @@
 #include <utility>
 
 #include "openfeature/flag_metadata.h"
+#include "openfeature/global_context_manager.h"
 #include "openfeature/reason.h"
 
 namespace openfeature {
 
-ClientAPI::ClientAPI(std::shared_ptr<OpenFeatureAPI> api,
-                     std::string_view domain)
-    : api_(std::move(api)), domain_(domain) {}
+ClientAPI::ClientAPI(std::string_view domain) : domain_(domain) {}
 
 Metadata ClientAPI::GetMetadata() { return Metadata{domain_}; }
 
@@ -24,7 +23,7 @@ void ClientAPI::SetEvaluationContext(const EvaluationContext& ctx) {
 }
 
 ProviderStatus ClientAPI::GetProviderStatus() {
-  return api_->GetProviderStatus(domain_);
+  return provider_repository_.GetProviderStatus(domain_);
 }
 
 bool ClientAPI::GetBooleanValue(std::string_view flag_key, bool default_value) {
@@ -45,7 +44,8 @@ std::unique_ptr<BoolResolutionDetails> ClientAPI::EvaluateBooleanFlag(
         ErrorCode::kProviderNotReady, "Provider is not ready");
   }
 
-  std::shared_ptr<FeatureProvider> provider = api_->GetProvider(domain_);
+  std::shared_ptr<FeatureProvider> provider =
+      provider_repository_.GetProvider(domain_);
   if (!provider) {
     return std::make_unique<BoolResolutionDetails>(
         default_value, Reason::kError, std::nullopt, FlagMetadata(),
@@ -59,7 +59,9 @@ std::unique_ptr<BoolResolutionDetails> ClientAPI::EvaluateBooleanFlag(
 
 EvaluationContext ClientAPI::MergeContexts(
     const std::optional<EvaluationContext>& invocation_ctx) {
-  EvaluationContext api_context = api_->GetEvaluationContext();
+  // EvaluationContext api_context = api_->GetEvaluationContext();
+  EvaluationContext api_context =
+      GlobalContextManager::GetInstance().GetGlobalEvaluationContext();
   EvaluationContext client_context = this->GetEvaluationContext();
   // TODO: Add context merging logic after EvaluationContext is implemented
 

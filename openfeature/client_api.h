@@ -10,18 +10,20 @@
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/features.h"
+#include "openfeature/global_context_manager.h"
 #include "openfeature/metadata.h"
-#include "openfeature/openfeature_api.h"
 #include "openfeature/provider.h"
+#include "openfeature/provider_repository.h"
 #include "openfeature/provider_status.h"
 #include "openfeature/resolution_details.h"
 
 namespace openfeature {
 
 // OpenFeature client implementation.
-class ClientAPI : public Client {
+class ClientAPI : public Client, public Features {
  public:
-  ClientAPI(std::shared_ptr<OpenFeatureAPI> api, std::string_view domain);
+  // ClientAPI(std::shared_ptr<OpenFeatureAPI> api, std::string_view domain);
+  ClientAPI(std::string_view domain);
 
   ~ClientAPI() override = default;
 
@@ -37,7 +39,7 @@ class ClientAPI : public Client {
   void SetEvaluationContext(const EvaluationContext& ctx) override;
 
   // Returns the current status of the associated provider.
-  ProviderStatus GetProviderStatus();
+  ProviderStatus GetProviderStatus() override;
 
   bool GetBooleanValue(std::string_view flag_key, bool default_value) override;
   bool GetBooleanValue(std::string_view flag_key, bool default_value,
@@ -57,7 +59,7 @@ class ClientAPI : public Client {
   EvaluationContext MergeContexts(
       const std::optional<EvaluationContext>& invocation_ctx);
 
-  std::shared_ptr<OpenFeatureAPI> api_;
+  ProviderRepository provider_repository_;
   std::string domain_;
   EvaluationContext evaluation_context_;
   mutable std::mutex context_mutex_;
@@ -65,4 +67,4 @@ class ClientAPI : public Client {
 
 }  // namespace openfeature
 
-#endif  // CPP_SDK_INCLUDE_OPENFEATURE_CLIENT_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_CLIENT_API_H_

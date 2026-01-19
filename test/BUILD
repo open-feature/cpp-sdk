@@ -66,3 +66,12 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "global_context_manager_test",
+    srcs = ["global_context_manager_test.cpp"],
+    deps = [
+        "//openfeature:global_context_manager",
+        "@googletest//:gtest_main",
+    ],
+)

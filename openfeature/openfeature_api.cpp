@@ -1,6 +1,7 @@
 #include "openfeature/openfeature_api.h"
 
 #include "openfeature/client_api.h"
+#include "openfeature/global_context_manager.h"
 
 namespace openfeature {
 
@@ -18,23 +19,30 @@ OpenFeatureAPI& OpenFeatureAPI::GetInstance() {
 }
 
 void OpenFeatureAPI::SetProvider(std::shared_ptr<FeatureProvider> provider) {
-  provider_repository_.SetProvider(provider, evaluation_context_, false);
+  provider_repository_.SetProvider(
+      provider,
+      GlobalContextManager::GetInstance().GetGlobalEvaluationContext(), false);
 }
 
 void OpenFeatureAPI::SetProvider(std::string_view domain,
                                  std::shared_ptr<FeatureProvider> provider) {
-  provider_repository_.SetProvider(domain, provider, evaluation_context_,
-                                   false);
+  provider_repository_.SetProvider(
+      domain, provider,
+      GlobalContextManager::GetInstance().GetGlobalEvaluationContext(), false);
 }
 
 void OpenFeatureAPI::SetProviderAndWait(
     std::shared_ptr<FeatureProvider> provider) {
-  provider_repository_.SetProvider(provider, evaluation_context_, true);
+  provider_repository_.SetProvider(
+      provider,
+      GlobalContextManager::GetInstance().GetGlobalEvaluationContext(), true);
 }
 
 void OpenFeatureAPI::SetProviderAndWait(
     std::string_view domain, std::shared_ptr<FeatureProvider> provider) {
-  provider_repository_.SetProvider(domain, provider, evaluation_context_, true);
+  provider_repository_.SetProvider(
+      domain, provider,
+      GlobalContextManager::GetInstance().GetGlobalEvaluationContext(), true);
 }
 
 std::shared_ptr<FeatureProvider> OpenFeatureAPI::GetProvider(
@@ -45,18 +53,16 @@ std::shared_ptr<FeatureProvider> OpenFeatureAPI::GetProvider(
 std::shared_ptr<Client> OpenFeatureAPI::GetClient() { return GetClient(""); }
 
 std::shared_ptr<Client> OpenFeatureAPI::GetClient(std::string_view domain) {
-  auto client = std::make_shared<ClientAPI>(this, domain);
+  auto client = std::make_shared<ClientAPI>(domain);
   return client;
 }
 
 void OpenFeatureAPI::SetEvaluationContext(const EvaluationContext& ctx) {
-  std::unique_lock<std::shared_mutex> lock(context_mutex_);
-  evaluation_context_ = ctx;
+  GlobalContextManager::GetInstance().SetGlobalEvaluationContext(ctx);
 }
 
 EvaluationContext OpenFeatureAPI::GetEvaluationContext() const {
-  std::shared_lock<std::shared_mutex> lock(context_mutex_);
-  return evaluation_context_;
+  return GlobalContextManager::GetInstance().GetGlobalEvaluationContext();
 }
 
 Metadata OpenFeatureAPI::GetProviderMetadata(std::string_view domain) const {

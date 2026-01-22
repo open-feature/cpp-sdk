@@ -8,7 +8,8 @@
 
 namespace openfeature {
 
-ClientAPI::ClientAPI(std::string_view domain) : domain_(domain) {}
+ClientAPI::ClientAPI(ProviderRepository& repository, std::string_view domain)
+    : provider_repository_(repository), domain_(domain) {}
 
 Metadata ClientAPI::GetMetadata() { return Metadata{domain_}; }
 
@@ -59,11 +60,7 @@ std::unique_ptr<BoolResolutionDetails> ClientAPI::EvaluateBooleanFlag(
 
 EvaluationContext ClientAPI::MergeContexts(
     const std::optional<EvaluationContext>& invocation_ctx) {
-  // EvaluationContext api_context = api_->GetEvaluationContext();
-  EvaluationContext api_context =
-      GlobalContextManager::GetInstance().GetGlobalEvaluationContext();
-  EvaluationContext client_context = this->GetEvaluationContext();
-  // TODO: Add context merging logic after EvaluationContext is implemented
+  // TODO: Add context merging logic after EvaluationContext is implemented.
 
   if (invocation_ctx) {
     return *invocation_ctx;

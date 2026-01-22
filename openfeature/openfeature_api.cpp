@@ -53,7 +53,7 @@ std::shared_ptr<FeatureProvider> OpenFeatureAPI::GetProvider(
 std::shared_ptr<Client> OpenFeatureAPI::GetClient() { return GetClient(""); }
 
 std::shared_ptr<Client> OpenFeatureAPI::GetClient(std::string_view domain) {
-  auto client = std::make_shared<ClientAPI>(domain);
+  auto client = std::make_shared<ClientAPI>(provider_repository_, domain);
   return client;
 }
 

@@ -8,6 +8,8 @@
 
 namespace openfeature {
 
+// Manages the global Evaluation Context for the OpenFeature SDK.
+// This data is static across the application (unless explicitly changed)
 class GlobalContextManager {
  public:
   static GlobalContextManager& GetInstance();
@@ -15,7 +17,10 @@ class GlobalContextManager {
   GlobalContextManager(const GlobalContextManager&) = delete;
   GlobalContextManager& operator=(const GlobalContextManager&) = delete;
 
+  // Updates the global evaluation context.
   void SetGlobalEvaluationContext(const EvaluationContext& ctx);
+
+  // Retrieves the current global evaluation context.
   EvaluationContext GetGlobalEvaluationContext() const;
 
  private:

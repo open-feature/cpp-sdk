@@ -28,33 +28,36 @@ TEST_F(GlobalContextManagerTest, ReturnsSameInstance) {
 
 TEST_F(GlobalContextManagerTest, SetAndGetContext) {
   GlobalContextManager& manager = GlobalContextManager::GetInstance();
-  EvaluationContext ctx;
+  EvaluationContext input_ctx;
 
-  EXPECT_NO_THROW(manager.SetGlobalEvaluationContext(ctx));
+  EXPECT_NO_THROW(manager.SetGlobalEvaluationContext(input_ctx));
 
-  EvaluationContext retrieved_ctx = manager.GetGlobalEvaluationContext();
+  EvaluationContext output_ctx = manager.GetGlobalEvaluationContext();
+  EXPECT_NO_THROW(output_ctx = manager.GetGlobalEvaluationContext());
 
   // NOTE: Since EvaluationContext is currently an empty class,
   // we cannot assert EQ or check member values.
   // Currently, the test simply proves the API calls succeed and copy semantics
   // work.
+
+  // TODO: Add assertions.
 }
 
 TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
   GlobalContextManager& manager = GlobalContextManager::GetInstance();
   std::atomic<bool> stop{false};
 
-  // Writer Thread: Continuously updates the context
+  // Writer Thread: Continuously updates the context.
   std::thread writer([&]() {
     while (!stop) {
       EvaluationContext ctx;
-      // In a real scenario, we would populate ctx with different data here
+      // In a real scenario, we would populate ctx with different data here.
       manager.SetGlobalEvaluationContext(ctx);
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   });
 
-  // Reader Threads: Continuously read the context
+  // Reader Threads: Continuously read the context.
   std::vector<std::thread> readers;
   for (int i = 0; i < 10; ++i) {
     readers.emplace_back([&]() {
@@ -63,14 +66,14 @@ TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
         // occur resulting in a crash (segfault).
         EvaluationContext ctx = manager.GetGlobalEvaluationContext();
 
-        // Prevent optimization from removing the call
+        // Prevent optimization from removing the call.
         volatile size_t size = sizeof(ctx);
         (void)size;
       }
     });
   }
 
-  // Let the chaos run for a short duration
+  // Let the chaos run for a short duration.
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   stop = true;

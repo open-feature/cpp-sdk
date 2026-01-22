@@ -18,7 +18,10 @@ class OpenFeatureAPITest : public ::testing::Test {
   // To ensure test isolation for the singleton, we shut it down before and
   // after each test, to reset it to its default state.
   void SetUp() override {}
-  void TearDown() override { api.Shutdown(); }
+  void TearDown() override {
+    api.Shutdown();
+    api.SetEvaluationContext(EvaluationContext{});
+  }
 
   OpenFeatureAPI& api = OpenFeatureAPI::GetInstance();
 };
@@ -115,6 +118,9 @@ TEST_F(OpenFeatureAPITest, ShutdownCallsProviderShutdown) {
       .WillOnce(Return(absl::OkStatus()));
 
   api.Shutdown();
+
+  testing::Mock::VerifyAndClearExpectations(mock_default_provider.get());
+  testing::Mock::VerifyAndClearExpectations(mock_named_provider.get());
 }
 
 // Test the asynchronous SetProvider to ensure it doesn't block.
@@ -171,11 +177,19 @@ TEST_F(OpenFeatureAPITest, SetNamedProviderAsyncDoesNotBlock) {
   init_can_complete.set_value();
 }
 
-// TODO: refactor once ClientImpl is added.
-// Test that GetClient methods return nullptr as per the current implementation.
-TEST_F(OpenFeatureAPITest, GetClientReturnsNullptr) {
-  EXPECT_EQ(api.GetClient(), nullptr);
-  EXPECT_EQ(api.GetClient("some-domain"), nullptr);
+// Test that GetClient returns a valid default ClientAPI instance.
+TEST_F(OpenFeatureAPITest, GetDefaultClient) {
+  std::shared_ptr<Client> client = api.GetClient();
+  EXPECT_NE(client, nullptr) << "GetClient() should return a valid ptr";
+  EXPECT_EQ(client->GetMetadata().name, "");
+}
+
+// Test that GetClient returns a valid named ClientAPI instance.
+TEST_F(OpenFeatureAPITest, GetNamedClient) {
+  std::shared_ptr<Client> named_client = api.GetClient("some-domain");
+  EXPECT_NE(named_client, nullptr)
+      << "GetClient(domain) should return a valid ptr";
+  EXPECT_EQ(named_client->GetMetadata().name, "some-domain");
 }
 
 // TODO: Add tests for "GetEvaluationContext" and "SetEvaluationContext" once.

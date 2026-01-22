@@ -20,10 +20,9 @@
 namespace openfeature {
 
 // OpenFeature client implementation.
-class ClientAPI : public Client, public Features {
+class ClientAPI : public Client {
  public:
-  // ClientAPI(std::shared_ptr<OpenFeatureAPI> api, std::string_view domain);
-  ClientAPI(std::string_view domain);
+  ClientAPI(ProviderRepository& repository, std::string_view domain);
 
   ~ClientAPI() override = default;
 
@@ -45,11 +44,11 @@ class ClientAPI : public Client, public Features {
   bool GetBooleanValue(std::string_view flag_key, bool default_value,
                        const EvaluationContext& ctx) override;
 
-  // TODO: Add methods to get and set Hooks
+  // TODO: Add methods to get and set Hooks.
   // TODO: Add methods for flag evaluation for other types (e.g. string, int,
-  // float, object)
-  // TODO: Add methods for detailed flag evaluation
-  // TODO: Overload method "GetBooleanValue" to accept "Evaluation Options"
+  // float, object).
+  // TODO: Add methods for detailed flag evaluation.
+  // TODO: Overload method "GetBooleanValue" to accept "Evaluation Options".
 
  private:
   std::unique_ptr<BoolResolutionDetails> EvaluateBooleanFlag(
@@ -59,7 +58,7 @@ class ClientAPI : public Client, public Features {
   EvaluationContext MergeContexts(
       const std::optional<EvaluationContext>& invocation_ctx);
 
-  ProviderRepository provider_repository_;
+  ProviderRepository& provider_repository_;
   std::string domain_;
   EvaluationContext evaluation_context_;
   mutable std::mutex context_mutex_;

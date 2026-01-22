@@ -14,7 +14,9 @@
 
 using namespace openfeature;
 using ::testing::_;
+using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::StrictMock;
 
 class ClientAPITest : public ::testing::Test {
  protected:
@@ -23,12 +25,13 @@ class ClientAPITest : public ::testing::Test {
     GlobalContextManager::GetInstance().SetGlobalEvaluationContext(
         EvaluationContext{});
   }
+  ProviderRepository repo_;
 };
 
 // Test that the constructor correctly sets the domain in the metadata.
 TEST_F(ClientAPITest, ConstructorSetsDomainMetadata) {
   std::string domain = "test-domain";
-  ClientAPI client(domain);
+  ClientAPI client(repo_, domain);
 
   Metadata metadata = client.GetMetadata();
   EXPECT_EQ(metadata.name, domain);
@@ -36,28 +39,23 @@ TEST_F(ClientAPITest, ConstructorSetsDomainMetadata) {
 
 // Test that the provider status is Ready by default.
 TEST_F(ClientAPITest, GetProviderStatusDefaultsToReady) {
-  ClientAPI client("test-domain");
+  ClientAPI client(repo_, "test-domain");
   EXPECT_EQ(client.GetProviderStatus(), ProviderStatus::kReady);
 }
 
 // Test setting and getting the EvaluationContext.
 TEST_F(ClientAPITest, SetAndGetEvaluationContext) {
-  ClientAPI client("test-domain");
+  ClientAPI client(repo_, "test-domain");
   EvaluationContext ctx;
 
   // Verify we can set the context without error.
   EXPECT_NO_THROW(client.SetEvaluationContext(ctx));
-
-  // Verify we can retrieve it.
-  // Note: Since EvaluationContext is currently empty,
-  // we are primarily testing that the API calls function correctly.
-  EvaluationContext retrieved_ctx = client.GetEvaluationContext();
 }
 
 // Test that GetBooleanValue returns the default value when using the default
 // provider.
 TEST_F(ClientAPITest, GetBooleanValueReturnsDefaultWithNoopProvider) {
-  ClientAPI client("test-domain");
+  ClientAPI client(repo_, "test-domain");
   std::string flag_key = "my-boolean-flag";
 
   EXPECT_TRUE(client.GetBooleanValue(flag_key, true));
@@ -67,7 +65,7 @@ TEST_F(ClientAPITest, GetBooleanValueReturnsDefaultWithNoopProvider) {
 
 // Test GetBooleanValue with an EvaluationContext passed in.
 TEST_F(ClientAPITest, GetBooleanValueWithContextReturnsDefault) {
-  ClientAPI client("test-domain");
+  ClientAPI client(repo_, "test-domain");
   EvaluationContext ctx;
   std::string flag_key = "my-boolean-flag";
 
@@ -80,7 +78,7 @@ TEST_F(ClientAPITest, GetBooleanValueSafeWithMergedContexts) {
   EvaluationContext global_ctx;
   GlobalContextManager::GetInstance().SetGlobalEvaluationContext(global_ctx);
 
-  ClientAPI client("test-domain");
+  ClientAPI client(repo_, "test-domain");
   EvaluationContext client_ctx;
   client.SetEvaluationContext(client_ctx);
 
@@ -94,7 +92,7 @@ TEST_F(ClientAPITest, GetBooleanValueSafeWithMergedContexts) {
 
 // Test behavior when the domain is empty.
 TEST_F(ClientAPITest, WorksWithEmptyDomain) {
-  ClientAPI client("");
+  ClientAPI client(repo_, "");
   EXPECT_EQ(client.GetMetadata().name, "");
   EXPECT_TRUE(client.GetBooleanValue("flag", true));
 }

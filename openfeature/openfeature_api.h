@@ -19,7 +19,7 @@ namespace openfeature {
 // library.
 class OpenFeatureAPI : public OpenFeature {
  public:
-  ~OpenFeatureAPI();
+  ~OpenFeatureAPI() = default;
 
   // Get the singleton instance of the OpenFeatureAPI.
   static OpenFeatureAPI& GetInstance();

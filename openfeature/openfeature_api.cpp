@@ -11,8 +11,6 @@ OpenFeatureAPI::OpenFeatureAPI() {
   // TODO: init hooks & events.
 }
 
-OpenFeatureAPI::~OpenFeatureAPI() { Shutdown(); }
-
 OpenFeatureAPI& OpenFeatureAPI::GetInstance() {
   static OpenFeatureAPI instance;
   return instance;

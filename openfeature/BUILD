@@ -94,6 +94,23 @@ cc_library(
 )
 
 cc_library(
+    name = "openfeature_api",
+    srcs = ["openfeature_api.cpp"],
+    hdrs = ["openfeature_api.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":client",
+        ":client_api",
+        ":evaluation_context",
+        ":global_context_manager",
+        ":metadata",
+        ":openfeature",
+        ":provider",
+        ":provider_repository",
+    ],
+)
+
+cc_library(
     name = "noop_provider",
     srcs = ["noop_provider.cpp"],
     hdrs = ["noop_provider.h"],

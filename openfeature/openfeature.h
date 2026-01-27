@@ -28,25 +28,15 @@ class OpenFeature {
   virtual void SetProviderAndWait(
       std::shared_ptr<FeatureProvider> provider) = 0;
 
-  // Sets the default provider and blocks until it initializes or a timeout
-  // occurs.
-  virtual void SetProviderAndWait(std::shared_ptr<FeatureProvider> provider,
-                                  std::chrono::milliseconds timeout) = 0;
-
   // Sets a named provider and blocks until it successfully initializes.
   virtual void SetProviderAndWait(
       std::string_view domain, std::shared_ptr<FeatureProvider> provider) = 0;
-
-  // Sets a named provider and blocks until it initializes or a timeout occurs.
-  virtual void SetProviderAndWait(std::string_view domain,
-                                  std::shared_ptr<FeatureProvider> provider,
-                                  std::chrono::milliseconds timeout) = 0;
 
   // If the domain is empty then GetProvider returns the default provider
   // otherwise it returns the provider for the domain. If this domain has no
   // provider bound, it returns the default provider.
   virtual std::shared_ptr<FeatureProvider> GetProvider(
-      std::string_view domain = "") = 0;
+      std::string_view domain = "") const = 0;
 
   virtual std::shared_ptr<Client> GetClient() = 0;
 
@@ -55,17 +45,21 @@ class OpenFeature {
   // Sets the global evaluation context.
   virtual void SetEvaluationContext(const EvaluationContext& ctx) = 0;
 
-  // Gets the global evaluation context
-  virtual EvaluationContext GetEvaluationContext(
-      std::shared_mutex& mutex, const EvaluationContext& ctx_src) = 0;
+  // Gets the global evaluation context.
+  virtual EvaluationContext GetEvaluationContext() const = 0;
 
   // Gets the metadata for a provider bound to a specific domain.
-  virtual Metadata GetProviderMetadata(std::string_view domain = "") = 0;
+  virtual Metadata GetProviderMetadata(std::string_view domain = "") const = 0;
+
+  // Fetches the status of a provider for a domain. If the domain is not set or
+  // not found, it returns the default provider status.
+  virtual ProviderStatus GetProviderStatus(
+      std::string_view domain = "") const = 0;
 
   // Shuts down all providers and resets the API to its initial state.
   virtual void Shutdown() = 0;
 
-  // TODO: Add methods to add and get Hooks
+  // TODO: Add methods to add and get Hooks.
 };
 
 }  // namespace openfeature

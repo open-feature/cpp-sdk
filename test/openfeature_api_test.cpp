@@ -194,8 +194,3 @@ TEST_F(OpenFeatureAPITest, GetNamedClient) {
 
 // TODO: Add tests for "GetEvaluationContext" and "SetEvaluationContext" once.
 // EvaluationContext logic is implemented.
-
-int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

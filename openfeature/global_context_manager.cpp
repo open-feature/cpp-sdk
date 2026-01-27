@@ -1,6 +1,7 @@
 #include "openfeature/global_context_manager.h"
 
 #include <mutex>
+#include <shared_mutex>
 
 namespace openfeature {
 

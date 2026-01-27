@@ -1,3 +1,5 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
 cc_library(
     name = "mock_feature_provider",
     testonly = True,
@@ -43,6 +45,15 @@ cc_test(
     deps = [
         ":mock_feature_provider",
         "//openfeature:provider_repository",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "global_context_manager_test",
+    srcs = ["global_context_manager_test.cpp"],
+    deps = [
+        "//openfeature:global_context_manager",
         "@googletest//:gtest_main",
     ],
 )

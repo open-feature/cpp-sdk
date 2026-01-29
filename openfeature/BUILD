@@ -1,3 +1,5 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 package(
     default_visibility = ["//visibility:public"],
 )
@@ -53,6 +55,16 @@ cc_library(
     name = "flag_metadata",
     hdrs = ["flag_metadata.h"],
     include_prefix = "openfeature",
+)
+
+cc_library(
+    name = "global_context_manager",
+    srcs = ["global_context_manager.cpp"],
+    hdrs = ["global_context_manager.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":evaluation_context",
+    ],
 )
 
 cc_library(

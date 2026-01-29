@@ -17,6 +17,26 @@ cc_library(
 )
 
 cc_library(
+    name = "client_api",
+    srcs = ["client_api.cpp"],
+    hdrs = ["client_api.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":client",
+        ":evaluation_context",
+        ":features",
+        ":flag_metadata",
+        ":global_context_manager",
+        ":metadata",
+        ":provider",
+        ":provider_repository",
+        ":provider_status",
+        ":reason",
+        ":resolution_details",
+    ],
+)
+
+cc_library(
     name = "error_code",
     hdrs = ["error_code.h"],
     include_prefix = "openfeature",

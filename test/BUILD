@@ -12,6 +12,16 @@ cc_library(
 )
 
 cc_test(
+    name = "client_api_test",
+    srcs = ["client_api_test.cpp"],
+    deps = [
+        ":mock_feature_provider",
+        "//openfeature:client_api",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "feature_provider_status_manager_test",
     srcs = ["feature_provider_status_manager_test.cpp"],
     deps = [
@@ -54,6 +64,20 @@ cc_test(
     srcs = ["evaluation_context_test.cpp"],
     deps = [
         "//openfeature:evaluation_context",
+    name = "openfeature_api_test",
+    srcs = ["openfeature_api_test.cpp"],
+    deps = [
+        ":mock_feature_provider",
+        "//openfeature:openfeature_api",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "global_context_manager_test",
+    srcs = ["global_context_manager_test.cpp"],
+    deps = [
+        "//openfeature:global_context_manager",
         "@googletest//:gtest_main",
     ],
 )

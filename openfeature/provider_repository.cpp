@@ -115,6 +115,16 @@ void ProviderRepository::Shutdown() {
     }
   }
   provider_manager_.clear();
+
+  // Re-initialize to the default state after shutting down
+  std::shared_ptr<openfeature::NoopProvider> noop_provider =
+      std::make_shared<NoopProvider>();
+  absl::StatusOr<std::unique_ptr<FeatureProviderStatusManager>> status_manager =
+      FeatureProviderStatusManager::Create(noop_provider);
+  if (status_manager.ok()) {
+    default_manager_ = std::move(status_manager.value());
+    default_manager_->SetStatus(ProviderStatus::kReady);
+  }
 }
 
 void ProviderRepository::PrepareAndInitializeProvider(

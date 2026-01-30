@@ -17,6 +17,26 @@ cc_library(
 )
 
 cc_library(
+    name = "client_api",
+    srcs = ["client_api.cpp"],
+    hdrs = ["client_api.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":client",
+        ":evaluation_context",
+        ":features",
+        ":flag_metadata",
+        ":global_context_manager",
+        ":metadata",
+        ":provider",
+        ":provider_repository",
+        ":provider_status",
+        ":reason",
+        ":resolution_details",
+    ],
+)
+
+cc_library(
     name = "error_code",
     hdrs = ["error_code.h"],
     include_prefix = "openfeature",
@@ -59,9 +79,36 @@ cc_library(
 )
 
 cc_library(
+    name = "global_context_manager",
+    srcs = ["global_context_manager.cpp"],
+    hdrs = ["global_context_manager.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":evaluation_context",
+    ],
+)
+
+cc_library(
     name = "metadata",
     hdrs = ["metadata.h"],
     include_prefix = "openfeature",
+)
+
+cc_library(
+    name = "openfeature_api",
+    srcs = ["openfeature_api.cpp"],
+    hdrs = ["openfeature_api.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":client",
+        ":client_api",
+        ":evaluation_context",
+        ":global_context_manager",
+        ":metadata",
+        ":openfeature",
+        ":provider",
+        ":provider_repository",
+    ],
 )
 
 cc_library(

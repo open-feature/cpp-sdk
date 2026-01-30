@@ -82,8 +82,3 @@ TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
     t.join();
   }
 }
-
-int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

@@ -60,6 +60,16 @@ cc_test(
 )
 
 cc_test(
+    name = "openfeature_api_test",
+    srcs = ["openfeature_api_test.cpp"],
+    deps = [
+        ":mock_feature_provider",
+        "//openfeature:openfeature_api",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "global_context_manager_test",
     srcs = ["global_context_manager_test.cpp"],
     deps = [

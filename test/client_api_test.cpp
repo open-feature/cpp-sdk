@@ -23,7 +23,7 @@ class ClientAPITest : public ::testing::Test {
   void SetUp() override {
     // Reset the Global Context to a clean state before each test.
     GlobalContextManager::GetInstance().SetGlobalEvaluationContext(
-        EvaluationContext{});
+        EvaluationContext::Builder().build());
   }
   ProviderRepository repo_;
 };
@@ -46,7 +46,7 @@ TEST_F(ClientAPITest, GetProviderStatusDefaultsToReady) {
 // Test setting and getting the EvaluationContext.
 TEST_F(ClientAPITest, SetAndGetEvaluationContext) {
   ClientAPI client(repo_, "test-domain");
-  EvaluationContext ctx;
+  EvaluationContext ctx = EvaluationContext::Builder().build();
 
   // Verify we can set the context without error.
   EXPECT_NO_THROW(client.SetEvaluationContext(ctx));
@@ -66,7 +66,7 @@ TEST_F(ClientAPITest, GetBooleanValueReturnsDefaultWithNoopProvider) {
 // Test GetBooleanValue with an EvaluationContext passed in.
 TEST_F(ClientAPITest, GetBooleanValueWithContextReturnsDefault) {
   ClientAPI client(repo_, "test-domain");
-  EvaluationContext ctx;
+  EvaluationContext ctx = EvaluationContext::Builder().build();
   std::string flag_key = "my-boolean-flag";
 
   EXPECT_TRUE(client.GetBooleanValue(flag_key, true, ctx));
@@ -75,14 +75,14 @@ TEST_F(ClientAPITest, GetBooleanValueWithContextReturnsDefault) {
 
 // Test context merging logic indirectly.
 TEST_F(ClientAPITest, GetBooleanValueSafeWithMergedContexts) {
-  EvaluationContext global_ctx;
+  EvaluationContext global_ctx = EvaluationContext::Builder().build();
   GlobalContextManager::GetInstance().SetGlobalEvaluationContext(global_ctx);
 
   ClientAPI client(repo_, "test-domain");
-  EvaluationContext client_ctx;
+  EvaluationContext client_ctx = EvaluationContext::Builder().build();
   client.SetEvaluationContext(client_ctx);
 
-  EvaluationContext invocation_ctx;
+  EvaluationContext invocation_ctx = EvaluationContext::Builder().build();
 
   // This call forces a merge of Global + Client + Invocation contexts.
   // We expect the NoopProvider to handle the result gracefully (return

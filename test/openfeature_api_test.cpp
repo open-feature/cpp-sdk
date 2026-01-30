@@ -20,7 +20,7 @@ class OpenFeatureAPITest : public ::testing::Test {
   void SetUp() override {}
   void TearDown() override {
     api.Shutdown();
-    api.SetEvaluationContext(EvaluationContext{});
+    api.SetEvaluationContext(EvaluationContext ::Builder().build());
   }
 
   OpenFeatureAPI& api = OpenFeatureAPI::GetInstance();
@@ -131,12 +131,15 @@ TEST_F(OpenFeatureAPITest, SetProviderAsyncDoesNotBlock) {
   std::future<void> init_started_future = init_can_start.get_future();
   std::promise<void> init_can_complete;
   std::future<void> init_can_complete_future = init_can_complete.get_future();
+  std::promise<void> init_has_finished;
 
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce([&](const auto&) {
     init_can_start.set_value();
     init_can_complete_future.wait();
+    init_has_finished.set_value();
     return absl::OkStatus();
   });
+
   EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
   api.SetProvider(mock_provider);
 
@@ -147,6 +150,7 @@ TEST_F(OpenFeatureAPITest, SetProviderAsyncDoesNotBlock) {
 
   // Allow the init to complete.
   init_can_complete.set_value();
+  init_has_finished.get_future().wait();
 }
 
 // Test the asynchronous SetProvider for a named provider to ensure it doesn't
@@ -159,11 +163,14 @@ TEST_F(OpenFeatureAPITest, SetNamedProviderAsyncDoesNotBlock) {
   std::future<void> init_started_future = init_can_start.get_future();
   std::promise<void> init_can_complete;
   std::future<void> init_can_complete_future = init_can_complete.get_future();
+  std::promise<void> init_has_finished;
 
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce([&](const auto&) {
     init_can_start.set_value();
     init_can_complete_future.wait();
+    init_has_finished.set_value();
     return absl::OkStatus();
+    ;
   });
   EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
   api.SetProvider(domain, mock_provider);
@@ -175,6 +182,7 @@ TEST_F(OpenFeatureAPITest, SetNamedProviderAsyncDoesNotBlock) {
 
   // Allow the init to complete.
   init_can_complete.set_value();
+  init_has_finished.get_future().wait();
 }
 
 // Test that GetClient returns a valid default ClientAPI instance.

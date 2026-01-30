@@ -1,6 +1,5 @@
 #include "openfeature/evaluation_context.h"
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <string>
@@ -25,8 +24,7 @@ TEST_F(EvaluationContextTest, DefaultBuilderCreatesEmptyContext) {
   // Based on implementation, a missing key in builder becomes "" in
   // constructor.
   auto key = ctx.GetTargetingKey();
-  ASSERT_TRUE(key.has_value());
-  EXPECT_TRUE(key->empty());
+  EXPECT_FALSE(key.has_value());
 
   EXPECT_TRUE(ctx.GetAttributes().empty());
 }
@@ -173,11 +171,12 @@ TEST_F(EvaluationContextTest, MergeIgnoresNullPointers) {
 TEST_F(EvaluationContextTest, StoresStringCorrectly) {
   EvaluationContext ctx_char =
       EvaluationContext::Builder().withAttribute("k", "v").build();
-
   const std::any* val_char = ctx_char.GetValue("k");
 
-  EXPECT_TRUE(val_char->type() == typeid(const char*) ||
-              val_char->type() == typeid(char const*));
+  // Verify it is stored as std::string, not const char*
+  ASSERT_NE(val_char, nullptr);
+  EXPECT_EQ(val_char->type(), typeid(std::string));
+  EXPECT_EQ(std::any_cast<std::string>(*val_char), "v");
 
   EvaluationContext ctx_str =
       EvaluationContext::Builder().withAttribute("k", std::string("v")).build();

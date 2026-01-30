@@ -4,3 +4,10 @@
 # as "No source files found in compile args" when running
 # `bazel run @hedron_compile_commands//:refresh_all`.
 build --features=-parse_headers
+
+# Fix for "relocation refers to local symbol in discarded section"
+build --copt=-fno-asynchronous-unwind-tables
+build --linkopt=-Wl,--gc-sections
+
+# Optional: Use a faster, more modern linker
+# build --linkopt=-fuse-ld=lld

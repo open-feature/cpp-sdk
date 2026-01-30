@@ -29,7 +29,7 @@ class FeatureProviderStatusManagerTest : public Test {
 
   std::shared_ptr<MockFeatureProvider> mock_provider_;
   std::unique_ptr<FeatureProviderStatusManager> manager_;
-  EvaluationContext ctx_;
+  EvaluationContext ctx_ = EvaluationContext::Builder().build();
 };
 
 TEST_F(FeatureProviderStatusManagerTest, CreateWithNullProviderReturnsError) {

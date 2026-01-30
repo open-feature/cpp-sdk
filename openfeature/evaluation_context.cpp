@@ -71,8 +71,13 @@ EvaluationContext::Builder& EvaluationContext::Builder::withAttribute(
   return *this;
 }
 
+EvaluationContext::Builder& EvaluationContext::Builder::withAttribute(
+    std::string key, const char* value) {
+  return this->withAttribute(std::move(key), std::string(value));
+}
+
 EvaluationContext EvaluationContext::Builder::build() const {
-  return EvaluationContext(targeting_key_.value_or(""), attributes_);
+  return EvaluationContext(targeting_key_, attributes_);
 }
 
 }  // namespace openfeature

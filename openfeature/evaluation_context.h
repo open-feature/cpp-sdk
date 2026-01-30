@@ -47,6 +47,8 @@ class EvaluationContext::Builder {
   // Builder methods return a reference to self to allow for chaining.
   Builder& withTargetingKey(std::string key);
   Builder& withAttribute(std::string key, std::any value);
+  // Overload for const char* to ensure implicit conversion to std::string
+  Builder& withAttribute(std::string key, const char* value);
 
   // The build() method creates the final, immutable EvaluationContext object.
   EvaluationContext build() const;

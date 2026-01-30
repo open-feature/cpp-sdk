@@ -17,7 +17,7 @@ using ::testing::Return;
 class ProviderRepositoryTest : public ::testing::Test {
  protected:
   ProviderRepository repo;
-  EvaluationContext ctx;
+  EvaluationContext ctx = EvaluationContext::Builder().build();
 };
 
 // Test to verify the constructor initializes with a NoopProvider.

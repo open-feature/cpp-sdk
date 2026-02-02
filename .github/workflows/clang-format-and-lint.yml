@@ -55,6 +55,8 @@ jobs:
         with:
           style: "file" # Use .clang-format config file.
           tidy-checks: "" # Use .clang-tidy config file.
+          database: "compile_commands.json"
+          version: "16"
 
       - name: Fail fast?!
         if: steps.linter.outputs.checks-failed > 0

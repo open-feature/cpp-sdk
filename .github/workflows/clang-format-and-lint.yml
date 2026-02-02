@@ -73,3 +73,6 @@ jobs:
           # We explicitly point to the config and the build folder.
 
           clang-tidy -p . openfeature/evaluation_context.h --config-file=.clang-tidy || echo "Manual Run Failed as Expected"
+
+          echo "=== 3. Running Clang-Tidy 16 Manually ==="
+          /usr/bin/clang-tidy-16 -p . openfeature/evaluation_context.h --config-file=.clang-tidy || echo "Manual Run Failed as Expected"

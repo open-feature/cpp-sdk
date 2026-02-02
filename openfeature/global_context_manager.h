@@ -24,7 +24,7 @@ class GlobalContextManager {
   EvaluationContext GetGlobalEvaluationContext() const;
 
  private:
-  GlobalContextManager() = default;
+  GlobalContextManager();
   EvaluationContext global_evaluation_context_;
   mutable std::shared_mutex context_mutex_;
 };

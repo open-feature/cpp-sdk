@@ -4,6 +4,9 @@
 
 namespace openfeature {
 
+GlobalContextManager::GlobalContextManager()
+    : global_evaluation_context_(EvaluationContext::Builder().build()) {}
+
 GlobalContextManager& GlobalContextManager::GetInstance() {
   static GlobalContextManager instance;
   return instance;

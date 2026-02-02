@@ -45,6 +45,7 @@ cc_library(
 cc_library(
     name = "evaluation_context",
     hdrs = ["evaluation_context.h"],
+    srcs = ["evaluation_context.cpp"],
     include_prefix = "openfeature",
 )
 

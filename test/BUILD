@@ -60,6 +60,15 @@ cc_test(
 )
 
 cc_test(
+    name = "evaluation_context_test",
+    srcs = ["evaluation_context_test.cpp"],
+    deps = [
+        "//openfeature:evaluation_context",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "openfeature_api_test",
     srcs = ["openfeature_api_test.cpp"],
     deps = [

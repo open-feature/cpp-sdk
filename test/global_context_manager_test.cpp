@@ -15,7 +15,7 @@ class GlobalContextManagerTest : public ::testing::Test {
   // Reset to a clean state before every test.
   void SetUp() override {
     GlobalContextManager::GetInstance().SetGlobalEvaluationContext(
-        EvaluationContext{});
+        EvaluationContext::Builder().build());
   }
 };
 
@@ -28,7 +28,7 @@ TEST_F(GlobalContextManagerTest, ReturnsSameInstance) {
 
 TEST_F(GlobalContextManagerTest, SetAndGetContext) {
   GlobalContextManager& manager = GlobalContextManager::GetInstance();
-  EvaluationContext input_ctx;
+  EvaluationContext input_ctx = EvaluationContext::Builder().build();
 
   EXPECT_NO_THROW(manager.SetGlobalEvaluationContext(input_ctx));
 
@@ -50,7 +50,7 @@ TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
   // Writer Thread: Continuously updates the context.
   std::thread writer([&]() {
     while (!stop) {
-      EvaluationContext ctx;
+      EvaluationContext ctx = EvaluationContext::Builder().build();
       // In a real scenario, we would populate ctx with different data here.
       manager.SetGlobalEvaluationContext(ctx);
       std::this_thread::sleep_for(std::chrono::milliseconds(1));

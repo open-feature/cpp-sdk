@@ -9,7 +9,7 @@ using namespace openfeature;
 class NoopProviderTest : public ::testing::Test {
  protected:
   NoopProvider provider_;
-  EvaluationContext ctx_;
+  EvaluationContext ctx_ = EvaluationContext::Builder().build();
 };
 
 // Test to verify the metadata returned by the provider.

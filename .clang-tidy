@@ -13,7 +13,7 @@ HeaderFilterRegex: ".*/openfeature/.*"
 ExcludeHeaderFilterRegex: ".*\\.pb\\.h|.*\\.grpc\\.pb\\.h"
 
 # Treat all warnings as errors (optional, good for strict CI/CD)
-WarningsAsErrors: ""
+WarningsAsErrors: "*"
 
 CheckOptions:
   - key: readability-identifier-naming.ClassCase

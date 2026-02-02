@@ -27,15 +27,15 @@ const std::map<std::string, std::any>& EvaluationContext::GetAttributes()
   return attributes_;
 }
 
-EvaluationContext EvaluationContext::merge(
+EvaluationContext EvaluationContext::Merge(
     std::initializer_list<const EvaluationContext*> contexts) {
   Builder builder;
 
   // Merge Attributes from all contexts (higher precedence overwrites lower).
   for (const EvaluationContext* ctx : contexts) {
-    if (ctx) {
+    if (ctx != nullptr) {
       for (const auto& pair : ctx->GetAttributes()) {
-        builder.withAttribute(pair.first, pair.second);
+        builder.WithAttribute(pair.first, pair.second);
       }
     }
   }
@@ -47,10 +47,10 @@ EvaluationContext EvaluationContext::merge(
   std::reverse(reversed.begin(), reversed.end());
 
   for (const EvaluationContext* ctx : reversed) {
-    if (ctx) {
+    if (ctx != nullptr) {
       auto key = ctx->GetTargetingKey();
       if (key.has_value() && !key->empty()) {
-        builder.withTargetingKey(std::string(key.value()));
+        builder.WithTargetingKey(std::string(key.value()));
         break;
       }
     }
@@ -59,21 +59,21 @@ EvaluationContext EvaluationContext::merge(
   return builder.build();
 }
 
-EvaluationContext::Builder& EvaluationContext::Builder::withTargetingKey(
+EvaluationContext::Builder& EvaluationContext::Builder::WithTargetingKey(
     std::string key) {
   this->targeting_key_ = std::move(key);
   return *this;
 }
 
-EvaluationContext::Builder& EvaluationContext::Builder::withAttribute(
+EvaluationContext::Builder& EvaluationContext::Builder::WithAttribute(
     std::string key, std::any value) {
   this->attributes_.insert_or_assign(std::move(key), std::move(value));
   return *this;
 }
 
-EvaluationContext::Builder& EvaluationContext::Builder::withAttribute(
+EvaluationContext::Builder& EvaluationContext::Builder::WithAttribute(
     std::string key, const char* value) {
-  return this->withAttribute(std::move(key), std::string(value));
+  return this->WithAttribute(std::move(key), std::string(value));
 }
 
 EvaluationContext EvaluationContext::Builder::build() const {

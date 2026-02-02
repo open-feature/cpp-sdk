@@ -31,7 +31,7 @@ class EvaluationContext {
 
   // It takes a list of pointers to contexts to avoid unnecessary copies.
   // The order of contexts in the initializer list determines precedence.
-  static EvaluationContext merge(
+  static EvaluationContext Merge(
       std::initializer_list<const EvaluationContext*> contexts);
 
  private:
@@ -45,10 +45,10 @@ class EvaluationContext {
 class EvaluationContext::Builder {
  public:
   // Builder methods return a reference to self to allow for chaining.
-  Builder& withTargetingKey(std::string key);
-  Builder& withAttribute(std::string key, std::any value);
+  Builder& WithTargetingKey(std::string key);
+  Builder& WithAttribute(std::string key, std::any value);
   // Overload for const char* to ensure implicit conversion to std::string
-  Builder& withAttribute(std::string key, const char* value);
+  Builder& WithAttribute(std::string key, const char* value);
 
   // The build() method creates the final, immutable EvaluationContext object.
   EvaluationContext build() const;

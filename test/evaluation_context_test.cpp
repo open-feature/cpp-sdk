@@ -33,7 +33,7 @@ TEST_F(EvaluationContextTest, DefaultBuilderCreatesEmptyContext) {
 TEST_F(EvaluationContextTest, BuilderSetsTargetingKey) {
   std::string expected_key = "user-12345";
   EvaluationContext ctx =
-      EvaluationContext::Builder().withTargetingKey(expected_key).build();
+      EvaluationContext::Builder().WithTargetingKey(expected_key).build();
 
   auto key = ctx.GetTargetingKey();
   ASSERT_TRUE(key.has_value());
@@ -43,10 +43,10 @@ TEST_F(EvaluationContextTest, BuilderSetsTargetingKey) {
 // Test setting and retrieving various attribute types.
 TEST_F(EvaluationContextTest, BuilderSetsAttributesOfVariousTypes) {
   EvaluationContext ctx = EvaluationContext::Builder()
-                              .withAttribute("str_attr", std::string("test"))
-                              .withAttribute("int_attr", 42)
-                              .withAttribute("bool_attr", true)
-                              .withAttribute("double_attr", 3.14)
+                              .WithAttribute("str_attr", std::string("test"))
+                              .WithAttribute("int_attr", 42)
+                              .WithAttribute("bool_attr", true)
+                              .WithAttribute("double_attr", 3.14)
                               .build();
 
   const auto& attrs = ctx.GetAttributes();
@@ -72,7 +72,7 @@ TEST_F(EvaluationContextTest, BuilderSetsAttributesOfVariousTypes) {
 // Test behavior when requesting a non-existent attribute.
 TEST_F(EvaluationContextTest, GetValueReturnsNullForMissingKey) {
   EvaluationContext ctx =
-      EvaluationContext::Builder().withAttribute("exists", 1).build();
+      EvaluationContext::Builder().WithAttribute("exists", 1).build();
 
   EXPECT_NE(ctx.GetValue("exists"), nullptr);
   EXPECT_EQ(ctx.GetValue("does_not_exist"), nullptr);
@@ -82,8 +82,8 @@ TEST_F(EvaluationContextTest, GetValueReturnsNullForMissingKey) {
 // within the same builder chain.
 TEST_F(EvaluationContextTest, BuilderOverwritesDuplicateKeys) {
   EvaluationContext ctx = EvaluationContext::Builder()
-                              .withAttribute("key", 100)
-                              .withAttribute("key", 200)
+                              .WithAttribute("key", 100)
+                              .WithAttribute("key", 200)
                               .build();
 
   const std::any* val = ctx.GetValue("key");
@@ -94,16 +94,16 @@ TEST_F(EvaluationContextTest, BuilderOverwritesDuplicateKeys) {
 // Test merging attributes with precedence.
 TEST_F(EvaluationContextTest, MergeAttributesWithPrecedence) {
   EvaluationContext ctx1 = EvaluationContext::Builder()
-                               .withAttribute("common", 1)
-                               .withAttribute("ctx1", std::string("A"))
+                               .WithAttribute("common", 1)
+                               .WithAttribute("ctx1", std::string("A"))
                                .build();
 
   EvaluationContext ctx2 = EvaluationContext::Builder()
-                               .withAttribute("common", 2)
-                               .withAttribute("ctx2", std::string("B"))
+                               .WithAttribute("common", 2)
+                               .WithAttribute("ctx2", std::string("B"))
                                .build();
 
-  EvaluationContext merged = EvaluationContext::merge({&ctx1, &ctx2});
+  EvaluationContext merged = EvaluationContext::Merge({&ctx1, &ctx2});
 
   EXPECT_EQ(merged.GetAttributes().size(), 3);
 
@@ -117,38 +117,38 @@ TEST_F(EvaluationContextTest, MergeAttributesWithPrecedence) {
 TEST_F(EvaluationContextTest, MergeTargetingKeyWithPrecedence) {
   EvaluationContext ctx_no_key = EvaluationContext::Builder().build();
   EvaluationContext ctx_key_a =
-      EvaluationContext::Builder().withTargetingKey("KeyA").build();
+      EvaluationContext::Builder().WithTargetingKey("KeyA").build();
   EvaluationContext ctx_key_b =
-      EvaluationContext::Builder().withTargetingKey("KeyB").build();
+      EvaluationContext::Builder().WithTargetingKey("KeyB").build();
 
-  EvaluationContext res1 = EvaluationContext::merge({&ctx_key_a, &ctx_key_b});
+  EvaluationContext res1 = EvaluationContext::Merge({&ctx_key_a, &ctx_key_b});
   EXPECT_EQ(res1.GetTargetingKey().value(), "KeyB");
 
   EvaluationContext res2 =
-      EvaluationContext::merge({&ctx_key_a, &ctx_no_key, &ctx_no_key});
+      EvaluationContext::Merge({&ctx_key_a, &ctx_no_key, &ctx_no_key});
   EXPECT_EQ(res2.GetTargetingKey().value(), "KeyA");
 
   EvaluationContext res3 =
-      EvaluationContext::merge({&ctx_no_key, &ctx_key_b, &ctx_no_key});
+      EvaluationContext::Merge({&ctx_no_key, &ctx_key_b, &ctx_no_key});
   EXPECT_EQ(res3.GetTargetingKey().value(), "KeyB");
 }
 
 // Test Merging: Complex scenario with attributes and keys.
 TEST_F(EvaluationContextTest, MergeComplexScenario) {
   EvaluationContext base = EvaluationContext::Builder()
-                               .withTargetingKey("base-user")
-                               .withAttribute("env", std::string("prod"))
-                               .withAttribute("region", std::string("us-east"))
+                               .WithTargetingKey("base-user")
+                               .WithAttribute("env", std::string("prod"))
+                               .WithAttribute("region", std::string("us-east"))
                                .build();
 
   EvaluationContext request =
       EvaluationContext::Builder()
-          .withTargetingKey("req-user")
-          .withAttribute("region", std::string("us-west"))
-          .withAttribute("request_id", 123)
+          .WithTargetingKey("req-user")
+          .WithAttribute("region", std::string("us-west"))
+          .WithAttribute("request_id", 123)
           .build();
 
-  EvaluationContext merged = EvaluationContext::merge({&base, &request});
+  EvaluationContext merged = EvaluationContext::Merge({&base, &request});
 
   EXPECT_EQ(merged.GetTargetingKey().value(), "req-user");
 
@@ -160,9 +160,9 @@ TEST_F(EvaluationContextTest, MergeComplexScenario) {
 // The merged context should only reflect non-null inputs.
 TEST_F(EvaluationContextTest, MergeIgnoresNullPointers) {
   EvaluationContext ctx =
-      EvaluationContext::Builder().withTargetingKey("valid").build();
+      EvaluationContext::Builder().WithTargetingKey("valid").build();
 
-  EvaluationContext merged = EvaluationContext::merge({nullptr, &ctx, nullptr});
+  EvaluationContext merged = EvaluationContext::Merge({nullptr, &ctx, nullptr});
 
   EXPECT_EQ(merged.GetTargetingKey().value(), "valid");
 }
@@ -170,7 +170,7 @@ TEST_F(EvaluationContextTest, MergeIgnoresNullPointers) {
 // Test that string literals and std::string are stored and retrieved correctly.
 TEST_F(EvaluationContextTest, StoresStringCorrectly) {
   EvaluationContext ctx_char =
-      EvaluationContext::Builder().withAttribute("k", "v").build();
+      EvaluationContext::Builder().WithAttribute("k", "v").build();
   const std::any* val_char = ctx_char.GetValue("k");
 
   // Verify it is stored as std::string, not const char*
@@ -179,8 +179,7 @@ TEST_F(EvaluationContextTest, StoresStringCorrectly) {
   EXPECT_EQ(std::any_cast<std::string>(*val_char), "v");
 
   EvaluationContext ctx_str =
-      EvaluationContext::Builder().withAttribute("k", std::string("v")).build();
-
+      EvaluationContext::Builder().WithAttribute("k", std::string("v")).build();
   const std::any* val_str = ctx_str.GetValue("k");
   EXPECT_EQ(val_str->type(), typeid(std::string));
   EXPECT_EQ(std::any_cast<std::string>(*val_str), "v");

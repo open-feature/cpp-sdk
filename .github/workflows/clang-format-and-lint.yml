@@ -39,6 +39,13 @@ jobs:
       - name: Build compilation database
         run: bazel run @hedron_compile_commands//:refresh_all
 
+      - name: Debug DB
+        run: |
+          echo "Current Dir: $(pwd)"
+          ls -lh compile_commands.json
+          # Check if the file with errors is actually in the DB
+          grep "client_api.cpp" compile_commands.json | head -n 1 || echo "FILE NOT IN DB"
+
       - uses: cpp-linter/cpp-linter-action@v2
         id: linter
         env:

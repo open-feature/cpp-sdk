@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - uses: bazel-contrib/setup-bazel@0.18.0
         with:
@@ -57,3 +59,15 @@ jobs:
       - name: Fail fast?!
         if: steps.linter.outputs.checks-failed > 0
         run: exit 1
+
+      - name: ☢️ NUCLEAR DEBUG - Manual Clang-Tidy Run
+        run: |
+          echo "=== 1. Checking Database Entry ==="
+          # Check how the file is referenced in the DB (Absolute vs Relative paths)
+          grep "openfeature/evaluation_context.h" compile_commands.json | head -n 1
+
+          echo "=== 2. Running Clang-Tidy Manually ==="
+          # We manually invoke clang-tidy on a file we KNOW has errors.
+          # We explicitly point to the config and the build folder.
+
+          clang-tidy -p . openfeature/evaluation_context.h --config-file=.clang-tidy || echo "Manual Run Failed as Expected"

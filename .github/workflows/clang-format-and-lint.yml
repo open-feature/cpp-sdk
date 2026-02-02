@@ -33,6 +33,9 @@ jobs:
           # Share repository cache between workflows.
           repository-cache: true
 
+      - name: Build all targets
+        run: bazel build //...
+
       - name: Build compilation database
         run: bazel run @hedron_compile_commands//:refresh_all
 

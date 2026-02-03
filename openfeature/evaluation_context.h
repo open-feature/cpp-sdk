@@ -53,6 +53,8 @@ class EvaluationContext::Builder {
   // The build() method creates the final, immutable EvaluationContext object.
   EvaluationContext build() const;
 
+  int Testing;
+
  private:
   std::optional<std::string> targeting_key_;
   std::map<std::string, std::any> attributes_;

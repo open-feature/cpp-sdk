@@ -9,6 +9,7 @@
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
 #include "openfeature/resolution_details.h"
+#include "openfeature/value.h"
 
 namespace openfeature {
 
@@ -26,7 +27,24 @@ class NoopProvider : public FeatureProvider {
       std::string_view flag, bool default_value,
       const EvaluationContext& ctx) override;
 
-  // TODO: Add other flag types (e.g. string, int, float, object)
+  // StringResolutionDetails returns a string flag.
+  std::unique_ptr<StringResolutionDetails> GetStringEvaluation(
+      std::string_view flag, std::string_view default_value,
+      const EvaluationContext& ctx);
+
+  // IntResolutionDetails returns an integer flag.
+  std::unique_ptr<IntResolutionDetails> GetIntegerEvaluation(
+      std::string_view flag, int64_t default_value,
+      const EvaluationContext& ctx);
+
+  // DoubleResolutionDetails returns a double flag.
+  std::unique_ptr<DoubleResolutionDetails> GetDoubleEvaluation(
+      std::string_view flag, double default_value,
+      const EvaluationContext& ctx);
+
+  // ObjectResolutionDetails returns an object flag.
+  std::unique_ptr<ObjectResolutionDetails> GetObjectEvaluation(
+      std::string_view flag, Value default_value, const EvaluationContext& ctx);
 
  private:
   std::string name_ = "Noop Provider";

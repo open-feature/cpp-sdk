@@ -48,6 +48,6 @@ template class ResolutionDetails<bool>;
 template class ResolutionDetails<std::string>;
 template class ResolutionDetails<int64_t>;
 template class ResolutionDetails<double>;
-template class ResolutionDetails<std::any>;
+template class ResolutionDetails<Value>;
 
 }  // namespace openfeature

@@ -8,6 +8,7 @@
 #include "openfeature/error_code.h"
 #include "openfeature/flag_metadata.h"
 #include "openfeature/reason.h"
+#include "openfeature/value.h"
 
 namespace openfeature {
 
@@ -44,7 +45,7 @@ using BoolResolutionDetails = ResolutionDetails<bool>;
 using StringResolutionDetails = ResolutionDetails<std::string>;
 using IntResolutionDetails = ResolutionDetails<int64_t>;
 using DoubleResolutionDetails = ResolutionDetails<double>;
-using ObjectResolutionDetails = ResolutionDetails<std::any>;
+using ObjectResolutionDetails = ResolutionDetails<Value>;
 
 }  // namespace openfeature
 

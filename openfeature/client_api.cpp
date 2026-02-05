@@ -38,26 +38,108 @@ bool ClientAPI::GetBooleanValue(std::string_view flag_key, bool default_value,
   return EvaluateBooleanFlag(flag_key, default_value, ctx)->GetValue();
 }
 
+std::string ClientAPI::GetStringValue(std::string_view flag_key,
+                                      std::string_view default_value) {
+  return EvaluateStringFlag(flag_key, default_value, std::nullopt)->GetValue();
+}
+
+std::string ClientAPI::GetStringValue(std::string_view flag_key,
+                                      std::string_view default_value,
+                                      const EvaluationContext& ctx) {
+  return EvaluateStringFlag(flag_key, default_value, ctx)->GetValue();
+}
+
+int64_t ClientAPI::GetIntegerValue(std::string_view flag_key,
+                                   int64_t default_value) {
+  return EvaluateIntegerFlag(flag_key, default_value, std::nullopt)->GetValue();
+}
+
+int64_t ClientAPI::GetIntegerValue(std::string_view flag_key,
+                                   int64_t default_value,
+                                   const EvaluationContext& ctx) {
+  return EvaluateIntegerFlag(flag_key, default_value, ctx)->GetValue();
+}
+
+double ClientAPI::GetDoubleValue(std::string_view flag_key,
+                                 double default_value) {
+  return EvaluateDoubleFlag(flag_key, default_value, std::nullopt)->GetValue();
+}
+
+double ClientAPI::GetDoubleValue(std::string_view flag_key,
+                                 double default_value,
+                                 const EvaluationContext& ctx) {
+  return EvaluateDoubleFlag(flag_key, default_value, ctx)->GetValue();
+}
+
+Value ClientAPI::GetObjectValue(std::string_view flag_key,
+                                Value default_value) {
+  return EvaluateObjectFlag(flag_key, default_value, std::nullopt)->GetValue();
+}
+
+Value ClientAPI::GetObjectValue(std::string_view flag_key, Value default_value,
+                                const EvaluationContext& ctx) {
+  return EvaluateObjectFlag(flag_key, default_value, ctx)->GetValue();
+}
+
 std::unique_ptr<BoolResolutionDetails> ClientAPI::EvaluateBooleanFlag(
     std::string_view flag_key, bool default_value,
     const std::optional<EvaluationContext>& ctx) {
-  if (GetProviderStatus() != ProviderStatus::kReady) {
-    return std::make_unique<BoolResolutionDetails>(
-        default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kProviderNotReady, "Provider is not ready");
-  }
+  return this->EvaluateFlag<BoolResolutionDetails>(
+      default_value, ctx,
+      [&](const std::shared_ptr<FeatureProvider>& provider,
+          const EvaluationContext& merged_ctx) {
+        return provider->GetBooleanEvaluation(flag_key, default_value,
+                                              merged_ctx);
+      });
+}
 
-  std::shared_ptr<FeatureProvider> provider =
-      provider_repository_.GetProvider(domain_);
-  if (!provider) {
-    return std::make_unique<BoolResolutionDetails>(
-        default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kProviderFatal, "Provider not found for domain");
-  }
+std::unique_ptr<StringResolutionDetails> ClientAPI::EvaluateStringFlag(
+    std::string_view flag_key, std::string_view default_value,
+    const std::optional<EvaluationContext>& ctx) {
+  std::string default_str(default_value);
+  return this->EvaluateFlag<StringResolutionDetails>(
+      default_str, ctx,
+      [&](const std::shared_ptr<FeatureProvider>& provider,
+          const EvaluationContext& merged_ctx) {
+        return provider->GetStringEvaluation(flag_key, default_value,
+                                             merged_ctx);
+      });
+}
 
-  EvaluationContext merged_context = MergeContexts(ctx);
-  return provider->GetBooleanEvaluation(flag_key, default_value,
-                                        merged_context);
+std::unique_ptr<IntResolutionDetails> ClientAPI::EvaluateIntegerFlag(
+    std::string_view flag_key, int64_t default_value,
+    const std::optional<EvaluationContext>& ctx) {
+  return this->EvaluateFlag<IntResolutionDetails>(
+      default_value, ctx,
+      [&](const std::shared_ptr<FeatureProvider>& provider,
+          const EvaluationContext& merged_ctx) {
+        return provider->GetIntegerEvaluation(flag_key, default_value,
+                                              merged_ctx);
+      });
+}
+
+std::unique_ptr<DoubleResolutionDetails> ClientAPI::EvaluateDoubleFlag(
+    std::string_view flag_key, double default_value,
+    const std::optional<EvaluationContext>& ctx) {
+  return this->EvaluateFlag<DoubleResolutionDetails>(
+      default_value, ctx,
+      [&](const std::shared_ptr<FeatureProvider>& provider,
+          const EvaluationContext& merged_ctx) {
+        return provider->GetDoubleEvaluation(flag_key, default_value,
+                                             merged_ctx);
+      });
+}
+
+std::unique_ptr<ObjectResolutionDetails> ClientAPI::EvaluateObjectFlag(
+    std::string_view flag_key, Value default_value,
+    const std::optional<EvaluationContext>& ctx) {
+  return this->EvaluateFlag<ObjectResolutionDetails>(
+      default_value, ctx,
+      [&](const std::shared_ptr<FeatureProvider>& provider,
+          const EvaluationContext& merged_ctx) {
+        return provider->GetObjectEvaluation(flag_key, default_value,
+                                             merged_ctx);
+      });
 }
 
 EvaluationContext ClientAPI::MergeContexts(

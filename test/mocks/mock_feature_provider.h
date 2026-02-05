@@ -15,7 +15,22 @@ class MockFeatureProvider : public FeatureProvider {
               (std::string_view flag, bool default_value,
                const EvaluationContext& ctx),
               (override));
-
+  MOCK_METHOD(std::unique_ptr<StringResolutionDetails>, GetStringEvaluation,
+              (std::string_view flag, std::string_view default_value,
+               const EvaluationContext& ctx),
+              (override));
+  MOCK_METHOD(std::unique_ptr<IntResolutionDetails>, GetIntegerEvaluation,
+              (std::string_view flag, int64_t default_value,
+               const EvaluationContext& ctx),
+              (override));
+  MOCK_METHOD(std::unique_ptr<DoubleResolutionDetails>, GetDoubleEvaluation,
+              (std::string_view flag, double default_value,
+               const EvaluationContext& ctx),
+              (override));
+  MOCK_METHOD(std::unique_ptr<ObjectResolutionDetails>, GetObjectEvaluation,
+              (std::string_view flag, Value default_value,
+               const EvaluationContext& ctx),
+              (override));
   MOCK_METHOD(absl::Status, Init, (const EvaluationContext& ctx), (override));
   MOCK_METHOD(absl::Status, Shutdown, (), (override));
 

@@ -63,6 +63,38 @@ TEST_F(ClientAPITest, GetBooleanValueReturnsDefaultWithNoopProvider) {
   EXPECT_FALSE(client.GetBooleanValue(flag_key, false));
 }
 
+// Test that GetStringValue returns the default value when using the default
+// provider.
+TEST_F(ClientAPITest, GetStringValueReturnsDefaultWithNoopProvider) {
+  ClientAPI client(repo_, "test-domain");
+  std::string flag_key = "my-string-flag";
+  EXPECT_EQ(client.GetStringValue(flag_key, "default"), "default");
+}
+
+// Test that GetIntegerValue returns the default value when using the default
+// provider.
+TEST_F(ClientAPITest, GetIntegerValueReturnsDefaultWithNoopProvider) {
+  ClientAPI client(repo_, "test-domain");
+  std::string flag_key = "my-integer-flag";
+  EXPECT_EQ(client.GetIntegerValue(flag_key, 42), 42);
+}
+
+// Test that GetDoubleValue returns the default value when using the default
+// provider.
+TEST_F(ClientAPITest, GetDoubleValueReturnsDefaultWithNoopProvider) {
+  ClientAPI client(repo_, "test-domain");
+  std::string flag_key = "my-double-flag";
+  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, 3.14), 3.14);
+}
+
+// Test that GetObjectValue returns the default value when using the default
+// provider.
+TEST_F(ClientAPITest, GetObjectValueReturnsDefaultWithNoopProvider) {
+  ClientAPI client(repo_, "test-domain");
+  std::string flag_key = "my-object-flag";
+  EXPECT_EQ(client.GetObjectValue(flag_key, Value(1)), Value(1));
+}
+
 // Test GetBooleanValue with an EvaluationContext passed in.
 TEST_F(ClientAPITest, GetBooleanValueWithContextReturnsDefault) {
   ClientAPI client(repo_, "test-domain");
@@ -71,6 +103,38 @@ TEST_F(ClientAPITest, GetBooleanValueWithContextReturnsDefault) {
 
   EXPECT_TRUE(client.GetBooleanValue(flag_key, true, ctx));
   EXPECT_FALSE(client.GetBooleanValue(flag_key, false, ctx));
+}
+
+// Test GetStringValue with an EvaluationContext passed in.
+TEST_F(ClientAPITest, GetStringValueWithContextReturnsDefault) {
+  ClientAPI client(repo_, "test-domain");
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  std::string flag_key = "my-string-flag";
+  EXPECT_EQ(client.GetStringValue(flag_key, "default", ctx), "default");
+}
+
+// Test that GetIntegerValue with an EvaluationContext passed in.
+TEST_F(ClientAPITest, GetIntegerValueWithContextReturnsDefault) {
+  ClientAPI client(repo_, "test-domain");
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  std::string flag_key = "my-integer-flag";
+  EXPECT_EQ(client.GetIntegerValue(flag_key, 42, ctx), 42);
+}
+
+// Test that GetDoubleValue with an EvaluationContext passed in.
+TEST_F(ClientAPITest, GetDoubleValueWithContextReturnsDefault) {
+  ClientAPI client(repo_, "test-domain");
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  std::string flag_key = "my-double-flag";
+  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, 3.14, ctx), 3.14);
+}
+
+// Test that GetObjectValue with an EvaluationContext passed in.
+TEST_F(ClientAPITest, GetObjectValueWithContextReturnsDefault) {
+  ClientAPI client(repo_, "test-domain");
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  std::string flag_key = "my-object-flag";
+  EXPECT_EQ(client.GetObjectValue(flag_key, Value(1), ctx), Value(1));
 }
 
 // Test context merging logic indirectly.

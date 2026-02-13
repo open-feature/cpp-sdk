@@ -38,7 +38,9 @@ absl::Status InMemoryProvider::Shutdown() {
 void InMemoryProvider::UpdateFlags(
     std::unordered_map<std::string, std::any> new_flags) {
   std::unique_lock lock(mutex_);
-  flags_ = std::move(new_flags);
+  for (auto& [key, value] : new_flags) {
+    flags_[key] = value;
+  }
 }
 
 void InMemoryProvider::UpdateFlag(std::string key, std::any new_flag) {
@@ -96,11 +98,11 @@ std::unique_ptr<ResolutionDetails<T>> InMemoryProvider::Evaluate(
 
   T value;
   Reason reason = Reason::kStatic;
-  const std::string& variant_key = flag->GetDefaultVariant();
+  const std::optional<std::string>& variant_key = flag->GetDefaultVariant();
   bool context_eval_success = false;
   const auto& evaluator = flag->GetContextEvaluator();
 
-  if (evaluator) {
+  if (evaluator != nullptr) {
     absl::StatusOr<T> result = evaluator(*flag, ctx);
 
     if (result.ok()) {
@@ -114,15 +116,22 @@ std::unique_ptr<ResolutionDetails<T>> InMemoryProvider::Evaluate(
 
   // Fallback to default variant if context evaluation failed.
   if (!context_eval_success) {
-    const std::unordered_map<std::string, T>& variants = flag->GetVariants();
-    auto variant_it = variants.find(variant_key);
+    if (variant_key.has_value()) {
+      const std::unordered_map<std::string, T>& variants = flag->GetVariants();
+      auto variant_it = variants.find(*variant_key);
 
-    if (variant_it != variants.end()) {
-      value = variant_it->second;
+      if (variant_it != variants.end()) {
+        value = variant_it->second;
+      } else {
+        return std::make_unique<ResolutionDetails<T>>(
+            default_value, Reason::kError, variant_key, flag->GetFlagMetadata(),
+            ErrorCode::kParseError,
+            "Default variant " + *variant_key + " not found in variants map");
+      }
     } else {
       return std::make_unique<ResolutionDetails<T>>(
-          default_value, Reason::kError, std::nullopt, flag->GetFlagMetadata(),
-          ErrorCode::kParseError, "Default variant not found in variants map");
+          default_value, Reason::kDefault, std::nullopt,
+          flag->GetFlagMetadata());
     }
   }
 

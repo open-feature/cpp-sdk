@@ -1,7 +1,8 @@
-#ifndef CPP_SDK_INCLUDE_OPENFEATURE_FLAG_H_
-#define CPP_SDK_INCLUDE_OPENFEATURE_FLAG_H_
+#ifndef CPP_SDK_INCLUDE_OPENFEATURE_MEMORY_PROVIDER_FLAG_H_
+#define CPP_SDK_INCLUDE_OPENFEATURE_MEMORY_PROVIDER_FLAG_H_
 
 #include <functional>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -19,7 +20,8 @@ class Flag {
   using ContextEvaluator =
       std::function<absl::StatusOr<T>(const Flag&, const EvaluationContext&)>;
 
-  Flag(std::unordered_map<std::string, T> variants, std::string default_variant,
+  Flag(std::unordered_map<std::string, T> variants,
+       std::optional<std::string> default_variant,
        ContextEvaluator context_evaluator, FlagMetadata flag_metadata,
        bool disabled = false)
       : variants_(std::move(variants)),
@@ -32,7 +34,9 @@ class Flag {
     return variants_;
   }
 
-  const std::string& GetDefaultVariant() const { return default_variant_; }
+  const std::optional<std::string>& GetDefaultVariant() const {
+    return default_variant_;
+  }
 
   const ContextEvaluator& GetContextEvaluator() const {
     return context_evaluator_;
@@ -44,11 +48,11 @@ class Flag {
 
  private:
   std::unordered_map<std::string, T> variants_;
-  std::string default_variant_;
+  std::optional<std::string> default_variant_;
   ContextEvaluator context_evaluator_;
   FlagMetadata flag_metadata_;
   bool disabled_;
 };
 }  // namespace openfeature
 
-#endif  // CPP_SDK_INCLUDE_OPENFEATURE_FLAG_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_MEMORY_PROVIDER_FLAG_H_

@@ -5,36 +5,6 @@ package(
 )
 
 cc_library(
-    name = "flag",
-    hdrs = ["memory_provider/flag.h"],
-    include_prefix = "openfeature",
-    deps = [
-        ":evaluation_context",
-        ":flag_metadata",
-        "@abseil-cpp//absl/status:statusor",
-    ],
-)
-
-cc_library(
-    name = "in_memory_provider",
-    srcs = ["memory_provider/in_memory_provider.cpp"],
-    hdrs = ["memory_provider/in_memory_provider.h"],
-    include_prefix = "openfeature",
-    deps = [
-        ":error_code",
-        ":evaluation_context",
-        ":flag",
-        ":metadata",
-        ":provider",
-        ":provider_status",
-        ":reason",
-        ":resolution_details",
-        "@abseil-cpp//absl/status",
-        "@abseil-cpp//absl/status:statusor",
-    ],
-)
-
-cc_library(
     name = "client",
     hdrs = ["client.h"],
     include_prefix = "openfeature",

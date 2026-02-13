@@ -30,21 +30,22 @@ class NoopProvider : public FeatureProvider {
   // StringResolutionDetails returns a string flag.
   std::unique_ptr<StringResolutionDetails> GetStringEvaluation(
       std::string_view flag, std::string_view default_value,
-      const EvaluationContext& ctx);
+      const EvaluationContext& ctx) override;
 
   // IntResolutionDetails returns an integer flag.
   std::unique_ptr<IntResolutionDetails> GetIntegerEvaluation(
       std::string_view flag, int64_t default_value,
-      const EvaluationContext& ctx);
+      const EvaluationContext& ctx) override;
 
   // DoubleResolutionDetails returns a double flag.
   std::unique_ptr<DoubleResolutionDetails> GetDoubleEvaluation(
       std::string_view flag, double default_value,
-      const EvaluationContext& ctx);
+      const EvaluationContext& ctx) override;
 
   // ObjectResolutionDetails returns an object flag.
   std::unique_ptr<ObjectResolutionDetails> GetObjectEvaluation(
-      std::string_view flag, Value default_value, const EvaluationContext& ctx);
+      std::string_view flag, Value default_value,
+      const EvaluationContext& ctx) override;
 
  private:
   std::string name_ = "Noop Provider";

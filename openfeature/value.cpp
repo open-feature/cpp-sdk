@@ -15,7 +15,11 @@ Value::Value(double value) : inner_value_(value) {}
 
 Value::Value(std::string value) : inner_value_(std::move(value)) {}
 
-Value::Value(const char* value) : inner_value_(std::string(value)) {}
+Value::Value(const char* value) : inner_value_() {
+  if (value) {
+    inner_value_ = std::string(value);
+  }
+}
 
 Value::Value(const std::map<std::string, Value>& value)
     : inner_value_(std::make_unique<std::map<std::string, Value>>(value)) {}
@@ -30,12 +34,13 @@ Value::Value(const Value& other) {
   if (other.IsStructure()) {
     auto& ptr = std::get<std::unique_ptr<std::map<std::string, Value>>>(
         other.inner_value_);
-    inner_value_ =
-        ptr ? std::make_unique<std::map<std::string, Value>>(*ptr) : nullptr;
+    inner_value_ = ptr ? std::make_unique<std::map<std::string, Value>>(*ptr)
+                       : std::unique_ptr<std::map<std::string, Value>>(nullptr);
   } else if (other.IsList()) {
     auto& ptr =
         std::get<std::unique_ptr<std::vector<Value>>>(other.inner_value_);
-    inner_value_ = ptr ? std::make_unique<std::vector<Value>>(*ptr) : nullptr;
+    inner_value_ = ptr ? std::make_unique<std::vector<Value>>(*ptr)
+                       : std::unique_ptr<std::vector<Value>>(nullptr);
   } else {
     std::visit(
         [this](auto&& arg) {
@@ -97,7 +102,7 @@ std::optional<std::string> Value::AsString() const {
 std::optional<int64_t> Value::AsInt() const {
   if (auto* v = std::get_if<int64_t>(&inner_value_)) return *v;
   if (auto* v = std::get_if<double>(&inner_value_))
-    return static_cast<int64_t>(std::round(*v));
+    return static_cast<int64_t>(std::floor(*v + 0.5));
   return std::nullopt;
 }
 
@@ -144,10 +149,20 @@ bool operator==(const Value& lhs, const Value& rhs) {
     return lhs.AsDateTime() == rhs.AsDateTime();
 
   if (lhs.IsStructure() && rhs.IsStructure()) {
-    return *lhs.AsStructure() == *rhs.AsStructure();
+    const auto* lhs_struct = lhs.AsStructure();
+    const auto* rhs_struct = rhs.AsStructure();
+    if (lhs_struct && rhs_struct) {
+      return *lhs_struct == *rhs_struct;
+    }
+    return lhs_struct == rhs_struct;
   }
   if (lhs.IsList() && rhs.IsList()) {
-    return *lhs.AsList() == *rhs.AsList();
+    const auto* lhs_list = lhs.AsList();
+    const auto* rhs_list = rhs.AsList();
+    if (lhs_list && rhs_list) {
+      return *lhs_list == *rhs_list;
+    }
+    return lhs_list == rhs_list;
   }
 
   return false;

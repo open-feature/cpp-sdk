@@ -11,6 +11,8 @@
 
 namespace openfeature {
 
+static constexpr std::string_view kName = "InMemoryProvider";
+
 InMemoryProvider::InMemoryProvider(
     std::unordered_map<std::string, std::any> flags)
     : flags_(std::move(flags)), status_(ProviderStatus::kNotReady) {}

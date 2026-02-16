@@ -325,7 +325,7 @@ TEST_F(InMemoryProviderTest, ContextEvaluatorUsesContext) {
 
   std::unique_ptr<BoolResolutionDetails> res_no_attr =
       provider.GetBooleanEvaluation("admin_flag", true, empty_ctx_);
-  ASSERT_NE(res_no_attr, nullptr);
+  ASSERT_THAT(res_no_attr, testing::NotNull());
   EXPECT_FALSE(res_no_attr->GetValue());
   EXPECT_EQ(res_no_attr->GetReason(), Reason::kTargetingMatch);
   EXPECT_FALSE(res_no_attr->GetErrorCode().has_value());

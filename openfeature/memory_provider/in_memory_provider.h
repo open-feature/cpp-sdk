@@ -52,7 +52,6 @@ class InMemoryProvider : public FeatureProvider {
                                                  const EvaluationContext& ctx);
 
   std::unordered_map<std::string, std::any> flags_;
-  static constexpr std::string_view kName = "InMemoryProvider";
   ProviderStatus status_;
   mutable std::shared_mutex mutex_;
 };

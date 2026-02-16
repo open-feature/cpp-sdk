@@ -144,12 +144,16 @@ std::unique_ptr<ObjectResolutionDetails> ClientAPI::EvaluateObjectFlag(
 
 EvaluationContext ClientAPI::MergeContexts(
     const std::optional<EvaluationContext>& invocation_ctx) {
-  // TODO: Add context merging logic after EvaluationContext is implemented.
+  EvaluationContext global_ctx =
+      GlobalContextManager::GetInstance().GetGlobalEvaluationContext();
+  EvaluationContext client_ctx = GetEvaluationContext();
 
-  if (invocation_ctx) {
-    return *invocation_ctx;
+  if (invocation_ctx.has_value()) {
+    return EvaluationContext::Merge(
+        {&global_ctx, &client_ctx, &(*invocation_ctx)});
+  } else {
+    return EvaluationContext::Merge({&global_ctx, &client_ctx});
   }
-  return GetEvaluationContext();
 }
 
 }  // namespace openfeature

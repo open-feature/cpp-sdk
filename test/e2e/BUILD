@@ -1,4 +1,5 @@
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_gherkin//gherkin:defs.bzl", "gherkin_test")
 
 package(
     default_visibility = ["//visibility:public"],
@@ -12,7 +13,6 @@ cc_library(
     hdrs = [
         "context_storing_provider.h",
     ],
-    testonly = True,
     include_prefix = "test/e2e",
     deps = [
         "//openfeature:evaluation_context",
@@ -31,7 +31,6 @@ cc_library(
     hdrs = [
         "flag.h",
     ],
-    testonly = True,
     include_prefix = "test/e2e",
     deps = [
         "//openfeature:client_api",
@@ -49,7 +48,6 @@ cc_library(
     hdrs = [
         "state.h",
     ],
-    testonly = True,
     include_prefix = "test/e2e",
     deps = [
         "//openfeature:client_api",
@@ -62,17 +60,10 @@ cc_library(
     ],
 )
 
-cc_test(
+gherkin_test(
     name = "openfeature_gherkin_e2e_tests",
+    steps = "//test/e2e/steps:gherkin_step_definitions",
     deps = [
-        "//test/e2e/steps:gherkin_step_definitions",
-        ":context_storing_provider",
-        ":flag",
-        ":state",
-        "@cucumber-cpp//:cucumber-cpp",
-        "@googletest//:gtest_main", # Required for the Cucumber-Cpp test runner
-    ],
-    data = [
-         "//:openfeature_gherkin_spec_features", # Reference the filegroup from the root package
+        "//:openfeature_gherkin_spec_features",
     ],
 )

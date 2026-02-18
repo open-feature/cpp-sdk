@@ -6,13 +6,13 @@ bazel_dep(name = "rules_cc", version = "0.2.16")
 bazel_dep(name = "cucumber-cpp", version = "0.8.0.bcr.1")
 
 bazel_dep(name = "rules_gherkin", version = "0.2.0")
-bazel_dep(name = "rules_ruby", version = "0.19.0")
+bazel_dep(name = "rules_ruby", version = "0.21.1")
 
 # Hermetic Ruby Toolchain Configuration
 ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby")
 ruby.toolchain(
     name = "ruby",
-    version = "jruby-9.4.5.0", # JRuby or standard MRI version suitable for execution
+    version = "3.2.2", # JRuby or standard MRI version suitable for execution
 )
 
 # Cucumber Gem provisioning via Bundler integration

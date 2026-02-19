@@ -86,3 +86,12 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "value_test",
+    srcs = ["value_test.cpp"],
+    deps = [
+        "//openfeature:value",
+        "@googletest//:gtest_main",
+    ],
+)

@@ -15,6 +15,7 @@
 #include "openfeature/memory_provider/flag.h"
 #include "openfeature/reason.h"
 #include "openfeature/resolution_details.h"
+#include "openfeature/value.h"
 
 namespace openfeature {
 
@@ -25,13 +26,14 @@ class InMemoryProviderTest : public ::testing::Test {
  protected:
   EvaluationContext empty_ctx_ = EvaluationContext::Builder().build();
 
-  // Helper method to create a basic boolean flag for testing.
-  Flag<bool> CreateBoolFlag(std::unordered_map<std::string, bool> variants,
-                            std::optional<std::string> default_variant_opt,
-                            Flag<bool>::ContextEvaluator evaluator = nullptr,
-                            bool disabled = false) {
-    return Flag<bool>(std::move(variants), std::move(default_variant_opt),
-                      std::move(evaluator), FlagMetadata{}, disabled);
+  // Helper method to create a generic flag for testing.
+  template <typename T>
+  Flag<T> CreateFlag(std::unordered_map<std::string, T> variants,
+                     std::optional<std::string> default_variant_opt,
+                     typename Flag<T>::ContextEvaluator evaluator = nullptr,
+                     bool disabled = false) {
+    return Flag<T>(std::move(variants), std::move(default_variant_opt),
+                   std::move(evaluator), FlagMetadata{}, disabled);
   }
 };
 
@@ -101,7 +103,7 @@ TEST_F(InMemoryProviderTest, FlagTypeMismatch) {
 TEST_F(InMemoryProviderTest, DisabledFlagReturnsDisabledReason) {
   InMemoryProvider provider({});
   provider.UpdateFlag("disabled_flag",
-                      CreateBoolFlag({{"on", true}}, "on", nullptr, true));
+                      CreateFlag<bool>({{"on", true}}, "on", nullptr, true));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
   std::unique_ptr<BoolResolutionDetails> res =
@@ -115,7 +117,7 @@ TEST_F(InMemoryProviderTest, DisabledFlagReturnsDisabledReason) {
 TEST_F(InMemoryProviderTest, StaticEvaluationSuccess) {
   InMemoryProvider provider({});
   provider.UpdateFlag("static_flag",
-                      CreateBoolFlag({{"on", true}, {"off", false}}, "on"));
+                      CreateFlag<bool>({{"on", true}, {"off", false}}, "on"));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
   std::unique_ptr<BoolResolutionDetails> res =
@@ -133,8 +135,9 @@ TEST_F(InMemoryProviderTest, ContextEvaluatorSuccess) {
   };
 
   InMemoryProvider provider({});
-  provider.UpdateFlag("dyn_flag", CreateBoolFlag({{"on", true}, {"off", false}},
-                                                 "on", evaluator));
+  provider.UpdateFlag(
+      "dyn_flag",
+      CreateFlag<bool>({{"on", true}, {"off", false}}, "on", evaluator));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
   std::unique_ptr<BoolResolutionDetails> res =
@@ -151,8 +154,9 @@ TEST_F(InMemoryProviderTest, ContextEvaluatorFailureFallsBackToDefaultVariant) {
   };
 
   InMemoryProvider provider({});
-  provider.UpdateFlag("dyn_flag", CreateBoolFlag({{"on", true}, {"off", false}},
-                                                 "off", evaluator));
+  provider.UpdateFlag(
+      "dyn_flag",
+      CreateFlag<bool>({{"on", true}, {"off", false}}, "off", evaluator));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
   std::unique_ptr<BoolResolutionDetails> res =
@@ -201,23 +205,23 @@ TEST_F(InMemoryProviderTest, UpdateFlagReplacesAndAddsNew) {
   InMemoryProvider provider({});
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
-  provider.UpdateFlag("flag1", CreateBoolFlag({{"on", true}}, "on"));
+  provider.UpdateFlag("flag1", CreateFlag<bool>({{"on", true}}, "on"));
   EXPECT_TRUE(
       provider.GetBooleanEvaluation("flag1", false, empty_ctx_)->GetValue());
 
-  provider.UpdateFlag("flag1", CreateBoolFlag({{"off", false}}, "off"));
+  provider.UpdateFlag("flag1", CreateFlag<bool>({{"off", false}}, "off"));
   EXPECT_FALSE(
       provider.GetBooleanEvaluation("flag1", true, empty_ctx_)->GetValue());
 
-  provider.UpdateFlag("new_flag", CreateBoolFlag({{"added", true}}, "added"));
+  provider.UpdateFlag("new_flag", CreateFlag<bool>({{"added", true}}, "added"));
   EXPECT_TRUE(
       provider.GetBooleanEvaluation("new_flag", false, empty_ctx_)->GetValue());
 }
 
 TEST_F(InMemoryProviderTest, UpdateFlagsAddsAndOverwritesExisting) {
   std::unordered_map<std::string, std::any> initial;
-  initial["flag1"] = CreateBoolFlag({{"on", true}}, "on");
-  initial["common_flag"] = CreateBoolFlag({{"initial", false}}, "initial");
+  initial["flag1"] = CreateFlag<bool>({{"on", true}}, "on");
+  initial["common_flag"] = CreateFlag<bool>({{"initial", false}}, "initial");
 
   InMemoryProvider provider(std::move(initial));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
@@ -227,8 +231,8 @@ TEST_F(InMemoryProviderTest, UpdateFlagsAddsAndOverwritesExisting) {
                    ->GetValue());
 
   std::unordered_map<std::string, std::any> updated;
-  updated["flag2"] = CreateBoolFlag({{"off", false}}, "off");
-  updated["common_flag"] = CreateBoolFlag({{"updated", true}}, "updated");
+  updated["flag2"] = CreateFlag<bool>({{"off", false}}, "off");
+  updated["common_flag"] = CreateFlag<bool>({{"updated", true}}, "updated");
 
   provider.UpdateFlags(std::move(updated));
 
@@ -258,7 +262,7 @@ TEST_F(InMemoryProviderTest, UpdateFlagsAddsAndOverwritesExisting) {
 TEST_F(InMemoryProviderTest, NoDefaultVariantAndEvaluatorFailsOrMissing) {
   InMemoryProvider provider1({});
   provider1.UpdateFlag("no_default_no_evaluator",
-                       CreateBoolFlag({{"v1", true}}, std::nullopt, nullptr));
+                       CreateFlag<bool>({{"v1", true}}, std::nullopt, nullptr));
   EXPECT_TRUE(provider1.Init(empty_ctx_).ok());
   std::unique_ptr<BoolResolutionDetails> res1 = provider1.GetBooleanEvaluation(
       "no_default_no_evaluator", true, empty_ctx_);
@@ -273,7 +277,7 @@ TEST_F(InMemoryProviderTest, NoDefaultVariantAndEvaluatorFailsOrMissing) {
   InMemoryProvider provider2({});
   provider2.UpdateFlag(
       "no_default_failing_evaluator",
-      CreateBoolFlag({{"v1", true}}, std::nullopt, failing_evaluator));
+      CreateFlag<bool>({{"v1", true}}, std::nullopt, failing_evaluator));
   EXPECT_TRUE(provider2.Init(empty_ctx_).ok());
   std::unique_ptr<BoolResolutionDetails> res2 = provider2.GetBooleanEvaluation(
       "no_default_failing_evaluator", false, empty_ctx_);
@@ -300,8 +304,8 @@ TEST_F(InMemoryProviderTest, ContextEvaluatorUsesContext) {
 
   InMemoryProvider provider({});
   provider.UpdateFlag("admin_flag",
-                      CreateBoolFlag({{"on", true}, {"off", false}}, "off",
-                                     context_aware_evaluator));
+                      CreateFlag<bool>({{"on", true}, {"off", false}}, "off",
+                                       context_aware_evaluator));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
   EvaluationContext admin_ctx =
@@ -342,4 +346,65 @@ TEST_F(InMemoryProviderTest, ContextEvaluatorUsesContext) {
   EXPECT_THAT(res_wrong_type->GetVariant(), Optional(std::string("off")));
   EXPECT_FALSE(res_wrong_type->GetErrorCode().has_value());
 }
+
+TEST_F(InMemoryProviderTest, StringEvaluationSuccess) {
+  InMemoryProvider provider({});
+  provider.UpdateFlag(
+      "string_flag",
+      CreateFlag<std::string>({{"v1", "hello"}, {"v2", "world"}}, "v2"));
+  EXPECT_TRUE(provider.Init(empty_ctx_).ok());
+
+  std::unique_ptr<StringResolutionDetails> res =
+      provider.GetStringEvaluation("string_flag", "default", empty_ctx_);
+
+  ASSERT_NE(res, nullptr);
+  EXPECT_EQ(res->GetValue(), "world");
+  EXPECT_EQ(res->GetReason(), Reason::kStatic);
+  EXPECT_THAT(res->GetVariant(), Optional(std::string("v2")));
+}
+
+TEST_F(InMemoryProviderTest, IntegerEvaluationSuccess) {
+  InMemoryProvider provider({});
+  provider.UpdateFlag("int_flag",
+                      CreateFlag<int64_t>({{"v1", 100}, {"v2", 200}}, "v1"));
+  EXPECT_TRUE(provider.Init(empty_ctx_).ok());
+
+  std::unique_ptr<IntResolutionDetails> res =
+      provider.GetIntegerEvaluation("int_flag", 0, empty_ctx_);
+
+  ASSERT_NE(res, nullptr);
+  EXPECT_EQ(res->GetValue(), 100);
+  EXPECT_EQ(res->GetReason(), Reason::kStatic);
+  EXPECT_THAT(res->GetVariant(), Optional(std::string("v1")));
+}
+
+TEST_F(InMemoryProviderTest, DoubleEvaluationSuccess) {
+  InMemoryProvider provider({});
+  provider.UpdateFlag("double_flag",
+                      CreateFlag<double>({{"v1", 3.14}, {"v2", 2.71}}, "v2"));
+  EXPECT_TRUE(provider.Init(empty_ctx_).ok());
+
+  std::unique_ptr<DoubleResolutionDetails> res =
+      provider.GetDoubleEvaluation("double_flag", 0.0, empty_ctx_);
+
+  ASSERT_NE(res, nullptr);
+  EXPECT_DOUBLE_EQ(res->GetValue(), 2.71);
+  EXPECT_EQ(res->GetReason(), Reason::kStatic);
+  EXPECT_THAT(res->GetVariant(), Optional(std::string("v2")));
+}
+
+TEST_F(InMemoryProviderTest, ObjectEvaluationSuccess) {
+  InMemoryProvider provider({});
+  provider.UpdateFlag("object_flag",
+                      CreateFlag<Value>({{"v1", Value()}}, "v1"));
+  EXPECT_TRUE(provider.Init(empty_ctx_).ok());
+
+  std::unique_ptr<ObjectResolutionDetails> res =
+      provider.GetObjectEvaluation("object_flag", Value(), empty_ctx_);
+
+  ASSERT_NE(res, nullptr);
+  EXPECT_EQ(res->GetReason(), Reason::kStatic);
+  EXPECT_THAT(res->GetVariant(), Optional(std::string("v1")));
+}
+
 }  // namespace openfeature

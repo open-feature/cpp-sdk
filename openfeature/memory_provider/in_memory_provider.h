@@ -14,6 +14,7 @@
 #include "openfeature/provider.h"
 #include "openfeature/provider_status.h"
 #include "openfeature/resolution_details.h"
+#include "openfeature/value.h"
 
 namespace openfeature {
 
@@ -43,6 +44,22 @@ class InMemoryProvider : public FeatureProvider {
 
   std::unique_ptr<BoolResolutionDetails> GetBooleanEvaluation(
       std::string_view key, bool default_value,
+      const EvaluationContext& ctx) override;
+
+  std::unique_ptr<StringResolutionDetails> GetStringEvaluation(
+      std::string_view key, std::string_view default_value,
+      const EvaluationContext& ctx) override;
+
+  std::unique_ptr<IntResolutionDetails> GetIntegerEvaluation(
+      std::string_view key, int64_t default_value,
+      const EvaluationContext& ctx) override;
+
+  std::unique_ptr<DoubleResolutionDetails> GetDoubleEvaluation(
+      std::string_view key, double default_value,
+      const EvaluationContext& ctx) override;
+
+  std::unique_ptr<ObjectResolutionDetails> GetObjectEvaluation(
+      std::string_view key, Value default_value,
       const EvaluationContext& ctx) override;
 
  private:

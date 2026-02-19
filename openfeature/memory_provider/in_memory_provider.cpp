@@ -55,6 +55,27 @@ std::unique_ptr<BoolResolutionDetails> InMemoryProvider::GetBooleanEvaluation(
   return Evaluate<bool>(key, default_value, ctx);
 }
 
+std::unique_ptr<StringResolutionDetails> InMemoryProvider::GetStringEvaluation(
+    std::string_view key, std::string_view default_value,
+    const EvaluationContext& ctx) {
+  return Evaluate<std::string>(key, std::string(default_value), ctx);
+}
+
+std::unique_ptr<IntResolutionDetails> InMemoryProvider::GetIntegerEvaluation(
+    std::string_view key, int64_t default_value, const EvaluationContext& ctx) {
+  return Evaluate<int64_t>(key, default_value, ctx);
+}
+
+std::unique_ptr<DoubleResolutionDetails> InMemoryProvider::GetDoubleEvaluation(
+    std::string_view key, double default_value, const EvaluationContext& ctx) {
+  return Evaluate<double>(key, default_value, ctx);
+}
+
+std::unique_ptr<ObjectResolutionDetails> InMemoryProvider::GetObjectEvaluation(
+    std::string_view key, Value default_value, const EvaluationContext& ctx) {
+  return Evaluate<Value>(key, default_value, ctx);
+}
+
 template <typename T>
 std::unique_ptr<ResolutionDetails<T>> InMemoryProvider::Evaluate(
     std::string_view key, T default_value, const EvaluationContext& ctx) {

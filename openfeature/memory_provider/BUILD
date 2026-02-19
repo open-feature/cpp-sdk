@@ -29,6 +29,7 @@ cc_library(
         "//openfeature:provider_status",
         "//openfeature:reason",
         "//openfeature:resolution_details",
+        "//openfeature:value",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
     ],

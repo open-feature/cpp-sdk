@@ -16,31 +16,23 @@ cc_library(
     include_prefix = "test/e2e",
     deps = [
         "//openfeature:evaluation_context",
-        "//openfeature:provider",
-        "//openfeature:resolution_details",
-        "//openfeature:metadata",
         "//openfeature:flag_metadata",
+        "//openfeature:metadata",
+        "//openfeature:provider",
         "//openfeature:reason",
-        "@abseil-cpp//absl/status",
-        "@abseil-cpp//absl/status:statusor",
+        "//openfeature:value",
+        "//openfeature:resolution_details",
+        "@cucumber-cpp//:cucumber-cpp",
+        "@googletest//:gtest", 
     ],
 )
 
 cc_library(
-    name = "flag",
+    name = "flag_test",
     hdrs = [
-        "flag.h",
+        "flag_test.h",
     ],
     include_prefix = "test/e2e",
-    deps = [
-        "//openfeature:client_api",
-        "//openfeature:evaluation_context",
-        "//openfeature:provider",
-        "//openfeature:resolution_details",
-        "//openfeature:flag_metadata",
-        "@abseil-cpp//absl/status",
-        "@abseil-cpp//absl/status:statusor",
-    ],
 )
 
 cc_library(
@@ -50,13 +42,12 @@ cc_library(
     ],
     include_prefix = "test/e2e",
     deps = [
-        "//openfeature:client_api",
+        "//openfeature:client",
         "//openfeature:evaluation_context",
         "//openfeature:provider",
         "//openfeature:resolution_details",
-        ":flag",
-        "@abseil-cpp//absl/status",
-        "@abseil-cpp//absl/status:statusor",
+        "//openfeature:value",
+        ":flag_test",
     ],
 )
 

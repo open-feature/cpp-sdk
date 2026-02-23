@@ -1,7 +1,14 @@
 #include "test/e2e/context_storing_provider.h"
 
+#include <gtest/gtest.h>
+
+#include <cucumber-cpp/autodetect.hpp>
+
 #include "openfeature/flag_metadata.h"
 #include "openfeature/reason.h"
+#include "openfeature/value.h"
+
+using cucumber::ScenarioScope;
 
 namespace openfeature_e2e {
 
@@ -13,15 +20,77 @@ std::unique_ptr<openfeature::BoolResolutionDetails>
 ContextStoringProvider::GetBooleanEvaluation(
     std::string_view key, bool default_value,
     const openfeature::EvaluationContext& ctx) {
-  // Store a copy of the evaluation context.
-  // We need to copy because `ctx` is passed by const reference.
-  this->last_evaluation_context_ = ctx;
+  last_ctx = ctx;
 
   return std::make_unique<openfeature::BoolResolutionDetails>(
       default_value,                  // The default value
       openfeature::Reason::kDefault,  // Reason for resolution
       "default-variant",              // A generic variant identifier
-      openfeature::FlagMetadata(),    // Empty metadata
+      openfeature::FlagMetadata{},    // Empty metadata
+      std::nullopt,                   // No error code
+      ""                              // Empty error message
+  );
+}
+
+std::unique_ptr<openfeature::StringResolutionDetails>
+ContextStoringProvider::GetStringEvaluation(
+    std::string_view key, std::string_view default_value,
+    const openfeature::EvaluationContext& ctx) {
+  last_ctx = ctx;
+  std::string default_str(default_value);
+  return std::make_unique<openfeature::StringResolutionDetails>(
+      default_str,                    // The default value
+      openfeature::Reason::kDefault,  // Reason for resolution
+      "default-variant",              // A generic variant identifier
+      openfeature::FlagMetadata{},    // Empty metadata
+      std::nullopt,                   // No error code
+      ""                              // Empty error message
+  );
+}
+
+std::unique_ptr<openfeature::IntResolutionDetails>
+ContextStoringProvider::GetIntegerEvaluation(
+    std::string_view key, int64_t default_value,
+    const openfeature::EvaluationContext& ctx) {
+  last_ctx = ctx;
+
+  return std::make_unique<openfeature::IntResolutionDetails>(
+      default_value,                  // The default value
+      openfeature::Reason::kDefault,  // Reason for resolution
+      "default-variant",              // A generic variant identifier
+      openfeature::FlagMetadata{},    // Empty metadata
+      std::nullopt,                   // No error code
+      ""                              // Empty error message
+  );
+}
+
+std::unique_ptr<openfeature::DoubleResolutionDetails>
+ContextStoringProvider::GetDoubleEvaluation(
+    std::string_view key, double default_value,
+    const openfeature::EvaluationContext& ctx) {
+  last_ctx = ctx;
+
+  return std::make_unique<openfeature::DoubleResolutionDetails>(
+      default_value,                  // The default value
+      openfeature::Reason::kDefault,  // Reason for resolution
+      "default-variant",              // A generic variant identifier
+      openfeature::FlagMetadata{},    // Empty metadata
+      std::nullopt,                   // No error code
+      ""                              // Empty error message
+  );
+}
+
+std::unique_ptr<openfeature::ObjectResolutionDetails>
+ContextStoringProvider::GetObjectEvaluation(
+    std::string_view key, const openfeature::Value default_value,
+    const openfeature::EvaluationContext& ctx) {
+  last_ctx = ctx;
+
+  return std::make_unique<openfeature::ObjectResolutionDetails>(
+      default_value,                  // The default value
+      openfeature::Reason::kDefault,  // Reason for resolution
+      "default-variant",              // A generic variant identifier
+      openfeature::FlagMetadata{},    // Empty metadata
       std::nullopt,                   // No error code
       ""                              // Empty error message
   );

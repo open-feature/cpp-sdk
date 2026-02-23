@@ -9,22 +9,23 @@
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/provider.h"
-#include "openfeature/resolution_details.h"  // For ResolutionDetails<Value>
-#include "test/e2e/flag.h"
+#include "openfeature/resolution_details.h"
+#include "openfeature/value.h"
+#include "test/e2e/flag_test.h"
 
 namespace openfeature_e2e {
 
-struct ScenarioState {
+struct State {
   std::shared_ptr<openfeature::Client> client;
-  Flag flag;
-  openfeature::EvaluationContext ctx =
-      openfeature::EvaluationContext::Builder().build();
+  std::shared_ptr<openfeature::FeatureProvider> provider;
+  FlagTest flag;
+  std::unique_ptr<openfeature::EvaluationContext> context;
   // FlagEvaluationDetails eval
   // MockHook hook
-  std::shared_ptr<openfeature::FeatureProvider> provider;
-  openfeature::EvaluationContext invocation_ctx =
-      openfeature::EvaluationContext::Builder().build();
+  std::unique_ptr<openfeature::EvaluationContext> invocation_context;
   std::vector<std::string> levels;
+
+  openfeature::Value last_evaluation_value;
 };
 
 }  // namespace openfeature_e2e

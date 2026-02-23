@@ -1,10 +1,12 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
+package(
+    default_visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "mock_feature_provider",
-    testonly = True,
     hdrs = ["mocks/mock_feature_provider.h"],
-    visibility = ["//test:__pkg__"],
     deps = [
         "//openfeature:provider",
         "@googletest//:gtest",

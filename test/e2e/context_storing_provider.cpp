@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <cucumber-cpp/autodetect.hpp>
+#include <optional>
 
 #include "openfeature/flag_metadata.h"
 #include "openfeature/reason.h"

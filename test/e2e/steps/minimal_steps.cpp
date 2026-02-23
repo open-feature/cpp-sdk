@@ -1,10 +1,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <any>
+#include <chrono>
 #include <cucumber-cpp/autodetect.hpp>
 #include <map>
 #include <memory>
 #include <string>
+#include <thread>
+#include <unordered_map>
 
 #include "openfeature/evaluation_context.h"
 #include "openfeature/memory_provider/flag.h"
@@ -64,7 +68,8 @@ std::shared_ptr<openfeature::FeatureProvider> CreateStableProvider() {
 }
 
 std::shared_ptr<openfeature::FeatureProvider> CreateMockErrorProvider() {
-  std::shared_ptr<openfeature::MockFeatureProvider> mock = std::make_shared<openfeature::MockFeatureProvider>();
+  std::shared_ptr<openfeature::MockFeatureProvider> mock =
+      std::make_shared<openfeature::MockFeatureProvider>();
   EXPECT_CALL(*mock, GetMetadata())
       .WillRepeatedly(Return(openfeature::Metadata{"MockFeatureProvider"}));
   EXPECT_CALL(*mock, Shutdown()).WillRepeatedly(Return(absl::OkStatus()));
@@ -74,7 +79,8 @@ std::shared_ptr<openfeature::FeatureProvider> CreateMockErrorProvider() {
 }
 
 std::shared_ptr<openfeature::FeatureProvider> CreateMockNotReadyProvider() {
-  std::shared_ptr<openfeature::MockFeatureProvider> mock = std::make_shared<openfeature::MockFeatureProvider>();
+  std::shared_ptr<openfeature::MockFeatureProvider> mock =
+      std::make_shared<openfeature::MockFeatureProvider>();
   EXPECT_CALL(*mock, GetMetadata())
       .WillRepeatedly(Return(openfeature::Metadata{"MockFeatureProvider"}));
   EXPECT_CALL(*mock, Shutdown()).WillRepeatedly(Return(absl::OkStatus()));
@@ -222,7 +228,8 @@ THEN(
   REGEX_PARAM(int64_t, v3);
   ScenarioScope<openfeature_e2e::State> state;
 
-  const std::map<std::string, openfeature::Value>* structure = state->last_evaluation_value.AsStructure();
+  const std::map<std::string, openfeature::Value>* structure =
+      state->last_evaluation_value.AsStructure();
   ASSERT_NE(structure, nullptr);
 
   EXPECT_EQ(structure->at(f1).AsBool().value(), (v1_str == "true"));

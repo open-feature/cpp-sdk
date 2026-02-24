@@ -1,4 +1,4 @@
-name: CI
+name: ci-format-test-lint
 
 on:
   push:

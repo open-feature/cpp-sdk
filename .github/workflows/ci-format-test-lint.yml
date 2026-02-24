@@ -1,25 +1,30 @@
-name: clang-format-and-lint
+name: ci-format-test-lint
 
 on:
+  push:
+    branches: ["main"]
   pull_request:
     branches: ["main"]
-    paths:
-      [
-        "**.c",
-        "**.cpp",
-        "**.h",
-        "**.hpp",
-        "**.cxx",
-        "**.hxx",
-        "**.cc",
-        "**.hh",
-        "**CMakeLists.txt",
-        "meson.build",
-        "**.cmake",
-      ]
 
 jobs:
-  clang-format-and-lint:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: bazel-contrib/setup-bazel@0.18.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+
+      - name: Build
+        run: bazel build //...
+
+      - name: Test
+        run: bazel test //test/...
+
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -28,11 +33,8 @@ jobs:
 
       - uses: bazel-contrib/setup-bazel@0.18.0
         with:
-          # Avoid downloading Bazel every time.
           bazelisk-cache: true
-          # Store build cache per workflow.
           disk-cache: ${{ github.workflow }}
-          # Share repository cache between workflows.
           repository-cache: true
 
       - name: Build compilation database

@@ -250,25 +250,25 @@ class MyProvider : public openfeature::FeatureProvider {
   std::unique_ptr<openfeature::StringResolutionDetails> GetStringEvaluation(
       std::string_view flag, std::string_view default_value,
       const openfeature::EvaluationContext& ctx) override {
-        // resolve a boolean flag value
+        // resolve a string flag value
       }
 
   std::unique_ptr<openfeature::IntResolutionDetails> GetIntegerEvaluation(
       std::string_view flag, int64_t default_value,
       const openfeature::EvaluationContext& ctx) override {
-        // resolve a boolean flag value
+        // resolve a int flag value
       }
 
   std::unique_ptr<openfeature::DoubleResolutionDetails> GetDoubleEvaluation(
       std::string_view flag, double default_value,
       const openfeature::EvaluationContext& ctx) override {
-        // resolve a boolean flag value
+        // resolve a double flag value
       }
 
   std::unique_ptr<openfeature::ObjectResolutionDetails> GetObjectEvaluation(
       std::string_view flag, Value default_value,
       const openfeature::EvaluationContext& ctx) override {
-        // resolve a boolean flag value
+        // resolve a object flag value
       }
 };
 ```

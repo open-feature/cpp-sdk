@@ -15,7 +15,6 @@ cc_gherkin_steps(
         "//test:mock_feature_provider",
         "@cucumber-cpp//:cucumber-cpp",
         "@googletest//:gtest",
-        "@googletest//:gmock",  
     ],
     visibility = ["//test/e2e:__subpackages__"],
 )

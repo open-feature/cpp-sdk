@@ -1,5 +1,5 @@
-#ifndef CPP_SDK_INCLUDE_TEST_E2E_FLAG_H_
-#define CPP_SDK_INCLUDE_TEST_E2E_FLAG_H_
+#ifndef CPP_SDK_INCLUDE_TEST_E2E_FLAG_TEST_H_
+#define CPP_SDK_INCLUDE_TEST_E2E_FLAG_TEST_H_
 
 #include <any>
 #include <string>
@@ -13,4 +13,4 @@ struct FlagTest {
 };
 
 }  // namespace openfeature_e2e
-#endif  // CPP_SDK_INCLUDE_TEST_E2E_FLAG_H_
+#endif  // CPP_SDK_INCLUDE_TEST_E2E_FLAG_TEST_H_

@@ -24,13 +24,8 @@ ContextStoringProvider::GetBooleanEvaluation(
   last_ctx = ctx;
 
   return std::make_unique<openfeature::BoolResolutionDetails>(
-      default_value,                  // The default value
-      openfeature::Reason::kDefault,  // Reason for resolution
-      "default-variant",              // A generic variant identifier
-      openfeature::FlagMetadata{},    // Empty metadata
-      std::nullopt,                   // No error code
-      ""                              // Empty error message
-  );
+      default_value, openfeature::Reason::kDefault, "default-variant",
+      openfeature::FlagMetadata{}, std::nullopt, "");
 }
 
 std::unique_ptr<openfeature::StringResolutionDetails>
@@ -40,13 +35,8 @@ ContextStoringProvider::GetStringEvaluation(
   last_ctx = ctx;
   std::string default_str(default_value);
   return std::make_unique<openfeature::StringResolutionDetails>(
-      default_str,                    // The default value
-      openfeature::Reason::kDefault,  // Reason for resolution
-      "default-variant",              // A generic variant identifier
-      openfeature::FlagMetadata{},    // Empty metadata
-      std::nullopt,                   // No error code
-      ""                              // Empty error message
-  );
+      default_str, openfeature::Reason::kDefault, "default-variant",
+      openfeature::FlagMetadata{}, std::nullopt, "");
 }
 
 std::unique_ptr<openfeature::IntResolutionDetails>
@@ -56,13 +46,8 @@ ContextStoringProvider::GetIntegerEvaluation(
   last_ctx = ctx;
 
   return std::make_unique<openfeature::IntResolutionDetails>(
-      default_value,                  // The default value
-      openfeature::Reason::kDefault,  // Reason for resolution
-      "default-variant",              // A generic variant identifier
-      openfeature::FlagMetadata{},    // Empty metadata
-      std::nullopt,                   // No error code
-      ""                              // Empty error message
-  );
+      default_value, openfeature::Reason::kDefault, "default-variant",
+      openfeature::FlagMetadata{}, std::nullopt, "");
 }
 
 std::unique_ptr<openfeature::DoubleResolutionDetails>
@@ -72,13 +57,8 @@ ContextStoringProvider::GetDoubleEvaluation(
   last_ctx = ctx;
 
   return std::make_unique<openfeature::DoubleResolutionDetails>(
-      default_value,                  // The default value
-      openfeature::Reason::kDefault,  // Reason for resolution
-      "default-variant",              // A generic variant identifier
-      openfeature::FlagMetadata{},    // Empty metadata
-      std::nullopt,                   // No error code
-      ""                              // Empty error message
-  );
+      default_value, openfeature::Reason::kDefault, "default-variant",
+      openfeature::FlagMetadata{}, std::nullopt, "");
 }
 
 std::unique_ptr<openfeature::ObjectResolutionDetails>
@@ -88,13 +68,8 @@ ContextStoringProvider::GetObjectEvaluation(
   last_ctx = ctx;
 
   return std::make_unique<openfeature::ObjectResolutionDetails>(
-      default_value,                  // The default value
-      openfeature::Reason::kDefault,  // Reason for resolution
-      "default-variant",              // A generic variant identifier
-      openfeature::FlagMetadata{},    // Empty metadata
-      std::nullopt,                   // No error code
-      ""                              // Empty error message
-  );
+      default_value, openfeature::Reason::kDefault, "default-variant",
+      openfeature::FlagMetadata{}, std::nullopt, "");
 }
 
 }  // namespace openfeature_e2e

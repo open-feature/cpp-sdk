@@ -20,13 +20,12 @@ struct State {
   std::shared_ptr<openfeature::FeatureProvider> provider;
   FlagTest flag;
   std::unique_ptr<openfeature::EvaluationContext> context;
-  // FlagEvaluationDetails eval
-  // MockHook hook
   std::unique_ptr<openfeature::EvaluationContext> invocation_context;
   std::vector<std::string> levels;
 
   openfeature::Value last_evaluation_value;
 };
 
+// TODO: Update struct after implementing hooks and flag evaluation details.
 }  // namespace openfeature_e2e
 #endif  // CPP_SDK_INCLUDE_TEST_E2E_STATE_H_

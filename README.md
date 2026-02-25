@@ -35,15 +35,33 @@
 
 ### Requirements
 
-<!-- TODO: required runtime, etc -->
+- C++17 or newer (due to the usage of `std::optional`, `std::any`, `std::variant`, and `std::string_view`)
+- [Bazel](https://bazel.build/) build system
 
 ### Install
 
-<!-- TODO: installation instructions -->
+To use the OpenFeature C++ SDK in your Bazel project, add the dependency to your `MODULE.bazel` file or your `WORKSPACE` (depending on your Bazel configuration).
 
 ### Usage
 
-<!-- TODO: basic usage instructions, setting the in-memory provider and getting a boolean flag called "v2_enabled" -->
+```cpp
+void example() {
+  // flags defined in memory
+  std::unordered_map<std::string, std::any> my_flags = {
+      {"v2_enabled", true}
+  };
+
+  // configure a provider
+  openfeature::OpenFeatureAPI& api = openfeature::OpenFeatureAPI::GetInstance();
+  api.SetProviderAndWait(std::make_shared<openfeature::InMemoryProvider>(my_flags));
+
+  // create a client
+  std::shared_ptr<openfeature::Client> client = api.GetClient();
+
+  // get a bool flag value
+  bool flag_value = client->GetBooleanValue("v2_enabled", false);
+}
+```
 
 ### API Reference
 
@@ -55,16 +73,16 @@
 
 | Status | Features                                                            | Description                                                                                                                                                  |
 | ------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| ❌      | [Providers](#providers)                                             | Integrate with a commercial, open source, or in-house feature management tool.                                                                               |
-| ❌      | [Targeting](#targeting)                                             | Contextually-aware flag evaluation using [evaluation context](https://openfeature.dev/docs/reference/concepts/evaluation-context).                           |
+| ⚠️      | [Providers](#providers)                                             | Integrate with a commercial, open source, or in-house feature management tool.                                                                               |
+| ✅      | [Targeting](#targeting)                                             | Contextually-aware flag evaluation using [evaluation context](https://openfeature.dev/docs/reference/concepts/evaluation-context).                           |
 | ❌      | [Hooks](#hooks)                                                     | Add functionality to various stages of the flag evaluation life-cycle.                                                                                       |
 | ❌      | [Logging](#logging)                                                 | Integrate with popular logging packages.                                                                                                                     |
-| ❌      | [Domains](#domains)                                                 | Logically bind clients with providers.                                                                                                                       |
+| ✅       | [Domains](#domains)                                                 | Logically bind clients with providers.                                                                                                                       |
 | ❌      | [Eventing](#eventing)                                               | React to state changes in the provider or flag management system.                                                                                            |
 | ❌      | [Tracking](#tracking)                                               | Associate user-actions with flag evaluations for the purposes of experimentation.                                                                            |
 | ❌      | [Transaction Context Propagation](#transaction-context-propagation) | Set a specific [evaluation context](https://openfeature.dev/docs/reference/concepts/evaluation-context) for a transaction (e.g. an HTTP request or a thread) |
-| ❌      | [Shutdown](#shutdown)                                               | Gracefully clean up a provider during application shutdown.                                                                                                  |
-| ❌      | [Extending](#extending)                                             | Extend OpenFeature with custom providers and hooks.                                                                                                          |
+| ✅      | [Shutdown](#shutdown)                                               | Gracefully clean up a provider during application shutdown.                                                                                                  |
+| ✅      | [Extending](#extending)                                             | Extend OpenFeature with custom providers and hooks.                                                                                                          |
 
 <sub>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌</sub>
 
@@ -76,7 +94,18 @@ If the provider you're looking for hasn't been created yet, see the [develop a p
 
 Once you've added a provider as a dependency, it can be registered with OpenFeature like this:
 
-<!-- TODO: code example setting a provider and setting it while awaiting init, if applicable -->
+#### Synchronous
+To register a provider in a blocking manner to ensure it is ready before further actions are taken, use the `SetProviderAndWait` method:
+```cpp
+openfeature::OpenFeatureAPI& api = openfeature::OpenFeatureAPI::GetInstance();
+api.SetProviderAndWait(std::make_shared<MyProvider>());
+```
+
+#### Asynchronous
+To register a provider in a non-blocking manner, use the `SetProvider` method:
+```cpp
+openfeature::OpenFeatureAPI::GetInstance().SetProvider(std::make_shared<MyProvider>());
+```
 
 In some situations, it may be beneficial to register multiple providers in the same application.
 This is possible using [domains](#domains), which is covered in more detail below.
@@ -87,7 +116,30 @@ Sometimes, the value of a flag must consider some dynamic criteria about the app
 In OpenFeature, we refer to this as [targeting](https://openfeature.dev/specification/glossary#targeting).
 If the flag management system you're using supports targeting, you can provide the input data using the [evaluation context](https://openfeature.dev/docs/reference/concepts/evaluation-context).
 
-<!-- TODO: code examples using context and different levels -->
+```cpp
+openfeature::OpenFeatureAPI& api = openfeature::OpenFeatureAPI::GetInstance();
+
+// Set a global evaluation context
+openfeature::EvaluationContext global_ctx = openfeature::EvaluationContext::Builder()
+    .WithAttribute("region", "us-east-1")
+    .build();
+api.SetEvaluationContext(global_ctx);
+
+// Set a client-level evaluation context
+std::shared_ptr<openfeature::Client> client = api.GetClient();
+openfeature::EvaluationContext client_ctx = openfeature::EvaluationContext::Builder()
+    .WithAttribute("app_version", "1.0.5")
+    .build();
+client->SetEvaluationContext(client_ctx);
+
+// Provide an invocation-level evaluation context
+openfeature::EvaluationContext req_ctx = openfeature::EvaluationContext::Builder()
+    .WithTargetingKey("session-id-12345")
+    .WithAttribute("email", "user@example.com")
+    .build();
+
+bool flag_value = client->GetBooleanValue("some-flag", false, req_ctx);
+```
 
 
 ### Hooks
@@ -109,7 +161,21 @@ Once you've added a hook as a dependency, it can be registered at the global, cl
 Clients can be assigned to a domain. A domain is a logical identifier which can be used to associate clients with a particular provider. 
 If a domain has no associated provider, the default provider is used.
 
-<!-- TODO: code example binding a named client to a provider -->
+```cpp
+openfeature::OpenFeatureAPI& api = openfeature::OpenFeatureAPI::GetInstance();
+
+// registering the default provider
+api.SetProvider(std::make_shared<LocalProvider>());
+
+// registering a provider to a domain
+api.SetProvider("my-domain", std::make_shared<CachedProvider>());
+
+// A client bound to the default provider
+std::shared_ptr<openfeature::Client> client_default = api.GetClient();
+
+// A client bound to the CachedProvider provider
+std::shared_ptr<openfeature::Client> domain_scoped_client = api.GetClient("my-domain");
+```
 
 ### Eventing
 
@@ -143,7 +209,10 @@ Transaction context can be set where specific data is available (e.g. an auth se
 The OpenFeature API provides a close function to perform a cleanup of all registered providers.
 This should only be called when your application is in the process of shutting down.
 
-<!-- TODO: code example for global shutdown -->
+```cpp
+// shut down all providers
+openfeature::OpenFeatureAPI::GetInstance().Shutdown();
+```
 
 ## Extending
 
@@ -153,7 +222,56 @@ To develop a provider, you need to create a new project and include the OpenFeat
 This can be a new repository or included in [the existing contrib repository](https://github.com/open-feature/cpp-sdk-contrib) available under the OpenFeature organization.
 You’ll then need to write the provider by implementing the `FeatureProvider` interface exported by the OpenFeature SDK.
 
-<!-- TODO: code example of provider implementation -->
+```cpp
+#include "openfeature/provider.h"
+
+class MyProvider : public openfeature::FeatureProvider {
+ public:
+  openfeature::Metadata GetMetadata() const override {
+    return {"My Provider"};
+  }
+
+  absl::Status Init(const openfeature::EvaluationContext& ctx) override {
+    // start up your provider
+    return absl::OkStatus();
+  }
+
+  absl::Status Shutdown() override {
+    // shut down your provider
+    return absl::OkStatus();
+  }
+
+  std::unique_ptr<openfeature::BoolResolutionDetails> GetBooleanEvaluation(
+      std::string_view key, bool default_value,
+      const openfeature::EvaluationContext& ctx) override {
+      // resolve a boolean flag value
+      }
+
+  std::unique_ptr<openfeature::StringResolutionDetails> GetStringEvaluation(
+      std::string_view flag, std::string_view default_value,
+      const openfeature::EvaluationContext& ctx) override {
+        // resolve a string flag value
+      }
+
+  std::unique_ptr<openfeature::IntResolutionDetails> GetIntegerEvaluation(
+      std::string_view flag, int64_t default_value,
+      const openfeature::EvaluationContext& ctx) override {
+        // resolve a int flag value
+      }
+
+  std::unique_ptr<openfeature::DoubleResolutionDetails> GetDoubleEvaluation(
+      std::string_view flag, double default_value,
+      const openfeature::EvaluationContext& ctx) override {
+        // resolve a double flag value
+      }
+
+  std::unique_ptr<openfeature::ObjectResolutionDetails> GetObjectEvaluation(
+      std::string_view flag, Value default_value,
+      const openfeature::EvaluationContext& ctx) override {
+        // resolve a object flag value
+      }
+};
+```
 
 > Built a new provider? [Let us know](https://github.com/open-feature/openfeature.dev/issues/new?assignees=&labels=provider&projects=&template=document-provider.yaml&title=%5BProvider%5D%3A+) so we can add it to the docs!
 

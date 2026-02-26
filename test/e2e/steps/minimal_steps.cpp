@@ -18,11 +18,11 @@
 #include "test/e2e/state.h"
 #include "test/mocks/mock_feature_provider.h"
 
-using cucumber::ScenarioScope;
+using ::cucumber::ScenarioScope;
 using ::testing::_;
 using ::testing::Return;
 
-// Helper to create simple static flags for the InMemoryProvider
+// Helper to create simple static flags for the InMemoryProvider.
 template <typename T>
 openfeature::Flag<T> CreateStaticFlag(T value) {
   return openfeature::Flag<T>(
@@ -35,13 +35,13 @@ openfeature::Flag<T> CreateStaticFlag(T value) {
 std::shared_ptr<openfeature::FeatureProvider> CreateStableProvider() {
   std::unordered_map<std::string, std::any> flags;
 
-  // Set up the static flags expected by the basic evaluation tests
+  // Set up the static flags expected by the basic evaluation tests.
   flags["boolean-flag"] = CreateStaticFlag<bool>(true);
   flags["string-flag"] = CreateStaticFlag<std::string>("hi");
   flags["integer-flag"] = CreateStaticFlag<int64_t>(10);
   flags["float-flag"] = CreateStaticFlag<double>(0.5);
 
-  // Object flag setup
+  // Object flag setup.
   std::map<std::string, openfeature::Value> obj_map;
   obj_map["showImages"] = openfeature::Value(true);
   obj_map["title"] = openfeature::Value("Check out these pics!");
@@ -49,7 +49,7 @@ std::shared_ptr<openfeature::FeatureProvider> CreateStableProvider() {
   flags["object-flag"] =
       CreateStaticFlag<openfeature::Value>(openfeature::Value(obj_map));
 
-  // Context-aware flag setup
+  // Context-aware flag setup.
   auto context_evaluator = [](const openfeature::Flag<std::string>&,
                               const openfeature::EvaluationContext& ctx)
       -> absl::StatusOr<std::string> {
@@ -268,7 +268,7 @@ WHEN(
   REGEX_PARAM(std::string, default_val);
   ScenarioScope<openfeature_e2e::State> state;
 
-  // Evaluate using the context built in the previous step
+  // Evaluate using the context built in the previous step.
   if (state->context) {
     state->last_evaluation_value = openfeature::Value(
         state->client->GetStringValue(key, default_val, *state->context));
@@ -289,7 +289,7 @@ THEN("^the resolved flag value is \"([^\"]*)\" when the context is empty$") {
   REGEX_PARAM(std::string, expected);
   ScenarioScope<openfeature_e2e::State> state;
 
-  // Evaluate context-aware flag with an empty context
+  // Evaluate context-aware flag with an empty context.
   openfeature::EvaluationContext empty_ctx =
       openfeature::EvaluationContext::Builder().build();
   std::string actual =
@@ -297,3 +297,5 @@ THEN("^the resolved flag value is \"([^\"]*)\" when the context is empty$") {
 
   EXPECT_EQ(actual, expected);
 }
+
+// TODO: Enable more Gherkin scenarios as the SDK functionality expands, e.g. around event hooks, detailed evaluation, etc.

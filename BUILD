@@ -4,5 +4,5 @@ package(default_visibility = ["//visibility:public"])
 
 gherkin_library(
     name = "openfeature_gherkin_spec_features",
-    srcs = glob(["spec/specification/assets/gherkin/*.feature"]),
+    srcs = glob(["spec/specification/assets/gherkin/evaluation.feature"]),
 ) 

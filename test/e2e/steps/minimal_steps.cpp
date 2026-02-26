@@ -298,4 +298,5 @@ THEN("^the resolved flag value is \"([^\"]*)\" when the context is empty$") {
   EXPECT_EQ(actual, expected);
 }
 
-// TODO: Enable more Gherkin scenarios as the SDK functionality expands, e.g. around event hooks, detailed evaluation, etc.
+// TODO: Enable more Gherkin scenarios as the SDK functionality expands, e.g.
+// around event hooks, detailed evaluation, etc.

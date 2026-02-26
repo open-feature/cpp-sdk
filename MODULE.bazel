@@ -3,6 +3,26 @@ module(name = "openfeature_cpp_sdk")
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
 bazel_dep(name = "abseil-cpp", version = "20250814.2")
 bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "cucumber-cpp", version = "0.8.0.bcr.1")
+
+bazel_dep(name = "rules_gherkin", version = "0.2.0")
+bazel_dep(name = "rules_ruby", version = "0.21.1")
+
+# Hermetic Ruby Toolchain Configuration
+ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby")
+ruby.toolchain(
+    name = "ruby",
+    version = "3.2.2", # JRuby or standard MRI version suitable for execution
+)
+
+# Cucumber Gem provisioning via Bundler integration
+ruby.bundle_fetch(
+    name = "cucumber",
+    gemfile = "//:Gemfile",
+    gemfile_lock = "//:Gemfile.lock",
+)
+use_repo(ruby, "cucumber", "ruby", "ruby_toolchains")
+register_toolchains("@ruby_toolchains//:all")
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor

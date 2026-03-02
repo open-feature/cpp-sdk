@@ -60,7 +60,7 @@ jobs:
           style: "file" # Use .clang-format config file.
           tidy-checks: "" # Use .clang-tidy config file.
           database: "compile_commands.json"
-          version: "20"
+          version: "21"
           extra-args: "--system-headers -fdiagnostics-absolute-paths"
 
       - name: Fail fast?!

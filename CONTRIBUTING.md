@@ -31,7 +31,7 @@ git submodule update --init --recursive
 
 and run tests with,
 ```
-
+bazel test //test/...
 ```
 
 ### Opening a Pull Request

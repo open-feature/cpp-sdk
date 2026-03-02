@@ -33,6 +33,7 @@ cc_library(
         ":provider_status",
         ":reason",
         ":resolution_details",
+        ":value",
     ],
 )
 
@@ -69,6 +70,7 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         ":evaluation_context",
+        ":value"
     ],
 )
 
@@ -121,6 +123,7 @@ cc_library(
         ":metadata",
         ":provider",
         ":resolution_details",
+        ":value",
     ],
 )
 
@@ -165,6 +168,7 @@ cc_library(
         ":evaluation_context",
         ":metadata",
         ":resolution_details",
+        ":value",
     ],
 )
 
@@ -178,6 +182,19 @@ cc_library(
     name = "resolution_details",
     srcs = ["resolution_details.cpp"],
     hdrs = ["resolution_details.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":error_code",
+        ":flag_metadata",
+        ":reason",
+        ":value",
+    ],
+)
+
+cc_library(
+    name = "value",
+    srcs = ["value.cpp"],
+    hdrs = ["value.h"],
     include_prefix = "openfeature",
     deps = [
         ":error_code",

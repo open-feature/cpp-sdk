@@ -1,10 +1,12 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
+package(
+    default_visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "mock_feature_provider",
-    testonly = True,
     hdrs = ["mocks/mock_feature_provider.h"],
-    visibility = ["//test:__pkg__"],
     deps = [
         "//openfeature:provider",
         "@googletest//:gtest",
@@ -83,6 +85,15 @@ cc_test(
     srcs = ["global_context_manager_test.cpp"],
     deps = [
         "//openfeature:global_context_manager",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "value_test",
+    srcs = ["value_test.cpp"],
+    deps = [
+        "//openfeature:value",
         "@googletest//:gtest_main",
     ],
 )

@@ -45,13 +45,6 @@ jobs:
       - name: Build compilation database
         run: bazel run @hedron_compile_commands//:refresh_all
 
-      - name: Debug DB
-        run: |
-          echo "Current Dir: $(pwd)"
-          ls -lh compile_commands.json
-          # Check if the file with errors is actually in the DB
-          grep "client_api.cpp" compile_commands.json | head -n 1 || echo "FILE NOT IN DB"
-
       - uses: cpp-linter/cpp-linter-action@v2
         id: linter
         env:
@@ -61,23 +54,8 @@ jobs:
           tidy-checks: "" # Use .clang-tidy config file.
           database: "compile_commands.json"
           version: "21"
-          extra-args: "--system-headers -fdiagnostics-absolute-paths"
+          extra-args: "--system-headers"
 
       - name: Fail fast?!
         if: steps.linter.outputs.checks-failed > 0
         run: exit 1
-
-      - name: ☢️ NUCLEAR DEBUG - Manual Clang-Tidy Run
-        run: |
-          echo "=== 1. Checking Database Entry ==="
-          # Check how the file is referenced in the DB (Absolute vs Relative paths)
-          grep "openfeature/evaluation_context.h" compile_commands.json | head -n 1
-
-          echo "=== 2. Running Clang-Tidy Manually ==="
-          # We manually invoke clang-tidy on a file we KNOW has errors.
-          # We explicitly point to the config and the build folder.
-
-          clang-tidy -p . openfeature/evaluation_context.h --config-file=.clang-tidy || echo "Manual Run Failed as Expected"
-
-          echo "=== 3. Running Clang-Tidy 16 Manually ==="
-          /usr/bin/clang-tidy-20 -p . openfeature/evaluation_context.h --config-file=.clang-tidy || echo "Manual Run Failed as Expected"

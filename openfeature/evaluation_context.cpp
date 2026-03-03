@@ -73,7 +73,6 @@ EvaluationContext::Builder& EvaluationContext::Builder::WithAttribute(
 
 EvaluationContext::Builder& EvaluationContext::Builder::WithAttribute(
     std::string key, const char* value) {
-  Testing += 1;
   return this->WithAttribute(std::move(key), std::string(value));
 }
 

@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
 
       - uses: bazel-contrib/setup-bazel@0.18.0
         with:
@@ -31,13 +31,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
 
       - uses: bazel-contrib/setup-bazel@0.18.0
         with:
           bazelisk-cache: true
           disk-cache: ${{ github.workflow }}
           repository-cache: true
+
+      - name: Build all targets
+        run: bazel build //...
 
       - name: Build compilation database
         run: bazel run @hedron_compile_commands//:refresh_all
@@ -49,6 +52,9 @@ jobs:
         with:
           style: "file" # Use .clang-format config file.
           tidy-checks: "" # Use .clang-tidy config file.
+          database: "compile_commands.json"
+          version: "21"
+          extra-args: "--system-headers"
 
       - name: Fail fast?!
         if: steps.linter.outputs.checks-failed > 0

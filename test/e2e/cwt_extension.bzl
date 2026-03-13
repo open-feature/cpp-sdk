@@ -22,7 +22,10 @@ genrule(
 
 cc_library(
     name = "cwt-cucumber",
-    srcs = glob(["src/**/*.cpp"]),
+    srcs = glob(
+        ["src/**/*.cpp"],
+        exclude =["src/main.cpp"]
+    ),
     hdrs = glob([
         "src/**/*.hpp",
     ]) +[

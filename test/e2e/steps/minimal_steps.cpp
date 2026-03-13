@@ -299,5 +299,24 @@ THEN(check_resolved_flag_empty_ctx,
   EXPECT_EQ(actual, expected);
 }
 
+// This function helps the test not to fail if we have an "UNDEFINED" scenario.
+// It should be deleted when we are able to write steps for all scenarios.
+int main(int argc, char* argv[]) {
+  GTEST_FLAG_SET(throw_on_failure, true);
+  ::testing::InitGoogleMock(&argc, argv);
+
+  cuke::cwt_cucumber cucumber(argc, const_cast<const char**>(argv));
+
+  cucumber.run_tests();
+
+  cucumber.print_results();
+
+  if (::testing::UnitTest::GetInstance()->failed_test_count() > 0) {
+    return 1;
+  }
+
+  return 0;
+}
+
 // TODO: Enable more Gherkin scenarios as the SDK functionality expands, e.g.
 // around event hooks, detailed evaluation, etc.

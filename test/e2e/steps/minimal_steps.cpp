@@ -21,6 +21,11 @@
 using ::testing::_;
 using ::testing::Return;
 
+constexpr int64_t kDefaultIntegerFlagValue = 10;
+constexpr double kDefaultFloatFlagValue = 0.5;
+constexpr int64_t kImagesPerPageValue = 100;
+constexpr auto kProviderInitDelay = std::chrono::milliseconds(200);
+
 // Helper to create simple static flags for the InMemoryProvider.
 template <typename T>
 openfeature::Flag<T> CreateStaticFlag(T value) {
@@ -37,14 +42,14 @@ std::shared_ptr<openfeature::FeatureProvider> CreateStableProvider() {
   // Set up the static flags expected by the basic evaluation tests.
   flags["boolean-flag"] = CreateStaticFlag<bool>(true);
   flags["string-flag"] = CreateStaticFlag<std::string>("hi");
-  flags["integer-flag"] = CreateStaticFlag<int64_t>(10);
-  flags["float-flag"] = CreateStaticFlag<double>(0.5);
+  flags["integer-flag"] = CreateStaticFlag<int64_t>(kDefaultIntegerFlagValue);
+  flags["float-flag"] = CreateStaticFlag<double>(kDefaultFloatFlagValue);
 
   // Object flag setup.
   std::map<std::string, openfeature::Value> obj_map;
   obj_map["showImages"] = openfeature::Value(true);
   obj_map["title"] = openfeature::Value("Check out these pics!");
-  obj_map["imagesPerPage"] = openfeature::Value(100);
+  obj_map["imagesPerPage"] = openfeature::Value(kImagesPerPageValue);
   flags["object-flag"] =
       CreateStaticFlag<openfeature::Value>(openfeature::Value(obj_map));
 
@@ -85,7 +90,7 @@ std::shared_ptr<openfeature::FeatureProvider> CreateMockNotReadyProvider() {
   EXPECT_CALL(*mock, Shutdown()).WillRepeatedly(Return(absl::OkStatus()));
   EXPECT_CALL(*mock, Init(_))
       .WillOnce(testing::Invoke([](const openfeature::EvaluationContext&) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(kProviderInitDelay);
         return absl::OkStatus();
       }));
   return mock;
@@ -93,7 +98,7 @@ std::shared_ptr<openfeature::FeatureProvider> CreateMockNotReadyProvider() {
 
 GIVEN(provider_setup, "a {word} provider") {
   std::string status_type = CUKE_ARG(1);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   if (status_type == "stable" || status_type == "ready") {
     state.provider = CreateStableProvider();
@@ -113,7 +118,7 @@ GIVEN(provider_setup, "a {word} provider") {
 
 THEN(check_provider_status, "the provider status should be {string}") {
   std::string expected_status_str = CUKE_ARG(1);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   openfeature::ProviderStatus actual_status = state.client->GetProviderStatus();
   openfeature::ProviderStatus expected_status =
@@ -139,7 +144,7 @@ WHEN(eval_boolean_flag,
      "{string}") {
   std::string key = CUKE_ARG(1);
   std::string default_val_str = CUKE_ARG(2);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   bool default_val = (default_val_str == "true");
   state.last_evaluation_value =
@@ -148,7 +153,7 @@ WHEN(eval_boolean_flag,
 
 THEN(check_resolved_boolean, "the resolved boolean value should be {string}") {
   std::string expected_str = CUKE_ARG(1);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   bool expected = (expected_str == "true");
   EXPECT_EQ(state.last_evaluation_value.AsBool().value(), expected);
@@ -159,7 +164,7 @@ WHEN(eval_string_flag,
      "{string}") {
   std::string key = CUKE_ARG(1);
   std::string default_val = CUKE_ARG(2);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   state.last_evaluation_value =
       openfeature::Value(state.client->GetStringValue(key, default_val));
@@ -167,7 +172,7 @@ WHEN(eval_string_flag,
 
 THEN(check_resolved_string, "the resolved string value should be {string}") {
   std::string expected = CUKE_ARG(1);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
   EXPECT_EQ(state.last_evaluation_value.AsString().value(), expected);
 }
 
@@ -176,7 +181,7 @@ WHEN(
     "an integer flag with key {string} is evaluated with default value {int}") {
   std::string key = CUKE_ARG(1);
   int64_t default_val = CUKE_ARG(2);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   state.last_evaluation_value =
       openfeature::Value(state.client->GetIntegerValue(key, default_val));
@@ -184,7 +189,7 @@ WHEN(
 
 THEN(check_resolved_integer, "the resolved integer value should be {int}") {
   int64_t expected = CUKE_ARG(1);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
   EXPECT_EQ(state.last_evaluation_value.AsInt().value(), expected);
 }
 
@@ -193,7 +198,7 @@ WHEN(
     "a float flag with key {string} is evaluated with default value {double}") {
   std::string key = CUKE_ARG(1);
   double default_val = CUKE_ARG(2);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   state.last_evaluation_value =
       openfeature::Value(state.client->GetDoubleValue(key, default_val));
@@ -201,7 +206,7 @@ WHEN(
 
 THEN(check_resolved_float, "the resolved float value should be {double}") {
   double expected = CUKE_ARG(1);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
   EXPECT_DOUBLE_EQ(state.last_evaluation_value.AsDouble().value(), expected);
 }
 
@@ -209,7 +214,7 @@ WHEN(
     eval_object_flag_null,
     "an object flag with key {string} is evaluated with a null default value") {
   std::string key = CUKE_ARG(1);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   state.last_evaluation_value =
       state.client->GetObjectValue(key, openfeature::Value());
@@ -224,7 +229,7 @@ THEN(check_resolved_object,
   std::string v1_str = CUKE_ARG(4);
   std::string v2 = CUKE_ARG(5);
   int64_t v3 = CUKE_ARG(6);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   const std::map<std::string, openfeature::Value>* structure =
       state.last_evaluation_value.AsStructure();
@@ -246,7 +251,7 @@ WHEN(setup_context,
   std::string v2 = CUKE_ARG(6);
   int64_t v3 = CUKE_ARG(7);
   std::string v4 = CUKE_ARG(8);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   openfeature::EvaluationContext ctx = openfeature::EvaluationContext::Builder()
                                            .WithAttribute(k1, v1)
@@ -262,7 +267,7 @@ WHEN(eval_flag_with_context,
      "a flag with key {string} is evaluated with default value {string}") {
   std::string key = CUKE_ARG(1);
   std::string default_val = CUKE_ARG(2);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   if (state.context) {
     state.last_evaluation_value = openfeature::Value(
@@ -276,7 +281,7 @@ WHEN(eval_flag_with_context,
 THEN(check_resolved_string_response,
      "the resolved string response should be {string}") {
   std::string expected = CUKE_ARG(1);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   EXPECT_EQ(state.last_evaluation_value.AsString().value(), expected);
 }
@@ -284,7 +289,7 @@ THEN(check_resolved_string_response,
 THEN(check_resolved_flag_empty_ctx,
      "the resolved flag value is {string} when the context is empty") {
   std::string expected = CUKE_ARG(1);
-  openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   openfeature::EvaluationContext empty_ctx =
       openfeature::EvaluationContext::Builder().build();

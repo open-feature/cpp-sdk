@@ -97,10 +97,12 @@ GIVEN(provider_setup, "a {word} provider") {
 
   if (status_type == "stable" || status_type == "ready") {
     state.provider = CreateStableProvider();
-    openfeature::OpenFeatureAPI::GetInstance().SetProviderAndWait(state.provider);
+    openfeature::OpenFeatureAPI::GetInstance().SetProviderAndWait(
+        state.provider);
   } else if (status_type == "error") {
     state.provider = CreateMockErrorProvider();
-    openfeature::OpenFeatureAPI::GetInstance().SetProviderAndWait(state.provider);
+    openfeature::OpenFeatureAPI::GetInstance().SetProviderAndWait(
+        state.provider);
   } else if (status_type == "not ready") {
     state.provider = CreateMockNotReadyProvider();
     openfeature::OpenFeatureAPI::GetInstance().SetProvider(state.provider);
@@ -114,7 +116,8 @@ THEN(check_provider_status, "the provider status should be {string}") {
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
 
   openfeature::ProviderStatus actual_status = state.client->GetProviderStatus();
-  openfeature::ProviderStatus expected_status = openfeature::ProviderStatus::kReady;
+  openfeature::ProviderStatus expected_status =
+      openfeature::ProviderStatus::kReady;
 
   if (expected_status_str == "READY") {
     expected_status = openfeature::ProviderStatus::kReady;
@@ -131,7 +134,9 @@ THEN(check_provider_status, "the provider status should be {string}") {
   EXPECT_EQ(actual_status, expected_status);
 }
 
-WHEN(eval_boolean_flag, "a boolean flag with key {string} is evaluated with default value {string}") {
+WHEN(eval_boolean_flag,
+     "a boolean flag with key {string} is evaluated with default value "
+     "{string}") {
   std::string key = CUKE_ARG(1);
   std::string default_val_str = CUKE_ARG(2);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
@@ -144,12 +149,14 @@ WHEN(eval_boolean_flag, "a boolean flag with key {string} is evaluated with defa
 THEN(check_resolved_boolean, "the resolved boolean value should be {string}") {
   std::string expected_str = CUKE_ARG(1);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
-  
+
   bool expected = (expected_str == "true");
   EXPECT_EQ(state.last_evaluation_value.AsBool().value(), expected);
 }
 
-WHEN(eval_string_flag, "a string flag with key {string} is evaluated with default value {string}") {
+WHEN(eval_string_flag,
+     "a string flag with key {string} is evaluated with default value "
+     "{string}") {
   std::string key = CUKE_ARG(1);
   std::string default_val = CUKE_ARG(2);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
@@ -164,7 +171,9 @@ THEN(check_resolved_string, "the resolved string value should be {string}") {
   EXPECT_EQ(state.last_evaluation_value.AsString().value(), expected);
 }
 
-WHEN(eval_integer_flag, "an integer flag with key {string} is evaluated with default value {int}") {
+WHEN(
+    eval_integer_flag,
+    "an integer flag with key {string} is evaluated with default value {int}") {
   std::string key = CUKE_ARG(1);
   int64_t default_val = CUKE_ARG(2);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
@@ -179,7 +188,9 @@ THEN(check_resolved_integer, "the resolved integer value should be {int}") {
   EXPECT_EQ(state.last_evaluation_value.AsInt().value(), expected);
 }
 
-WHEN(eval_float_flag, "a float flag with key {string} is evaluated with default value {double}") {
+WHEN(
+    eval_float_flag,
+    "a float flag with key {string} is evaluated with default value {double}") {
   std::string key = CUKE_ARG(1);
   double default_val = CUKE_ARG(2);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
@@ -194,14 +205,19 @@ THEN(check_resolved_float, "the resolved float value should be {double}") {
   EXPECT_DOUBLE_EQ(state.last_evaluation_value.AsDouble().value(), expected);
 }
 
-WHEN(eval_object_flag_null, "an object flag with key {string} is evaluated with a null default value") {
+WHEN(
+    eval_object_flag_null,
+    "an object flag with key {string} is evaluated with a null default value") {
   std::string key = CUKE_ARG(1);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
 
-  state.last_evaluation_value = state.client->GetObjectValue(key, openfeature::Value());
+  state.last_evaluation_value =
+      state.client->GetObjectValue(key, openfeature::Value());
 }
 
-THEN(check_resolved_object, "the resolved object value should be contain fields {string}, {string}, and {string}, with values {string}, {string} and {int}, respectively") {
+THEN(check_resolved_object,
+     "the resolved object value should be contain fields {string}, {string}, "
+     "and {string}, with values {string}, {string} and {int}, respectively") {
   std::string f1 = CUKE_ARG(1);
   std::string f2 = CUKE_ARG(2);
   std::string f3 = CUKE_ARG(3);
@@ -210,7 +226,8 @@ THEN(check_resolved_object, "the resolved object value should be contain fields 
   int64_t v3 = CUKE_ARG(6);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
 
-  const std::map<std::string, openfeature::Value>* structure = state.last_evaluation_value.AsStructure();
+  const std::map<std::string, openfeature::Value>* structure =
+      state.last_evaluation_value.AsStructure();
   ASSERT_NE(structure, nullptr);
 
   EXPECT_EQ(structure->at(f1).AsBool().value(), (v1_str == "true"));
@@ -218,7 +235,9 @@ THEN(check_resolved_object, "the resolved object value should be contain fields 
   EXPECT_EQ(structure->at(f3).AsInt().value(), v3);
 }
 
-WHEN(setup_context, "context contains keys {string}, {string}, {string}, {string} with values {string}, {string}, {int}, {string}") {
+WHEN(setup_context,
+     "context contains keys {string}, {string}, {string}, {string} with values "
+     "{string}, {string}, {int}, {string}") {
   std::string k1 = CUKE_ARG(1);
   std::string k2 = CUKE_ARG(2);
   std::string k3 = CUKE_ARG(3);
@@ -239,7 +258,8 @@ WHEN(setup_context, "context contains keys {string}, {string}, {string}, {string
   state.context = std::make_unique<openfeature::EvaluationContext>(ctx);
 }
 
-WHEN(eval_flag_with_context, "a flag with key {string} is evaluated with default value {string}") {
+WHEN(eval_flag_with_context,
+     "a flag with key {string} is evaluated with default value {string}") {
   std::string key = CUKE_ARG(1);
   std::string default_val = CUKE_ARG(2);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
@@ -253,14 +273,16 @@ WHEN(eval_flag_with_context, "a flag with key {string} is evaluated with default
   }
 }
 
-THEN(check_resolved_string_response, "the resolved string response should be {string}") {
+THEN(check_resolved_string_response,
+     "the resolved string response should be {string}") {
   std::string expected = CUKE_ARG(1);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
 
   EXPECT_EQ(state.last_evaluation_value.AsString().value(), expected);
 }
 
-THEN(check_resolved_flag_empty_ctx, "the resolved flag value is {string} when the context is empty") {
+THEN(check_resolved_flag_empty_ctx,
+     "the resolved flag value is {string} when the context is empty") {
   std::string expected = CUKE_ARG(1);
   openfeature_e2e::State& state = cuke::context<openfeature_e2e::State>();
 

@@ -8,7 +8,6 @@
 #include "openfeature/reason.h"
 #include "openfeature/value.h"
 
-
 namespace openfeature_e2e {
 
 openfeature::Metadata ContextStoringProvider::GetMetadata() const {

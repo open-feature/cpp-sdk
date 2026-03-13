@@ -3,14 +3,14 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 def _cwt_ext_impl(ctx):
     http_archive(
         name = "cwt_cucumber",
-        # Use the latest stable release (e.g., v2.8)
+#Use the latest stable release(e.g., v2.8)
         urls =["https://github.com/ThoSe1990/cwt-cucumber/archive/refs/tags/2.8.tar.gz"],
         strip_prefix = "cwt-cucumber-2.8",
-        # Inject a BUILD file to compile it on the fly
+#Inject a BUILD file to compile it on the fly
         build_file_content = """
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-# Generate the version file from the template
+#Generate the version file from the template
 genrule(
     name = "generate_version_file",
     srcs =["src/version.template"],
@@ -20,9 +20,7 @@ genrule(
 
 cc_library(
     name = "cwt-cucumber",
-    srcs = glob([
-        "src/**/*.cpp",
-        ]),
+    srcs = glob(["src/**/*.cpp"]),
     hdrs = glob([
         "src/**/*.hpp",
     ]) +[

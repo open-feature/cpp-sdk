@@ -1,10 +1,11 @@
-load("@rules_gherkin//gherkin:defs.bzl", "cc_gherkin_steps")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
-cc_gherkin_steps(
+cc_library(
     name = "gherkin_step_definitions",
     srcs = ["minimal_steps.cpp"],
+    copts = ["-std=c++20"],
     deps = [
         "//openfeature:evaluation_context",
         "//openfeature:openfeature_api",
@@ -13,7 +14,7 @@ cc_gherkin_steps(
         "//test/e2e:context_storing_provider",
         "//test/e2e:state",
         "//test:mock_feature_provider",
-        "@cucumber-cpp//:cucumber-cpp",
+        "@cwt_cucumber//:cwt-cucumber",
         "@googletest//:gtest",
     ],
     visibility = ["//test/e2e:__subpackages__"],

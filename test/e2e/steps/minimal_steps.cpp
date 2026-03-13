@@ -3,7 +3,7 @@
 
 #include <any>
 #include <chrono>
-#include <cucumber-cpp/autodetect.hpp>
+#include <cucumber.hpp>
 #include <map>
 #include <memory>
 #include <string>
@@ -18,9 +18,13 @@
 #include "test/e2e/state.h"
 #include "test/mocks/mock_feature_provider.h"
 
-using ::cucumber::ScenarioScope;
 using ::testing::_;
 using ::testing::Return;
+
+constexpr int64_t kDefaultIntegerFlagValue = 10;
+constexpr double kDefaultFloatFlagValue = 0.5;
+constexpr int64_t kImagesPerPageValue = 100;
+constexpr auto kProviderInitDelay = std::chrono::milliseconds(200);
 
 // Helper to create simple static flags for the InMemoryProvider.
 template <typename T>
@@ -38,14 +42,14 @@ std::shared_ptr<openfeature::FeatureProvider> CreateStableProvider() {
   // Set up the static flags expected by the basic evaluation tests.
   flags["boolean-flag"] = CreateStaticFlag<bool>(true);
   flags["string-flag"] = CreateStaticFlag<std::string>("hi");
-  flags["integer-flag"] = CreateStaticFlag<int64_t>(10);
-  flags["float-flag"] = CreateStaticFlag<double>(0.5);
+  flags["integer-flag"] = CreateStaticFlag<int64_t>(kDefaultIntegerFlagValue);
+  flags["float-flag"] = CreateStaticFlag<double>(kDefaultFloatFlagValue);
 
   // Object flag setup.
   std::map<std::string, openfeature::Value> obj_map;
   obj_map["showImages"] = openfeature::Value(true);
   obj_map["title"] = openfeature::Value("Check out these pics!");
-  obj_map["imagesPerPage"] = openfeature::Value(100);
+  obj_map["imagesPerPage"] = openfeature::Value(kImagesPerPageValue);
   flags["object-flag"] =
       CreateStaticFlag<openfeature::Value>(openfeature::Value(obj_map));
 
@@ -86,38 +90,37 @@ std::shared_ptr<openfeature::FeatureProvider> CreateMockNotReadyProvider() {
   EXPECT_CALL(*mock, Shutdown()).WillRepeatedly(Return(absl::OkStatus()));
   EXPECT_CALL(*mock, Init(_))
       .WillOnce(testing::Invoke([](const openfeature::EvaluationContext&) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(kProviderInitDelay);
         return absl::OkStatus();
       }));
   return mock;
 }
 
-GIVEN("^a (.*) provider$") {
-  REGEX_PARAM(std::string, status_type);
-  ScenarioScope<openfeature_e2e::State> state;
+GIVEN(provider_setup, "a {word} provider") {
+  std::string status_type = CUKE_ARG(1);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   if (status_type == "stable" || status_type == "ready") {
-    state->provider = CreateStableProvider();
+    state.provider = CreateStableProvider();
     openfeature::OpenFeatureAPI::GetInstance().SetProviderAndWait(
-        state->provider);
+        state.provider);
   } else if (status_type == "error") {
-    state->provider = CreateMockErrorProvider();
+    state.provider = CreateMockErrorProvider();
     openfeature::OpenFeatureAPI::GetInstance().SetProviderAndWait(
-        state->provider);
+        state.provider);
   } else if (status_type == "not ready") {
-    state->provider = CreateMockNotReadyProvider();
-    openfeature::OpenFeatureAPI::GetInstance().SetProvider(state->provider);
+    state.provider = CreateMockNotReadyProvider();
+    openfeature::OpenFeatureAPI::GetInstance().SetProvider(state.provider);
   }
 
-  state->client = openfeature::OpenFeatureAPI::GetInstance().GetClient();
+  state.client = openfeature::OpenFeatureAPI::GetInstance().GetClient();
 }
 
-THEN("^the provider status should be \"([^\"]*)\"$") {
-  REGEX_PARAM(std::string, expected_status_str);
-  ScenarioScope<openfeature_e2e::State> state;
+THEN(check_provider_status, "the provider status should be {string}") {
+  std::string expected_status_str = CUKE_ARG(1);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
-  openfeature::ProviderStatus actual_status =
-      state->client->GetProviderStatus();
+  openfeature::ProviderStatus actual_status = state.client->GetProviderStatus();
   openfeature::ProviderStatus expected_status =
       openfeature::ProviderStatus::kReady;
 
@@ -136,100 +139,100 @@ THEN("^the provider status should be \"([^\"]*)\"$") {
   EXPECT_EQ(actual_status, expected_status);
 }
 
-WHEN(
-    "^a boolean flag with key \"([^\"]*)\" is evaluated with default value "
-    "\"([^\"]*)\"$") {
-  REGEX_PARAM(std::string, key);
-  REGEX_PARAM(std::string, default_val_str);
-  ScenarioScope<openfeature_e2e::State> state;
+WHEN(eval_boolean_flag,
+     "a boolean flag with key {string} is evaluated with default value "
+     "{string}") {
+  std::string key = CUKE_ARG(1);
+  std::string default_val_str = CUKE_ARG(2);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   bool default_val = (default_val_str == "true");
-  state->last_evaluation_value =
-      openfeature::Value(state->client->GetBooleanValue(key, default_val));
+  state.last_evaluation_value =
+      openfeature::Value(state.client->GetBooleanValue(key, default_val));
 }
 
-THEN("^the resolved boolean value should be \"([^\"]*)\"$") {
-  REGEX_PARAM(std::string, expected_str);
-  ScenarioScope<openfeature_e2e::State> state;
+THEN(check_resolved_boolean, "the resolved boolean value should be {string}") {
+  std::string expected_str = CUKE_ARG(1);
+  auto& state = cuke::context<openfeature_e2e::State>();
+
   bool expected = (expected_str == "true");
-  EXPECT_EQ(state->last_evaluation_value.AsBool().value(), expected);
+  EXPECT_EQ(state.last_evaluation_value.AsBool().value(), expected);
+}
+
+WHEN(eval_string_flag,
+     "a string flag with key {string} is evaluated with default value "
+     "{string}") {
+  std::string key = CUKE_ARG(1);
+  std::string default_val = CUKE_ARG(2);
+  auto& state = cuke::context<openfeature_e2e::State>();
+
+  state.last_evaluation_value =
+      openfeature::Value(state.client->GetStringValue(key, default_val));
+}
+
+THEN(check_resolved_string, "the resolved string value should be {string}") {
+  std::string expected = CUKE_ARG(1);
+  auto& state = cuke::context<openfeature_e2e::State>();
+  EXPECT_EQ(state.last_evaluation_value.AsString().value(), expected);
 }
 
 WHEN(
-    "^a string flag with key \"([^\"]*)\" is evaluated with default value "
-    "\"([^\"]*)\"$") {
-  REGEX_PARAM(std::string, key);
-  REGEX_PARAM(std::string, default_val);
-  ScenarioScope<openfeature_e2e::State> state;
+    eval_integer_flag,
+    "an integer flag with key {string} is evaluated with default value {int}") {
+  std::string key = CUKE_ARG(1);
+  int64_t default_val = CUKE_ARG(2);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
-  state->last_evaluation_value =
-      openfeature::Value(state->client->GetStringValue(key, default_val));
+  state.last_evaluation_value =
+      openfeature::Value(state.client->GetIntegerValue(key, default_val));
 }
 
-THEN("^the resolved string value should be \"([^\"]*)\"$") {
-  REGEX_PARAM(std::string, expected);
-  ScenarioScope<openfeature_e2e::State> state;
-  EXPECT_EQ(state->last_evaluation_value.AsString().value(), expected);
-}
-
-WHEN(
-    "^an integer flag with key \"([^\"]*)\" is evaluated with default value "
-    "(\\d+)$") {
-  REGEX_PARAM(std::string, key);
-  REGEX_PARAM(int64_t, default_val);
-  ScenarioScope<openfeature_e2e::State> state;
-
-  state->last_evaluation_value =
-      openfeature::Value(state->client->GetIntegerValue(key, default_val));
-}
-
-THEN("^the resolved integer value should be (\\d+)$") {
-  REGEX_PARAM(int64_t, expected);
-  ScenarioScope<openfeature_e2e::State> state;
-  EXPECT_EQ(state->last_evaluation_value.AsInt().value(), expected);
+THEN(check_resolved_integer, "the resolved integer value should be {int}") {
+  int64_t expected = CUKE_ARG(1);
+  auto& state = cuke::context<openfeature_e2e::State>();
+  EXPECT_EQ(state.last_evaluation_value.AsInt().value(), expected);
 }
 
 WHEN(
-    "^a float flag with key \"([^\"]*)\" is evaluated with default value "
-    "([\\d\\.]+)$") {
-  REGEX_PARAM(std::string, key);
-  REGEX_PARAM(double, default_val);
-  ScenarioScope<openfeature_e2e::State> state;
+    eval_float_flag,
+    "a float flag with key {string} is evaluated with default value {double}") {
+  std::string key = CUKE_ARG(1);
+  double default_val = CUKE_ARG(2);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
-  state->last_evaluation_value =
-      openfeature::Value(state->client->GetDoubleValue(key, default_val));
+  state.last_evaluation_value =
+      openfeature::Value(state.client->GetDoubleValue(key, default_val));
 }
 
-THEN("^the resolved float value should be ([\\d\\.]+)$") {
-  REGEX_PARAM(double, expected);
-  ScenarioScope<openfeature_e2e::State> state;
-  EXPECT_DOUBLE_EQ(state->last_evaluation_value.AsDouble().value(), expected);
+THEN(check_resolved_float, "the resolved float value should be {double}") {
+  double expected = CUKE_ARG(1);
+  auto& state = cuke::context<openfeature_e2e::State>();
+  EXPECT_DOUBLE_EQ(state.last_evaluation_value.AsDouble().value(), expected);
 }
 
 WHEN(
-    "^an object flag with key \"([^\"]*)\" is evaluated with a null default "
-    "value$") {
-  REGEX_PARAM(std::string, key);
-  ScenarioScope<openfeature_e2e::State> state;
+    eval_object_flag_null,
+    "an object flag with key {string} is evaluated with a null default value") {
+  std::string key = CUKE_ARG(1);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
-  state->last_evaluation_value =
-      state->client->GetObjectValue(key, openfeature::Value());
+  state.last_evaluation_value =
+      state.client->GetObjectValue(key, openfeature::Value());
 }
 
-THEN(
-    "^the resolved object value should be contain fields \"([^\"]*)\", "
-    "\"([^\"]*)\", and \"([^\"]*)\", with values \"([^\"]*)\", \"([^\"]*)\" "
-    "and (\\d+), respectively$") {
-  REGEX_PARAM(std::string, f1);
-  REGEX_PARAM(std::string, f2);
-  REGEX_PARAM(std::string, f3);
-  REGEX_PARAM(std::string, v1_str);
-  REGEX_PARAM(std::string, v2);
-  REGEX_PARAM(int64_t, v3);
-  ScenarioScope<openfeature_e2e::State> state;
+THEN(check_resolved_object,
+     "the resolved object value should be contain fields {string}, {string}, "
+     "and {string}, with values {string}, {string} and {int}, respectively") {
+  std::string f1 = CUKE_ARG(1);
+  std::string f2 = CUKE_ARG(2);
+  std::string f3 = CUKE_ARG(3);
+  std::string v1_str = CUKE_ARG(4);
+  std::string v2 = CUKE_ARG(5);
+  int64_t v3 = CUKE_ARG(6);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   const std::map<std::string, openfeature::Value>* structure =
-      state->last_evaluation_value.AsStructure();
+      state.last_evaluation_value.AsStructure();
   ASSERT_NE(structure, nullptr);
 
   EXPECT_EQ(structure->at(f1).AsBool().value(), (v1_str == "true"));
@@ -237,19 +240,18 @@ THEN(
   EXPECT_EQ(structure->at(f3).AsInt().value(), v3);
 }
 
-WHEN(
-    "^context contains keys \"([^\"]*)\", \"([^\"]*)\", \"([^\"]*)\", "
-    "\"([^\"]*)\" with values \"([^\"]*)\", \"([^\"]*)\", (\\d+), "
-    "\"([^\"]*)\"$") {
-  REGEX_PARAM(std::string, k1);
-  REGEX_PARAM(std::string, k2);
-  REGEX_PARAM(std::string, k3);
-  REGEX_PARAM(std::string, k4);
-  REGEX_PARAM(std::string, v1);
-  REGEX_PARAM(std::string, v2);
-  REGEX_PARAM(int64_t, v3);
-  REGEX_PARAM(std::string, v4);
-  ScenarioScope<openfeature_e2e::State> state;
+WHEN(setup_context,
+     "context contains keys {string}, {string}, {string}, {string} with values "
+     "{string}, {string}, {int}, {string}") {
+  std::string k1 = CUKE_ARG(1);
+  std::string k2 = CUKE_ARG(2);
+  std::string k3 = CUKE_ARG(3);
+  std::string k4 = CUKE_ARG(4);
+  std::string v1 = CUKE_ARG(5);
+  std::string v2 = CUKE_ARG(6);
+  int64_t v3 = CUKE_ARG(7);
+  std::string v4 = CUKE_ARG(8);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
   openfeature::EvaluationContext ctx = openfeature::EvaluationContext::Builder()
                                            .WithAttribute(k1, v1)
@@ -258,44 +260,62 @@ WHEN(
                                            .WithAttribute(k4, v4)
                                            .build();
 
-  state->context = std::make_unique<openfeature::EvaluationContext>(ctx);
+  state.context = std::make_unique<openfeature::EvaluationContext>(ctx);
 }
 
-WHEN(
-    "^a flag with key \"([^\"]*)\" is evaluated with default value "
-    "\"([^\"]*)\"$") {
-  REGEX_PARAM(std::string, key);
-  REGEX_PARAM(std::string, default_val);
-  ScenarioScope<openfeature_e2e::State> state;
+WHEN(eval_flag_with_context,
+     "a flag with key {string} is evaluated with default value {string}") {
+  std::string key = CUKE_ARG(1);
+  std::string default_val = CUKE_ARG(2);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
-  // Evaluate using the context built in the previous step.
-  if (state->context) {
-    state->last_evaluation_value = openfeature::Value(
-        state->client->GetStringValue(key, default_val, *state->context));
+  if (state.context) {
+    state.last_evaluation_value = openfeature::Value(
+        state.client->GetStringValue(key, default_val, *state.context));
   } else {
-    state->last_evaluation_value =
-        openfeature::Value(state->client->GetStringValue(key, default_val));
+    state.last_evaluation_value =
+        openfeature::Value(state.client->GetStringValue(key, default_val));
   }
 }
 
-THEN("^the resolved string response should be \"([^\"]*)\"$") {
-  REGEX_PARAM(std::string, expected);
-  ScenarioScope<openfeature_e2e::State> state;
+THEN(check_resolved_string_response,
+     "the resolved string response should be {string}") {
+  std::string expected = CUKE_ARG(1);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
-  EXPECT_EQ(state->last_evaluation_value.AsString().value(), expected);
+  EXPECT_EQ(state.last_evaluation_value.AsString().value(), expected);
 }
 
-THEN("^the resolved flag value is \"([^\"]*)\" when the context is empty$") {
-  REGEX_PARAM(std::string, expected);
-  ScenarioScope<openfeature_e2e::State> state;
+THEN(check_resolved_flag_empty_ctx,
+     "the resolved flag value is {string} when the context is empty") {
+  std::string expected = CUKE_ARG(1);
+  auto& state = cuke::context<openfeature_e2e::State>();
 
-  // Evaluate context-aware flag with an empty context.
   openfeature::EvaluationContext empty_ctx =
       openfeature::EvaluationContext::Builder().build();
   std::string actual =
-      state->client->GetStringValue("context-aware", "EXTERNAL", empty_ctx);
+      state.client->GetStringValue("context-aware", "EXTERNAL", empty_ctx);
 
   EXPECT_EQ(actual, expected);
+}
+
+// This function helps the test not to fail if we have an "UNDEFINED" scenario.
+// It should be deleted when we are able to write steps for all scenarios.
+int main(int argc, char* argv[]) {
+  GTEST_FLAG_SET(throw_on_failure, true);
+  ::testing::InitGoogleMock(&argc, argv);
+
+  cuke::cwt_cucumber cucumber(argc, const_cast<const char**>(argv));
+
+  cucumber.run_tests();
+
+  cucumber.print_results();
+
+  if (::testing::UnitTest::GetInstance()->failed_test_count() > 0) {
+    return 1;
+  }
+
+  return 0;
 }
 
 // TODO: Enable more Gherkin scenarios as the SDK functionality expands, e.g.

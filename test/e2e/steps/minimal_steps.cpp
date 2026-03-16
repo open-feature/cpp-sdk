@@ -223,21 +223,21 @@ WHEN(
 THEN(check_resolved_object,
      "the resolved object value should be contain fields {string}, {string}, "
      "and {string}, with values {string}, {string} and {int}, respectively") {
-  std::string boolField = CUKE_ARG(1);
-  std::string stringField = CUKE_ARG(2);
-  std::string intField = CUKE_ARG(3);
-  std::string boolValue = CUKE_ARG(4);
-  std::string stringValue = CUKE_ARG(5);
-  int64_t intValue = CUKE_ARG(6);
+  std::string bool_field = CUKE_ARG(1);
+  std::string string_field = CUKE_ARG(2);
+  std::string int_field = CUKE_ARG(3);
+  std::string bool_value = CUKE_ARG(4);
+  std::string string_value = CUKE_ARG(5);
+  int64_t int_value = CUKE_ARG(6);
   auto& state = cuke::context<openfeature_e2e::State>();
 
   const std::map<std::string, openfeature::Value>* structure =
       state.last_evaluation_value.AsStructure();
   ASSERT_NE(structure, nullptr);
 
-  EXPECT_EQ(structure->at(boolField).AsBool().value(), (boolValue == "true"));
-  EXPECT_EQ(structure->at(stringField).AsString().value(), stringValue);
-  EXPECT_EQ(structure->at(intField).AsInt().value(), intValue);
+  EXPECT_EQ(structure->at(bool_field).AsBool().value(), (bool_value == "true"));
+  EXPECT_EQ(structure->at(string_field).AsString().value(), string_value);
+  EXPECT_EQ(structure->at(int_field).AsInt().value(), int_value);
 }
 
 WHEN(setup_context,

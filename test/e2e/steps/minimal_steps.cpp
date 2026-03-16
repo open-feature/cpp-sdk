@@ -223,41 +223,41 @@ WHEN(
 THEN(check_resolved_object,
      "the resolved object value should be contain fields {string}, {string}, "
      "and {string}, with values {string}, {string} and {int}, respectively") {
-  std::string f1 = CUKE_ARG(1);
-  std::string f2 = CUKE_ARG(2);
-  std::string f3 = CUKE_ARG(3);
-  std::string v1_str = CUKE_ARG(4);
-  std::string v2 = CUKE_ARG(5);
-  int64_t v3 = CUKE_ARG(6);
+  std::string boolField = CUKE_ARG(1);
+  std::string stringField = CUKE_ARG(2);
+  std::string intField = CUKE_ARG(3);
+  std::string boolValue = CUKE_ARG(4);
+  std::string stringValue = CUKE_ARG(5);
+  int64_t intValue = CUKE_ARG(6);
   auto& state = cuke::context<openfeature_e2e::State>();
 
   const std::map<std::string, openfeature::Value>* structure =
       state.last_evaluation_value.AsStructure();
   ASSERT_NE(structure, nullptr);
 
-  EXPECT_EQ(structure->at(f1).AsBool().value(), (v1_str == "true"));
-  EXPECT_EQ(structure->at(f2).AsString().value(), v2);
-  EXPECT_EQ(structure->at(f3).AsInt().value(), v3);
+  EXPECT_EQ(structure->at(boolField).AsBool().value(), (boolValue == "true"));
+  EXPECT_EQ(structure->at(stringField).AsString().value(), stringValue);
+  EXPECT_EQ(structure->at(intField).AsInt().value(), intValue);
 }
 
 WHEN(setup_context,
      "context contains keys {string}, {string}, {string}, {string} with values "
      "{string}, {string}, {int}, {string}") {
-  std::string k1 = CUKE_ARG(1);
-  std::string k2 = CUKE_ARG(2);
-  std::string k3 = CUKE_ARG(3);
-  std::string k4 = CUKE_ARG(4);
-  std::string v1 = CUKE_ARG(5);
-  std::string v2 = CUKE_ARG(6);
-  int64_t v3 = CUKE_ARG(7);
-  std::string v4 = CUKE_ARG(8);
+  std::string field1 = CUKE_ARG(1);
+  std::string field2 = CUKE_ARG(2);
+  std::string field3 = CUKE_ARG(3);
+  std::string field4 = CUKE_ARG(4);
+  std::string value1 = CUKE_ARG(5);
+  std::string value2 = CUKE_ARG(6);
+  int64_t value3 = CUKE_ARG(7);
+  std::string value4 = CUKE_ARG(8);
   auto& state = cuke::context<openfeature_e2e::State>();
 
   openfeature::EvaluationContext ctx = openfeature::EvaluationContext::Builder()
-                                           .WithAttribute(k1, v1)
-                                           .WithAttribute(k2, v2)
-                                           .WithAttribute(k3, v3)
-                                           .WithAttribute(k4, v4)
+                                           .WithAttribute(field1, value1)
+                                           .WithAttribute(field2, value2)
+                                           .WithAttribute(field3, value3)
+                                           .WithAttribute(field4, value4)
                                            .build();
 
   state.context = std::make_unique<openfeature::EvaluationContext>(ctx);

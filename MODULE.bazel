@@ -15,6 +15,12 @@ git_override(
     commit = "02d15621b528efd877f5d5657c4b738523a0eb17",
 )
 
+git_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
 # Fetch cwt-cucumber directly from GitHub
-cwt_ext = use_extension("//test/e2e:cwt_extension.bzl", "cwt_ext")
-use_repo(cwt_ext, "cwt_cucumber")
+git_repository(
+    name = "cwt_cucumber",
+    build_file = "//test/e2e:cwt_cucumber.BUILD",
+    remote = "https://github.com/ThoSe1990/cwt-cucumber.git",
+    tag = "2.8",
+)

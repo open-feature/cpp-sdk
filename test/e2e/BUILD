@@ -4,6 +4,8 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+exports_files(["cwt-cucumber.BUILD"])
+
 cc_library(
     name = "context_storing_provider",
     srcs = [

@@ -4,23 +4,40 @@ bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
 bazel_dep(name = "abseil-cpp", version = "20250814.2")
 bazel_dep(name = "rules_cc", version = "0.2.17")
 
-# Hedron's Compile Commands Extractor for Bazel
-# https://github.com/hedronvision/bazel-compile-commands-extractor
+#Hedron's Compile Commands Extractor for Bazel
+#https:  // github.com/hedronvision/bazel-compile-commands-extractor
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
 git_override(
     module_name = "hedron_compile_commands",
     remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
-    # Not official but well established fork with a fix to header only libraries
-    # https://github.com/hedronvision/bazel-compile-commands-extractor/pull/219
+#Not official but well established fork with a fix to header only libraries
+#https:  // github.com/hedronvision/bazel-compile-commands-extractor/pull/219
     commit = "02d15621b528efd877f5d5657c4b738523a0eb17",
 )
 
 git_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-# Fetch cwt-cucumber directly from GitHub
+#Fetch cwt - cucumber directly from GitHub
 git_repository(
     name = "cwt_cucumber",
     build_file = "//test/e2e:cwt_cucumber.BUILD",
     remote = "https://github.com/ThoSe1990/cwt-cucumber.git",
     tag = "2.8",
+)
+
+#Fetch OpenFeature spec for Gherkin scenarios
+git_repository(
+    name = "openfeature_spec",
+    remote = "https://github.com/open-feature/spec.git",
+    branch = "main", 
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "gherkin_features",
+#TODO : Once the SDK is finished, \
+    the source should be changed to "specification/assets/gherkin/*.feature"
+    srcs = glob(["specification/assets/gherkin/evaluation.feature"]),
+)
+""",
 )

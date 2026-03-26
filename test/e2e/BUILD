@@ -53,8 +53,8 @@ cc_library(
 
 cc_test(
     name = "openfeature_gherkin_e2e_tests",
-    data = ["//:openfeature_gherkin_spec_features"],
-    args =["$(locations //:openfeature_gherkin_spec_features)"],
+    data = ["@openfeature_spec//:gherkin_features"],
+    args =["$(locations @openfeature_spec//:gherkin_features)"],
     deps = [
         "//test/e2e/steps:gherkin_step_definitions",
         "@cwt_cucumber//:cwt-cucumber", 

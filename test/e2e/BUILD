@@ -1,9 +1,10 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("@rules_gherkin//gherkin:defs.bzl", "gherkin_test")
 
 package(
     default_visibility = ["//visibility:public"],
 )
+
+exports_files(["cwt-cucumber.BUILD"])
 
 cc_library(
     name = "context_storing_provider",
@@ -22,7 +23,6 @@ cc_library(
         "//openfeature:reason",
         "//openfeature:value",
         "//openfeature:resolution_details",
-        "@cucumber-cpp//:cucumber-cpp",
         "@googletest//:gtest", 
     ],
 )
@@ -51,10 +51,12 @@ cc_library(
     ],
 )
 
-gherkin_test(
+cc_test(
     name = "openfeature_gherkin_e2e_tests",
-    steps = "//test/e2e/steps:gherkin_step_definitions",
+    data = ["@openfeature_spec//:gherkin_features"],
+    args =["$(locations @openfeature_spec//:gherkin_features)"],
     deps = [
-        "//:openfeature_gherkin_spec_features",
+        "//test/e2e/steps:gherkin_step_definitions",
+        "@cwt_cucumber//:cwt-cucumber", 
     ],
 )

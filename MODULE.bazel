@@ -35,8 +35,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "gherkin_features",
-#TODO : Once the SDK is finished, \
-    the source should be changed to "specification/assets/gherkin/*.feature"
+#TODO : https:  // github.com/open-feature/cpp-sdk/issues/92
     srcs = glob(["specification/assets/gherkin/evaluation.feature"]),
 )
 """,

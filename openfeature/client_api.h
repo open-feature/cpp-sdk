@@ -113,7 +113,7 @@ template <typename ResolutionDetailsType, typename ValueType,
 std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
     ValueType default_value, const std::optional<EvaluationContext>& ctx,
     ProviderCallable provider_call) {
-   ProviderStatus status = GetProviderStatus();
+  ProviderStatus status = GetProviderStatus();
   if (status == ProviderStatus::kNotReady) {
     return std::make_unique<ResolutionDetailsType>(
         default_value, Reason::kError, std::nullopt, FlagMetadata(),

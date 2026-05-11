@@ -113,10 +113,16 @@ template <typename ResolutionDetailsType, typename ValueType,
 std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
     ValueType default_value, const std::optional<EvaluationContext>& ctx,
     ProviderCallable provider_call) {
-  if (GetProviderStatus() != ProviderStatus::kReady) {
+   ProviderStatus status = GetProviderStatus();
+  if (status == ProviderStatus::kNotReady) {
     return std::make_unique<ResolutionDetailsType>(
         default_value, Reason::kError, std::nullopt, FlagMetadata(),
         ErrorCode::kProviderNotReady, "Provider is not ready");
+  }
+  if (status == ProviderStatus::kFatal) {
+    return std::make_unique<ResolutionDetailsType>(
+        default_value, Reason::kError, std::nullopt, FlagMetadata(),
+        ErrorCode::kProviderFatal, "Provider is in fatal error state");
   }
 
   std::shared_ptr<FeatureProvider> provider =

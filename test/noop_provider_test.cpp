@@ -37,8 +37,11 @@ class NoopProviderBooleanTest : public NoopProviderTest,
 TEST_P(NoopProviderBooleanTest, BooleanEvaluationShouldReturnDefaultValue) {
   const bool defaultValue = GetParam();
 
-  const std::unique_ptr<BoolResolutionDetails> details =
+  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> result =
       provider_.GetBooleanEvaluation("my-bool-flag", defaultValue, ctx_);
+
+  ASSERT_TRUE(result.ok());
+  const std::unique_ptr<BoolResolutionDetails>& details = *result;
 
   EXPECT_EQ(details->GetValue(), defaultValue);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);
@@ -59,8 +62,10 @@ class NoopProviderStringTest
 TEST_P(NoopProviderStringTest, StringEvaluationShouldReturnDefaultValue) {
   const std::string defaultValue = GetParam();
 
-  const std::unique_ptr<StringResolutionDetails> details =
+  absl::StatusOr<std::unique_ptr<StringResolutionDetails>> result =
       provider_.GetStringEvaluation("my-string-flag", defaultValue, ctx_);
+  ASSERT_TRUE(result.ok());
+  const std::unique_ptr<StringResolutionDetails>& details = *result;
 
   EXPECT_EQ(details->GetValue(), defaultValue);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);
@@ -81,8 +86,10 @@ class NoopProviderIntegerTest : public NoopProviderTest,
 TEST_P(NoopProviderIntegerTest, IntegerEvaluationShouldReturnDefaultValue) {
   const int64_t defaultValue = GetParam();
 
-  const std::unique_ptr<IntResolutionDetails> details =
+  absl::StatusOr<std::unique_ptr<IntResolutionDetails>> result =
       provider_.GetIntegerEvaluation("my-int-flag", defaultValue, ctx_);
+  ASSERT_TRUE(result.ok());
+  const std::unique_ptr<IntResolutionDetails>& details = *result;
 
   EXPECT_EQ(details->GetValue(), defaultValue);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);
@@ -102,8 +109,10 @@ class NoopProviderDoubleTest : public NoopProviderTest,
 TEST_P(NoopProviderDoubleTest, DoubleEvaluationShouldReturnDefaultValue) {
   const double defaultValue = GetParam();
 
-  const std::unique_ptr<DoubleResolutionDetails> details =
+  absl::StatusOr<std::unique_ptr<DoubleResolutionDetails>> result =
       provider_.GetDoubleEvaluation("my-double-flag", defaultValue, ctx_);
+  ASSERT_TRUE(result.ok());
+  const std::unique_ptr<DoubleResolutionDetails>& details = *result;
 
   EXPECT_DOUBLE_EQ(details->GetValue(), defaultValue);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);
@@ -129,8 +138,10 @@ TEST_F(NoopProviderTest, ObjectEvaluationShouldReturnDefaultValue) {
 
   const Value defaultValue(default_struct);
 
-  const std::unique_ptr<ObjectResolutionDetails> details =
+  absl::StatusOr<std::unique_ptr<ObjectResolutionDetails>> result =
       provider_.GetObjectEvaluation("my-object-flag", defaultValue, ctx_);
+  ASSERT_TRUE(result.ok());
+  const std::unique_ptr<ObjectResolutionDetails>& details = *result;
 
   EXPECT_EQ(details->GetValue(), defaultValue);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);

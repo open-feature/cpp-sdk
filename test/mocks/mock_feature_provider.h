@@ -11,23 +11,28 @@ namespace openfeature {
 class MockFeatureProvider : public FeatureProvider {
  public:
   MOCK_METHOD(Metadata, GetMetadata, (), (const, override));
-  MOCK_METHOD(std::unique_ptr<BoolResolutionDetails>, GetBooleanEvaluation,
+  MOCK_METHOD(absl::StatusOr<std::unique_ptr<BoolResolutionDetails>>,
+              GetBooleanEvaluation,
               (std::string_view flag, bool default_value,
                const EvaluationContext& ctx),
               (override));
-  MOCK_METHOD(std::unique_ptr<StringResolutionDetails>, GetStringEvaluation,
+  MOCK_METHOD(absl::StatusOr<std::unique_ptr<StringResolutionDetails>>,
+              GetStringEvaluation,
               (std::string_view flag, std::string_view default_value,
                const EvaluationContext& ctx),
               (override));
-  MOCK_METHOD(std::unique_ptr<IntResolutionDetails>, GetIntegerEvaluation,
+  MOCK_METHOD(absl::StatusOr<std::unique_ptr<IntResolutionDetails>>,
+              GetIntegerEvaluation,
               (std::string_view flag, int64_t default_value,
                const EvaluationContext& ctx),
               (override));
-  MOCK_METHOD(std::unique_ptr<DoubleResolutionDetails>, GetDoubleEvaluation,
+  MOCK_METHOD(absl::StatusOr<std::unique_ptr<DoubleResolutionDetails>>,
+              GetDoubleEvaluation,
               (std::string_view flag, double default_value,
                const EvaluationContext& ctx),
               (override));
-  MOCK_METHOD(std::unique_ptr<ObjectResolutionDetails>, GetObjectEvaluation,
+  MOCK_METHOD(absl::StatusOr<std::unique_ptr<ObjectResolutionDetails>>,
+              GetObjectEvaluation,
               (std::string_view flag, Value default_value,
                const EvaluationContext& ctx),
               (override));

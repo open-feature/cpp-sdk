@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
@@ -42,23 +43,23 @@ class InMemoryProvider : public FeatureProvider {
   // will be added to the configuration.
   void UpdateFlag(std::string key, std::any new_flag);
 
-  std::unique_ptr<BoolResolutionDetails> GetBooleanEvaluation(
+  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> GetBooleanEvaluation(
       std::string_view key, bool default_value,
       const EvaluationContext& ctx) override;
 
-  std::unique_ptr<StringResolutionDetails> GetStringEvaluation(
+  absl::StatusOr<std::unique_ptr<StringResolutionDetails>> GetStringEvaluation(
       std::string_view key, std::string_view default_value,
       const EvaluationContext& ctx) override;
 
-  std::unique_ptr<IntResolutionDetails> GetIntegerEvaluation(
+  absl::StatusOr<std::unique_ptr<IntResolutionDetails>> GetIntegerEvaluation(
       std::string_view key, int64_t default_value,
       const EvaluationContext& ctx) override;
 
-  std::unique_ptr<DoubleResolutionDetails> GetDoubleEvaluation(
+  absl::StatusOr<std::unique_ptr<DoubleResolutionDetails>> GetDoubleEvaluation(
       std::string_view key, double default_value,
       const EvaluationContext& ctx) override;
 
-  std::unique_ptr<ObjectResolutionDetails> GetObjectEvaluation(
+  absl::StatusOr<std::unique_ptr<ObjectResolutionDetails>> GetObjectEvaluation(
       std::string_view key, Value default_value,
       const EvaluationContext& ctx) override;
 

@@ -128,7 +128,14 @@ std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
   }
 
   EvaluationContext merged_context = MergeContexts(ctx);
-  return provider_call(provider, merged_context);
+  auto result = provider_call(provider, merged_context);
+
+  if (!result.ok()) {
+    return std::make_unique<ResolutionDetailsType>(
+        default_value, Reason::kError, std::nullopt, FlagMetadata(),
+        ErrorCode::kGeneral, std::string(result.status().message()));
+  }
+  return std::move(*result);
 }
 
 }  // namespace openfeature

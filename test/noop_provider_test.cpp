@@ -131,18 +131,23 @@ TEST_P(NoopProviderDoubleTest, DoubleEvaluationShouldReturnDefaultValue) {
   EXPECT_TRUE(details->GetErrorMessage()->empty());
 }
 
+constexpr double kPi = 3.14;
+constexpr double kNegativeDouble = -100.5;
 INSTANTIATE_TEST_SUITE_P(DoubleDefaultValues, NoopProviderDoubleTest,
-                         testing::Values(3.14, -100.5, 0.0));
+                         testing::Values(kPi, kNegativeDouble, 0.0));
 
 TEST_F(NoopProviderTest, ObjectEvaluationShouldReturnDefaultValue) {
+  constexpr int64_t kDefaultIntValue = 123;
+  constexpr double kDefaultListItemValue = 1.23;
+
   std::map<std::string, Value> inner_struct;
   inner_struct["inner_key"] = Value("inner_value");
 
   std::map<std::string, Value> default_struct;
   default_struct["a_bool"] = Value(true);
-  default_struct["an_int"] = Value(123);
+  default_struct["an_int"] = Value(kDefaultIntValue);
   default_struct["a_list"] =
-      Value(std::vector<Value>{{Value("item1"), Value(1.23)}});
+      Value(std::vector<Value>{{Value("item1"), Value(kDefaultListItemValue)}});
   default_struct["a_struct"] = Value(inner_struct);
 
   const Value default_value(default_struct);

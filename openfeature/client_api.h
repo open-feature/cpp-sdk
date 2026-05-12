@@ -128,16 +128,27 @@ std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
   }
 
   EvaluationContext merged_context = MergeContexts(ctx);
-  auto result = provider_call(provider, merged_context);
 
-  if (!result.ok()) {
+  try {
+    auto result = provider_call(provider, merged_context);
+
+    if (!result.ok() || *result == nullptr) {
+      return std::make_unique<ResolutionDetailsType>(
+          default_value, Reason::kError, std::nullopt, FlagMetadata(),
+          ErrorCode::kGeneral, std::string(result.status().message()));
+    }
+    return std::move(*result);
+  } catch (const std::exception& e) {
     return std::make_unique<ResolutionDetailsType>(
         default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kGeneral, std::string(result.status().message()));
+        ErrorCode::kGeneral,
+        std::string("Exception during evaluation: ") + e.what());
+  } catch (...) {
+    return std::make_unique<ResolutionDetailsType>(
+        default_value, Reason::kError, std::nullopt, FlagMetadata(),
+        ErrorCode::kGeneral, "Unknown exception during evaluation");
   }
-  return std::move(*result);
 }
-
 }  // namespace openfeature
 
 #endif  // CPP_SDK_INCLUDE_OPENFEATURE_CLIENT_API_H_

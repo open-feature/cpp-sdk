@@ -22,6 +22,7 @@ using ::testing::Return;
 
 class ProviderRepositoryTest : public ::testing::Test {
  protected:
+  static constexpr std::chrono::milliseconds kWaitDuration{100};
   ProviderRepository repo_;
   EvaluationContext ctx_ = EvaluationContext::Builder().build();
 };
@@ -172,7 +173,7 @@ TEST_F(ProviderRepositoryTest, SetProviderDoesNotWaitForInitialization) {
   EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kNotReady);
 
   init_can_complete.set_value();
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(kWaitDuration);
 
   EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kReady);
 }
@@ -332,7 +333,7 @@ TEST_F(ProviderRepositoryTest, ShutdownWaitsForAsyncInitializationToComplete) {
       std::async(std::launch::async, [&]() { repo_.Shutdown(); });
 
   // We expect it to time out because the Init() is still blocked.
-  auto status = shutdown_future.wait_for(std::chrono::milliseconds(100));
+  auto status = shutdown_future.wait_for(kWaitDuration);
   ASSERT_EQ(status, std::future_status::timeout)
       << "Shutdown() did not wait for initialization to complete.";
 

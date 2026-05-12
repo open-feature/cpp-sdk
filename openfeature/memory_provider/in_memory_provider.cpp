@@ -105,14 +105,14 @@ std::unique_ptr<ResolutionDetails<T>> InMemoryProvider::Evaluate(
   }
 
   std::string key_str{key};
-  auto it = flags_.find(key_str);
-  if (it == flags_.end()) {
+  auto flag_it = flags_.find(key_str);
+  if (flag_it == flags_.end()) {
     return std::make_unique<ResolutionDetails<T>>(
         default_value, Reason::kError, std::nullopt, FlagMetadata{},
         ErrorCode::kFlagNotFound, "Flag " + key_str + " not found");
   }
 
-  const Flag<T>* flag = std::any_cast<Flag<T>>(&it->second);
+  const Flag<T>* flag = std::any_cast<Flag<T>>(&flag_it->second);
 
   if (!flag) {
     return std::make_unique<ResolutionDetails<T>>(

@@ -423,9 +423,12 @@ TEST_F(InMemoryProviderTest, StringEvaluationSuccess) {
 }
 
 TEST_F(InMemoryProviderTest, IntegerEvaluationSuccess) {
+  constexpr int64_t kVariantValue1 = 100;
+  constexpr int64_t kVariantValue2 = 200;
+
   InMemoryProvider provider({});
   provider.UpdateFlag("int_flag",
-                      CreateFlag<int64_t>({{"v1", 100}, {"v2", 200}}, "v1"));
+                      CreateFlag<int64_t>({{"v1", kVariantValue1}, {"v2", kVariantValue2}}, "v1"));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
   absl::StatusOr<std::unique_ptr<IntResolutionDetails>> res_or =
@@ -434,15 +437,18 @@ TEST_F(InMemoryProviderTest, IntegerEvaluationSuccess) {
   const std::unique_ptr<IntResolutionDetails>& res = *res_or;
 
   ASSERT_NE(res, nullptr);
-  EXPECT_EQ(res->GetValue(), 100);
+  EXPECT_EQ(res->GetValue(), kVariantValue1);
   EXPECT_EQ(res->GetReason(), Reason::kStatic);
   EXPECT_THAT(res->GetVariant(), Optional(std::string("v1")));
 }
 
 TEST_F(InMemoryProviderTest, DoubleEvaluationSuccess) {
+  constexpr double kVariantValue1 = 3.14;
+  constexpr double kVariantValue2 = 2.71;
+
   InMemoryProvider provider({});
   provider.UpdateFlag("double_flag",
-                      CreateFlag<double>({{"v1", 3.14}, {"v2", 2.71}}, "v2"));
+                      CreateFlag<double>({{"v1", kVariantValue1}, {"v2", kVariantValue2}}, "v2"));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
   absl::StatusOr<std::unique_ptr<DoubleResolutionDetails>> res_or =
@@ -451,7 +457,7 @@ TEST_F(InMemoryProviderTest, DoubleEvaluationSuccess) {
   const std::unique_ptr<DoubleResolutionDetails>& res = *res_or;
 
   ASSERT_NE(res, nullptr);
-  EXPECT_DOUBLE_EQ(res->GetValue(), 2.71);
+  EXPECT_DOUBLE_EQ(res->GetValue(), kVariantValue2);
   EXPECT_EQ(res->GetReason(), Reason::kStatic);
   EXPECT_THAT(res->GetVariant(), Optional(std::string("v2")));
 }

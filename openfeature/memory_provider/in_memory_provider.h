@@ -24,9 +24,9 @@ namespace openfeature {
 // evaluation based on the provided EvaluationContext.
 class InMemoryProvider : public FeatureProvider {
  public:
-  InMemoryProvider(std::unordered_map<std::string, std::any> flags);
+  explicit InMemoryProvider(std::unordered_map<std::string, std::any> flags);
 
-  ~InMemoryProvider() = default;
+  ~InMemoryProvider() override = default;
 
   Metadata GetMetadata() const override;
 

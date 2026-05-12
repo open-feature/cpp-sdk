@@ -30,9 +30,9 @@ ProviderRepository::GetFeatureProviderStatusManager(
     return default_manager_;
   }
 
-  auto it = provider_manager_.find(std::string(domain));
-  if (it != provider_manager_.end()) {
-    return it->second;
+  auto provider_manager_it = provider_manager_.find(std::string(domain));
+  if (provider_manager_it != provider_manager_.end()) {
+    return provider_manager_it->second;
   }
 
   return default_manager_;
@@ -53,7 +53,7 @@ void ProviderRepository::SetProvider(std::shared_ptr<FeatureProvider> provider,
                                      const EvaluationContext& ctx,
                                      bool wait_for_init) {
   if (!provider) {
-    std::cerr << "Provider cannot be null" << std::endl;
+    std::cerr << "Provider cannot be null\n";
     return;
   }
   PrepareAndInitializeProvider(std::nullopt, std::move(provider), ctx,
@@ -65,7 +65,7 @@ void ProviderRepository::SetProvider(std::string_view domain,
                                      const EvaluationContext& ctx,
                                      bool wait_for_init) {
   if (!provider) {
-    std::cerr << "Provider cannot be null" << std::endl;
+    std::cerr << "Provider cannot be null\n";
     return;
   }
 
@@ -90,7 +90,7 @@ ProviderStatus ProviderRepository::GetProviderStatus(
 
 void ProviderRepository::Shutdown() {
   {
-    std::lock_guard<std::mutex> lock(threads_mutex_);
+    std::scoped_lock lock(threads_mutex_);
     for (std::thread& thread : initialization_threads_) {
       if (thread.joinable()) {
         thread.join();
@@ -128,9 +128,9 @@ void ProviderRepository::Shutdown() {
 }
 
 void ProviderRepository::PrepareAndInitializeProvider(
-    const std::optional<std::string> domain,
-    std::shared_ptr<FeatureProvider> new_provider, const EvaluationContext& ctx,
-    bool wait_for_init) {
+    const std::optional<std::string>& domain,
+    const std::shared_ptr<FeatureProvider>& new_provider,
+    const EvaluationContext& ctx, bool wait_for_init) {
   std::shared_ptr<FeatureProviderStatusManager> new_status_manager;
   std::shared_ptr<FeatureProviderStatusManager> old_status_manager;
 
@@ -144,7 +144,7 @@ void ProviderRepository::PrepareAndInitializeProvider(
           FeatureProviderStatusManager::Create(new_provider);
       if (!manager.ok()) {
         std::cerr << "Failed to create FeatureProviderStatusManager: "
-                  << manager.status() << std::endl;
+                  << manager.status() << "\n";
         return;
       }
       new_status_manager = std::move(manager.value());
@@ -154,9 +154,9 @@ void ProviderRepository::PrepareAndInitializeProvider(
 
     if (domain) {
       // Setting a named provider.
-      auto it = provider_manager_.find(domain.value());
-      if (it != provider_manager_.end()) {
-        old_status_manager = it->second;
+      auto provider_manager_it = provider_manager_.find(domain.value());
+      if (provider_manager_it != provider_manager_.end()) {
+        old_status_manager = provider_manager_it->second;
       }
       provider_manager_[domain.value()] = new_status_manager;
     } else {
@@ -169,7 +169,7 @@ void ProviderRepository::PrepareAndInitializeProvider(
   if (wait_for_init) {
     InitializeProvider(new_status_manager, old_status_manager, ctx);
   } else {
-    std::lock_guard<std::mutex> lock(threads_mutex_);
+    std::scoped_lock lock(threads_mutex_);
     initialization_threads_.emplace_back(
         [this, new_status_manager, old_status_manager, ctx] {
           InitializeProvider(new_status_manager, old_status_manager, ctx);
@@ -178,8 +178,8 @@ void ProviderRepository::PrepareAndInitializeProvider(
 }
 
 void ProviderRepository::InitializeProvider(
-    std::shared_ptr<FeatureProviderStatusManager> new_status_manager,
-    std::shared_ptr<FeatureProviderStatusManager> old_status_manager,
+    const std::shared_ptr<FeatureProviderStatusManager>& new_status_manager,
+    const std::shared_ptr<FeatureProviderStatusManager>& old_status_manager,
     const EvaluationContext& ctx) {
   if (new_status_manager->GetStatus() == ProviderStatus::kNotReady) {
     new_status_manager->Init(ctx);

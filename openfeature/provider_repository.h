@@ -63,13 +63,13 @@ class ProviderRepository {
 
  private:
   void PrepareAndInitializeProvider(
-      const std::optional<std::string> domain,
-      std::shared_ptr<FeatureProvider> new_provider,
+      const std::optional<std::string>& domain,
+      const std::shared_ptr<FeatureProvider>& new_provider,
       const EvaluationContext& ctx, bool waitForInit);
 
   void InitializeProvider(
-      std::shared_ptr<FeatureProviderStatusManager> new_status_manager,
-      std::shared_ptr<FeatureProviderStatusManager> old_status_manager,
+      const std::shared_ptr<FeatureProviderStatusManager>& new_status_manager,
+      const std::shared_ptr<FeatureProviderStatusManager>& old_status_manager,
       const EvaluationContext& ctx);
 
   void ShutdownOldProvider(

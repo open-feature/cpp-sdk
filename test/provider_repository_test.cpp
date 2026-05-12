@@ -226,9 +226,9 @@ TEST_F(ProviderRepositoryTest, OldProviderIsShutdownAfterNewOneIsReady) {
   EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
 }
 
-// Test to verify the old provider is not shut down if the new one fails to
+// Test to verify the old provider is shut down if the new one fails to
 // init.
-TEST_F(ProviderRepositoryTest, OldProviderIsNotShutdownIfNewOneFailsToInit) {
+TEST_F(ProviderRepositoryTest, OldProviderIsShutdownIfNewOneFailsToInit) {
   std::shared_ptr<MockFeatureProvider> mock_provider1 =
       std::make_shared<MockFeatureProvider>();
   std::shared_ptr<MockFeatureProvider> mock_provider2 =
@@ -239,7 +239,7 @@ TEST_F(ProviderRepositoryTest, OldProviderIsNotShutdownIfNewOneFailsToInit) {
 
   EXPECT_CALL(*mock_provider2, Init(_))
       .WillOnce(Return(absl::InternalError("Init failed")));
-  EXPECT_CALL(*mock_provider1, Shutdown()).Times(0);
+  EXPECT_CALL(*mock_provider1, Shutdown()).WillOnce(Return(absl::OkStatus()));
 
   repo.SetProvider(mock_provider2, ctx, true);
 

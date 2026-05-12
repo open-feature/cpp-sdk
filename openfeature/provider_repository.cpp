@@ -185,9 +185,7 @@ void ProviderRepository::InitializeProvider(
     new_status_manager->Init(ctx);
   }
 
-  if (new_status_manager->GetStatus() == ProviderStatus::kReady) {
-    ShutdownOldProvider(old_status_manager);
-  }
+  ShutdownOldProvider(old_status_manager);
 }
 
 void ProviderRepository::ShutdownOldProvider(

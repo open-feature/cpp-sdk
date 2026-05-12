@@ -43,13 +43,13 @@ class ProviderRepository {
       std::string_view domain = "") const;
 
   // Set the default provider.
-  void SetProvider(std::shared_ptr<FeatureProvider> provider,
-                   const EvaluationContext& ctx, bool waitForInit);
+  void SetProvider(const std::shared_ptr<FeatureProvider>& provider,
+                   const EvaluationContext& ctx, bool wait_for_init);
 
   // Add a provider for a domain.
   void SetProvider(std::string_view domain,
-                   std::shared_ptr<FeatureProvider> provider,
-                   const EvaluationContext& ctx, bool waitForInit);
+                   const std::shared_ptr<FeatureProvider>& provider,
+                   const EvaluationContext& ctx, bool wait_for_init);
 
   // Fetch the status of a provider for a domain.
   // If the domain is not set, return the default provider status.
@@ -65,7 +65,7 @@ class ProviderRepository {
   void PrepareAndInitializeProvider(
       const std::optional<std::string>& domain,
       const std::shared_ptr<FeatureProvider>& new_provider,
-      const EvaluationContext& ctx, bool waitForInit);
+      const EvaluationContext& ctx, bool wait_for_init);
 
   void InitializeProvider(
       const std::shared_ptr<FeatureProviderStatusManager>& new_status_manager,
@@ -73,7 +73,7 @@ class ProviderRepository {
       const EvaluationContext& ctx);
 
   void ShutdownOldProvider(
-      std::shared_ptr<FeatureProviderStatusManager> old_status_manager);
+      const std::shared_ptr<FeatureProviderStatusManager>& old_status_manager);
 
   std::shared_ptr<FeatureProviderStatusManager>
   GetExistingStatusManagerForProvider(

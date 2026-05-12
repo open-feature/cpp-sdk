@@ -1,5 +1,6 @@
 #include "openfeature/provider_repository.h"
 
+#include <algorithm>
 #include <iostream>
 
 #include "absl/status/statusor.h"
@@ -49,32 +50,30 @@ std::shared_ptr<FeatureProvider> ProviderRepository::GetProvider(
   return nullptr;
 }
 
-void ProviderRepository::SetProvider(std::shared_ptr<FeatureProvider> provider,
-                                     const EvaluationContext& ctx,
-                                     bool wait_for_init) {
+void ProviderRepository::SetProvider(
+    const std::shared_ptr<FeatureProvider>& provider,
+    const EvaluationContext& ctx, bool wait_for_init) {
   if (!provider) {
     std::cerr << "Provider cannot be null\n";
     return;
   }
-  PrepareAndInitializeProvider(std::nullopt, std::move(provider), ctx,
-                               wait_for_init);
+  PrepareAndInitializeProvider(std::nullopt, provider, ctx, wait_for_init);
 }
 
-void ProviderRepository::SetProvider(std::string_view domain,
-                                     std::shared_ptr<FeatureProvider> provider,
-                                     const EvaluationContext& ctx,
-                                     bool wait_for_init) {
+void ProviderRepository::SetProvider(
+    std::string_view domain, const std::shared_ptr<FeatureProvider>& provider,
+    const EvaluationContext& ctx, bool wait_for_init) {
   if (!provider) {
     std::cerr << "Provider cannot be null\n";
     return;
   }
 
   if (domain.empty()) {
-    SetProvider(std::move(provider), ctx, wait_for_init);
+    SetProvider(provider, ctx, wait_for_init);
     return;
   }
 
-  PrepareAndInitializeProvider(std::string(domain), std::move(provider), ctx,
+  PrepareAndInitializeProvider(std::string(domain), provider, ctx,
                                wait_for_init);
 }
 
@@ -189,7 +188,7 @@ void ProviderRepository::InitializeProvider(
 }
 
 void ProviderRepository::ShutdownOldProvider(
-    std::shared_ptr<FeatureProviderStatusManager> old_status_manager) {
+    const std::shared_ptr<FeatureProviderStatusManager>& old_status_manager) {
   if (old_status_manager) {
     std::shared_lock<std::shared_mutex> lock(repo_mutex_);
 
@@ -219,12 +218,9 @@ bool ProviderRepository::IsStatusManagerRegistered(
   if (default_manager_ == manager) {
     return true;
   }
-  for (const auto& pair : provider_manager_) {
-    if (pair.second == manager) {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(
+      provider_manager_.begin(), provider_manager_.end(),
+      [&manager](const auto& pair) { return pair.second == manager; });
 }
 
 }  // namespace openfeature

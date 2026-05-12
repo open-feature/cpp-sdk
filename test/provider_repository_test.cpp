@@ -9,7 +9,12 @@
 #include "mocks/mock_feature_provider.h"
 #include "openfeature/noop_provider.h"
 
-using namespace openfeature;
+using ::openfeature::EvaluationContext;
+using ::openfeature::FeatureProvider;
+using ::openfeature::FeatureProviderStatusManager;
+using ::openfeature::NoopProvider;
+using ::openfeature::ProviderRepository;
+using ::openfeature::ProviderStatus;
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Return;

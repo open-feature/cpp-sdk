@@ -301,108 +301,127 @@ TEST_F(InMemoryProviderTest, UpdateFlagsAddsAndOverwritesExisting) {
   EXPECT_THAT(common_flag_res->GetVariant(), Optional(std::string("updated")));
 }
 
-TEST_F(InMemoryProviderTest, NoDefaultVariantAndEvaluatorFailsOrMissing) {
-  InMemoryProvider provider1({});
-  provider1.UpdateFlag("no_default_no_evaluator",
-                       CreateFlag<bool>({{"v1", true}}, std::nullopt, nullptr));
-  EXPECT_TRUE(provider1.Init(empty_ctx_).ok());
-  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res1_or =
-      provider1.GetBooleanEvaluation("no_default_no_evaluator", true,
-                                     empty_ctx_);
-  ASSERT_TRUE(res1_or.ok());
-  const std::unique_ptr<BoolResolutionDetails>& res1 = *res1_or;
-  EXPECT_TRUE(res1->GetValue());
-  EXPECT_EQ(res1->GetReason(), Reason::kDefault);
-  EXPECT_FALSE(res1->GetVariant().has_value());
+TEST_F(InMemoryProviderTest, NoDefaultVariantAndNoEvaluatorReturnsDefault) {
+  InMemoryProvider provider({});
+  provider.UpdateFlag("no_default_no_evaluator",
+                      CreateFlag<bool>({{"v1", true}}, std::nullopt, nullptr));
+  EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
+  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_or =
+      provider.GetBooleanEvaluation("no_default_no_evaluator", true,
+                                    empty_ctx_);
+  ASSERT_TRUE(res_or.ok());
+  const std::unique_ptr<BoolResolutionDetails>& res = *res_or;
+
+  EXPECT_TRUE(res->GetValue());
+  EXPECT_EQ(res->GetReason(), Reason::kDefault);
+  EXPECT_FALSE(res->GetVariant().has_value());
+}
+
+TEST_F(InMemoryProviderTest,
+       NoDefaultVariantAndFailingEvaluatorReturnsDefault) {
   auto failing_evaluator =
       [](const Flag<bool>&, const EvaluationContext&) -> absl::StatusOr<bool> {
     return absl::InvalidArgumentError("Evaluator explicitly failed");
   };
-  InMemoryProvider provider2({});
-  provider2.UpdateFlag(
+
+  InMemoryProvider provider({});
+  provider.UpdateFlag(
       "no_default_failing_evaluator",
       CreateFlag<bool>({{"v1", true}}, std::nullopt, failing_evaluator));
-  EXPECT_TRUE(provider2.Init(empty_ctx_).ok());
-  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res2_or =
-      provider2.GetBooleanEvaluation("no_default_failing_evaluator", false,
-                                     empty_ctx_);
-  ASSERT_TRUE(res2_or.ok());
-  const std::unique_ptr<BoolResolutionDetails>& res2 = *res2_or;
-  EXPECT_FALSE(res2->GetValue());
-  EXPECT_EQ(res2->GetReason(), Reason::kDefault);
-  EXPECT_FALSE(res2->GetVariant().has_value());
+  EXPECT_TRUE(provider.Init(empty_ctx_).ok());
+
+  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_or =
+      provider.GetBooleanEvaluation("no_default_failing_evaluator", false,
+                                    empty_ctx_);
+  ASSERT_TRUE(res_or.ok());
+  const std::unique_ptr<BoolResolutionDetails>& res = *res_or;
+
+  EXPECT_FALSE(res->GetValue());
+  EXPECT_EQ(res->GetReason(), Reason::kDefault);
+  EXPECT_FALSE(res->GetVariant().has_value());
 }
 
-TEST_F(InMemoryProviderTest, ContextEvaluatorUsesContext) {
-  auto context_aware_evaluator =
-      [](const Flag<bool>&,
-         const EvaluationContext& ctx) -> absl::StatusOr<bool> {
-    const std::any* val_ptr = ctx.GetValue("user_is_admin");
-    if (val_ptr != nullptr) {
-      try {
-        return std::any_cast<bool>(*val_ptr);
-      } catch (const std::bad_any_cast& e) {
+class ContextAwareProviderTest : public InMemoryProviderTest {
+ protected:
+  void SetUp() override {
+    auto context_aware_evaluator =
+        [](const Flag<bool>&,
+           const EvaluationContext& ctx) -> absl::StatusOr<bool> {
+      const std::any* val_ptr = ctx.GetValue("user_is_admin");
+      if (val_ptr != nullptr) {
+        // Exception-free casting using pointer overload
+        const bool* casted = std::any_cast<bool>(val_ptr);
+        if (casted) {
+          return *casted;
+        }
         return absl::InvalidArgumentError(
             "Context attribute 'user_is_admin' is not of type bool");
       }
-    }
-    return false;
-  };
+      return false;
+    };
 
-  InMemoryProvider provider({});
-  provider.UpdateFlag("admin_flag",
-                      CreateFlag<bool>({{"on", true}, {"off", false}}, "off",
-                                       context_aware_evaluator));
-  EXPECT_TRUE(provider.Init(empty_ctx_).ok());
+    provider_.UpdateFlag("admin_flag",
+                         CreateFlag<bool>({{"on", true}, {"off", false}}, "off",
+                                          context_aware_evaluator));
+    EXPECT_TRUE(provider_.Init(empty_ctx_).ok());
+  }
 
+  InMemoryProvider provider_{{}};
+};
+
+TEST_F(ContextAwareProviderTest, AdminUserMatchesTargeting) {
   EvaluationContext admin_ctx =
       EvaluationContext::Builder().WithAttribute("user_is_admin", true).build();
-  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_admin_or =
-      provider.GetBooleanEvaluation("admin_flag", false, admin_ctx);
-  ASSERT_TRUE(res_admin_or.ok());
-  const std::unique_ptr<BoolResolutionDetails>& res_admin = *res_admin_or;
-  ASSERT_NE(res_admin, nullptr);
-  EXPECT_TRUE(res_admin->GetValue());
-  EXPECT_EQ(res_admin->GetReason(), Reason::kTargetingMatch);
-  EXPECT_FALSE(res_admin->GetErrorCode().has_value());
+  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_or =
+      provider_.GetBooleanEvaluation("admin_flag", false, admin_ctx);
+  ASSERT_TRUE(res_or.ok());
+  const std::unique_ptr<BoolResolutionDetails>& res = *res_or;
+  ASSERT_NE(res, nullptr);
+  EXPECT_TRUE(res->GetValue());
+  EXPECT_EQ(res->GetReason(), Reason::kTargetingMatch);
+  EXPECT_FALSE(res->GetErrorCode().has_value());
+}
 
+TEST_F(ContextAwareProviderTest, NonAdminUserMatchesTargeting) {
   EvaluationContext non_admin_ctx = EvaluationContext::Builder()
                                         .WithAttribute("user_is_admin", false)
                                         .build();
-  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_non_admin_or =
-      provider.GetBooleanEvaluation("admin_flag", true, non_admin_ctx);
-  ASSERT_TRUE(res_non_admin_or.ok());
-  const std::unique_ptr<BoolResolutionDetails>& res_non_admin =
-      *res_non_admin_or;
-  ASSERT_NE(res_non_admin, nullptr);
-  EXPECT_FALSE(res_non_admin->GetValue());
-  EXPECT_EQ(res_non_admin->GetReason(), Reason::kTargetingMatch);
-  EXPECT_FALSE(res_non_admin->GetErrorCode().has_value());
+  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_or =
+      provider_.GetBooleanEvaluation("admin_flag", true, non_admin_ctx);
+  ASSERT_TRUE(res_or.ok());
+  const std::unique_ptr<BoolResolutionDetails>& res = *res_or;
+  ASSERT_NE(res, nullptr);
+  EXPECT_FALSE(res->GetValue());
+  EXPECT_EQ(res->GetReason(), Reason::kTargetingMatch);
+  EXPECT_FALSE(res->GetErrorCode().has_value());
+}
 
-  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_no_attr_or =
-      provider.GetBooleanEvaluation("admin_flag", true, empty_ctx_);
-  ASSERT_TRUE(res_no_attr_or.ok());
-  const std::unique_ptr<BoolResolutionDetails>& res_no_attr = *res_no_attr_or;
-  ASSERT_NE(res_no_attr, nullptr);
-  EXPECT_FALSE(res_no_attr->GetValue());
-  EXPECT_EQ(res_no_attr->GetReason(), Reason::kTargetingMatch);
-  EXPECT_FALSE(res_no_attr->GetErrorCode().has_value());
+TEST_F(ContextAwareProviderTest, MissingAttributeDefaultsToFalse) {
+  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_or =
+      provider_.GetBooleanEvaluation("admin_flag", true, empty_ctx_);
+  ASSERT_TRUE(res_or.ok());
+  const std::unique_ptr<BoolResolutionDetails>& res = *res_or;
+  ASSERT_NE(res, nullptr);
+  EXPECT_FALSE(res->GetValue());
+  EXPECT_EQ(res->GetReason(), Reason::kTargetingMatch);
+  EXPECT_FALSE(res->GetErrorCode().has_value());
+}
 
+TEST_F(ContextAwareProviderTest, WrongAttributeTypeFallsBackToDefaultVariant) {
   EvaluationContext wrong_type_ctx =
       EvaluationContext::Builder()
           .WithAttribute("user_is_admin", std::string("true"))
           .build();
-  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_wrong_type_or =
-      provider.GetBooleanEvaluation("admin_flag", true, wrong_type_ctx);
-  ASSERT_TRUE(res_wrong_type_or.ok());
-  const std::unique_ptr<BoolResolutionDetails>& res_wrong_type =
-      *res_wrong_type_or;
-  ASSERT_NE(res_wrong_type, nullptr);
-  EXPECT_FALSE(res_wrong_type->GetValue());
-  EXPECT_EQ(res_wrong_type->GetReason(), Reason::kDefault);
-  EXPECT_THAT(res_wrong_type->GetVariant(), Optional(std::string("off")));
-  EXPECT_FALSE(res_wrong_type->GetErrorCode().has_value());
+  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_or =
+      provider_.GetBooleanEvaluation("admin_flag", true, wrong_type_ctx);
+  ASSERT_TRUE(res_or.ok());
+  const std::unique_ptr<BoolResolutionDetails>& res = *res_or;
+  ASSERT_NE(res, nullptr);
+  EXPECT_FALSE(res->GetValue());
+  EXPECT_EQ(res->GetReason(), Reason::kDefault);
+  EXPECT_THAT(res->GetVariant(), Optional(std::string("off")));
+  EXPECT_FALSE(res->GetErrorCode().has_value());
 }
 
 TEST_F(InMemoryProviderTest, StringEvaluationSuccess) {
@@ -427,8 +446,9 @@ TEST_F(InMemoryProviderTest, IntegerEvaluationSuccess) {
   constexpr int64_t kVariantValue2 = 200;
 
   InMemoryProvider provider({});
-  provider.UpdateFlag("int_flag",
-                      CreateFlag<int64_t>({{"v1", kVariantValue1}, {"v2", kVariantValue2}}, "v1"));
+  provider.UpdateFlag(
+      "int_flag", CreateFlag<int64_t>(
+                      {{"v1", kVariantValue1}, {"v2", kVariantValue2}}, "v1"));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
   absl::StatusOr<std::unique_ptr<IntResolutionDetails>> res_or =
@@ -447,8 +467,10 @@ TEST_F(InMemoryProviderTest, DoubleEvaluationSuccess) {
   constexpr double kVariantValue2 = 2.71;
 
   InMemoryProvider provider({});
-  provider.UpdateFlag("double_flag",
-                      CreateFlag<double>({{"v1", kVariantValue1}, {"v2", kVariantValue2}}, "v2"));
+  provider.UpdateFlag(
+      "double_flag",
+      CreateFlag<double>({{"v1", kVariantValue1}, {"v2", kVariantValue2}},
+                         "v2"));
   EXPECT_TRUE(provider.Init(empty_ctx_).ok());
 
   absl::StatusOr<std::unique_ptr<DoubleResolutionDetails>> res_or =

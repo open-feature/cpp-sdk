@@ -66,11 +66,11 @@ class InMemoryProvider : public FeatureProvider {
  private:
   template <typename T>
   std::unique_ptr<ResolutionDetails<T>> Evaluate(std::string_view key,
-                                                 T default_value,
+                                                 const T& default_value,
                                                  const EvaluationContext& ctx);
 
   std::unordered_map<std::string, std::any> flags_;
-  ProviderStatus status_;
+  ProviderStatus status_ = ProviderStatus::kNotReady;
   mutable std::shared_mutex mutex_;
 };
 

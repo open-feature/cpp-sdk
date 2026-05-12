@@ -4,7 +4,16 @@
 
 #include "absl/status/status.h"
 
-using namespace openfeature;
+using ::openfeature::BoolResolutionDetails;
+using ::openfeature::DoubleResolutionDetails;
+using ::openfeature::EvaluationContext;
+using ::openfeature::IntResolutionDetails;
+using ::openfeature::Metadata;
+using ::openfeature::NoopProvider;
+using ::openfeature::ObjectResolutionDetails;
+using ::openfeature::Reason;
+using ::openfeature::StringResolutionDetails;
+using ::openfeature::Value;
 
 class NoopProviderTest : public ::testing::Test {
  protected:
@@ -35,15 +44,15 @@ class NoopProviderBooleanTest : public NoopProviderTest,
                                 public ::testing::WithParamInterface<bool> {};
 
 TEST_P(NoopProviderBooleanTest, BooleanEvaluationShouldReturnDefaultValue) {
-  const bool defaultValue = GetParam();
+  const bool default_value = GetParam();
 
   absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> result =
-      provider_.GetBooleanEvaluation("my-bool-flag", defaultValue, ctx_);
+      provider_.GetBooleanEvaluation("my-bool-flag", default_value, ctx_);
 
   ASSERT_TRUE(result.ok());
   const std::unique_ptr<BoolResolutionDetails>& details = *result;
 
-  EXPECT_EQ(details->GetValue(), defaultValue);
+  EXPECT_EQ(details->GetValue(), default_value);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);
   EXPECT_EQ(details->GetVariant(), "default-variant");
   EXPECT_FALSE(details->GetErrorCode().has_value());
@@ -60,14 +69,14 @@ class NoopProviderStringTest
 
 // Test to verify the string evaluation returns the default value.
 TEST_P(NoopProviderStringTest, StringEvaluationShouldReturnDefaultValue) {
-  const std::string defaultValue = GetParam();
+  const std::string& default_value = GetParam();
 
   absl::StatusOr<std::unique_ptr<StringResolutionDetails>> result =
-      provider_.GetStringEvaluation("my-string-flag", defaultValue, ctx_);
+      provider_.GetStringEvaluation("my-string-flag", default_value, ctx_);
   ASSERT_TRUE(result.ok());
   const std::unique_ptr<StringResolutionDetails>& details = *result;
 
-  EXPECT_EQ(details->GetValue(), defaultValue);
+  EXPECT_EQ(details->GetValue(), default_value);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);
   EXPECT_EQ(details->GetVariant(), "default-variant");
   EXPECT_FALSE(details->GetErrorCode().has_value());
@@ -84,14 +93,14 @@ class NoopProviderIntegerTest : public NoopProviderTest,
 
 // Test to verify the integer evaluation returns the default value.
 TEST_P(NoopProviderIntegerTest, IntegerEvaluationShouldReturnDefaultValue) {
-  const int64_t defaultValue = GetParam();
+  const int64_t default_value = GetParam();
 
   absl::StatusOr<std::unique_ptr<IntResolutionDetails>> result =
-      provider_.GetIntegerEvaluation("my-int-flag", defaultValue, ctx_);
+      provider_.GetIntegerEvaluation("my-int-flag", default_value, ctx_);
   ASSERT_TRUE(result.ok());
   const std::unique_ptr<IntResolutionDetails>& details = *result;
 
-  EXPECT_EQ(details->GetValue(), defaultValue);
+  EXPECT_EQ(details->GetValue(), default_value);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);
   EXPECT_EQ(details->GetVariant(), "default-variant");
   EXPECT_FALSE(details->GetErrorCode().has_value());
@@ -107,14 +116,14 @@ class NoopProviderDoubleTest : public NoopProviderTest,
 
 // Test to verify the double evaluation returns the default value.
 TEST_P(NoopProviderDoubleTest, DoubleEvaluationShouldReturnDefaultValue) {
-  const double defaultValue = GetParam();
+  const double default_value = GetParam();
 
   absl::StatusOr<std::unique_ptr<DoubleResolutionDetails>> result =
-      provider_.GetDoubleEvaluation("my-double-flag", defaultValue, ctx_);
+      provider_.GetDoubleEvaluation("my-double-flag", default_value, ctx_);
   ASSERT_TRUE(result.ok());
   const std::unique_ptr<DoubleResolutionDetails>& details = *result;
 
-  EXPECT_DOUBLE_EQ(details->GetValue(), defaultValue);
+  EXPECT_DOUBLE_EQ(details->GetValue(), default_value);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);
   EXPECT_EQ(details->GetVariant(), "default-variant");
   EXPECT_FALSE(details->GetErrorCode().has_value());
@@ -136,14 +145,14 @@ TEST_F(NoopProviderTest, ObjectEvaluationShouldReturnDefaultValue) {
       Value(std::vector<Value>{{Value("item1"), Value(1.23)}});
   default_struct["a_struct"] = Value(inner_struct);
 
-  const Value defaultValue(default_struct);
+  const Value default_value(default_struct);
 
   absl::StatusOr<std::unique_ptr<ObjectResolutionDetails>> result =
-      provider_.GetObjectEvaluation("my-object-flag", defaultValue, ctx_);
+      provider_.GetObjectEvaluation("my-object-flag", default_value, ctx_);
   ASSERT_TRUE(result.ok());
   const std::unique_ptr<ObjectResolutionDetails>& details = *result;
 
-  EXPECT_EQ(details->GetValue(), defaultValue);
+  EXPECT_EQ(details->GetValue(), default_value);
   EXPECT_EQ(details->GetReason(), Reason::kDefault);
   EXPECT_EQ(details->GetVariant(), "default-variant");
   EXPECT_FALSE(details->GetErrorCode().has_value());

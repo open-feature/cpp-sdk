@@ -15,7 +15,7 @@ static constexpr std::string_view kName = "InMemoryProvider";
 
 InMemoryProvider::InMemoryProvider(
     std::unordered_map<std::string, std::any> flags)
-    : flags_(std::move(flags)), status_(ProviderStatus::kNotReady) {}
+    : flags_(std::move(flags)) {}
 
 Metadata InMemoryProvider::GetMetadata() const {
   return Metadata{std::string(kName)};
@@ -85,7 +85,8 @@ InMemoryProvider::GetObjectEvaluation(std::string_view key, Value default_value,
 
 template <typename T>
 std::unique_ptr<ResolutionDetails<T>> InMemoryProvider::Evaluate(
-    std::string_view key, T default_value, const EvaluationContext& ctx) {
+    std::string_view key, const T& default_value,
+    const EvaluationContext& ctx) {
   std::shared_lock lock(mutex_);
 
   if (status_ != ProviderStatus::kReady) {

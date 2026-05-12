@@ -12,6 +12,7 @@
 using ::openfeature::EvaluationContext;
 using ::openfeature::FeatureProvider;
 using ::openfeature::FeatureProviderStatusManager;
+using ::openfeature::MockFeatureProvider;
 using ::openfeature::NoopProvider;
 using ::openfeature::ProviderRepository;
 using ::openfeature::ProviderStatus;
@@ -21,17 +22,17 @@ using ::testing::Return;
 
 class ProviderRepositoryTest : public ::testing::Test {
  protected:
-  ProviderRepository repo;
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  ProviderRepository repo_;
+  EvaluationContext ctx_ = EvaluationContext::Builder().build();
 };
 
 // Test to verify the constructor initializes with a NoopProvider.
 TEST_F(ProviderRepositoryTest, ConstructorInitializesWithNoopProvider) {
-  std::shared_ptr<FeatureProvider> provider = repo.GetProvider();
+  std::shared_ptr<FeatureProvider> provider = repo_.GetProvider();
   ASSERT_NE(provider, nullptr);
   EXPECT_NE(dynamic_cast<NoopProvider*>(provider.get()), nullptr);
-  EXPECT_EQ(repo.GetProvider()->GetMetadata().name, "Noop Provider");
-  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
+  EXPECT_EQ(repo_.GetProvider()->GetMetadata().name, "Noop Provider");
+  EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kReady);
 }
 
 // Test to verify that GetFeatureProviderStatusManager returns the correct
@@ -40,12 +41,12 @@ TEST_F(ProviderRepositoryTest,
        GetFeatureProviderStatusManagerReturnsCorrectManager) {
   // On initialization, it should return the default manager.
   std::shared_ptr<FeatureProviderStatusManager> initial_default_manager =
-      repo.GetFeatureProviderStatusManager();
+      repo_.GetFeatureProviderStatusManager();
   ASSERT_NE(initial_default_manager, nullptr);
 
   // Asking for a non-existent domain should return the default manager.
   std::shared_ptr<FeatureProviderStatusManager> non_existent_manager =
-      repo.GetFeatureProviderStatusManager("non-existent");
+      repo_.GetFeatureProviderStatusManager("non-existent");
   EXPECT_EQ(non_existent_manager, initial_default_manager);
 
   // After setting a named provider, it should return the new manager.
@@ -53,32 +54,33 @@ TEST_F(ProviderRepositoryTest,
       std::make_shared<MockFeatureProvider>();
   std::string domain = "my-domain";
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
-  repo.SetProvider(domain, mock_provider, ctx, true);
+  repo_.SetProvider(domain, mock_provider, ctx_, true);
 
   std::shared_ptr<FeatureProviderStatusManager> named_manager =
-      repo.GetFeatureProviderStatusManager(domain);
+      repo_.GetFeatureProviderStatusManager(domain);
   ASSERT_NE(named_manager, nullptr);
   EXPECT_NE(named_manager, initial_default_manager);
   EXPECT_EQ(named_manager->GetProvider(), mock_provider);
 
   // Getting the default manager should still return the original one.
   std::shared_ptr<FeatureProviderStatusManager> current_default_manager =
-      repo.GetFeatureProviderStatusManager();
+      repo_.GetFeatureProviderStatusManager();
   EXPECT_EQ(current_default_manager, initial_default_manager);
 }
 
 // Test to verify GetProvider returns the default when the domain is empty.
 TEST_F(ProviderRepositoryTest, GetProviderReturnsDefaultWhenDomainIsEmpty) {
-  std::shared_ptr<FeatureProvider> default_provider = repo.GetProvider();
-  std::shared_ptr<FeatureProvider> empty_domain_provider = repo.GetProvider("");
+  std::shared_ptr<FeatureProvider> default_provider = repo_.GetProvider();
+  std::shared_ptr<FeatureProvider> empty_domain_provider =
+      repo_.GetProvider("");
   EXPECT_EQ(default_provider, empty_domain_provider);
 }
 
 // Test to verify GetProvider returns the default when the domain is not found.
 TEST_F(ProviderRepositoryTest, GetProviderReturnsDefaultWhenDomainNotFound) {
-  std::shared_ptr<FeatureProvider> default_provider = repo.GetProvider();
+  std::shared_ptr<FeatureProvider> default_provider = repo_.GetProvider();
   std::shared_ptr<FeatureProvider> not_found_provider =
-      repo.GetProvider("non-existent-domain");
+      repo_.GetProvider("non-existent-domain");
   EXPECT_EQ(default_provider, not_found_provider);
 }
 
@@ -90,10 +92,10 @@ TEST_F(ProviderRepositoryTest, SetAndGetNamedProvider) {
 
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  repo.SetProvider(domain, mock_provider, ctx, true);
+  repo_.SetProvider(domain, mock_provider, ctx_, true);
 
-  EXPECT_EQ(repo.GetProvider(domain), mock_provider);
-  EXPECT_NE(dynamic_cast<NoopProvider*>(repo.GetProvider().get()), nullptr);
+  EXPECT_EQ(repo_.GetProvider(domain), mock_provider);
+  EXPECT_NE(dynamic_cast<NoopProvider*>(repo_.GetProvider().get()), nullptr);
 }
 
 // Test to verify that setting the default provider replaces the NoopProvider.
@@ -103,23 +105,23 @@ TEST_F(ProviderRepositoryTest, SetDefaultProviderReplacesNoop) {
 
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  repo.SetProvider(mock_provider, ctx, true);
+  repo_.SetProvider(mock_provider, ctx_, true);
 
-  EXPECT_EQ(repo.GetProvider(), mock_provider);
+  EXPECT_EQ(repo_.GetProvider(), mock_provider);
 }
 
 // Test that setting a null provider for the default does not change the state.
 TEST_F(ProviderRepositoryTest, SetProviderWithNullProviderDoesNothing) {
-  std::shared_ptr<FeatureProvider> initial_provider = repo.GetProvider();
-  ProviderStatus initial_status = repo.GetProviderStatus();
+  std::shared_ptr<FeatureProvider> initial_provider = repo_.GetProvider();
+  ProviderStatus initial_status = repo_.GetProviderStatus();
   testing::internal::CaptureStderr();
 
-  repo.SetProvider(nullptr, ctx, true);
+  repo_.SetProvider(nullptr, ctx_, true);
   std::string output = testing::internal::GetCapturedStderr();
 
   EXPECT_THAT(output, testing::HasSubstr("Provider cannot be null"));
-  EXPECT_EQ(repo.GetProvider(), initial_provider);
-  EXPECT_EQ(repo.GetProviderStatus(), initial_status);
+  EXPECT_EQ(repo_.GetProvider(), initial_provider);
+  EXPECT_EQ(repo_.GetProviderStatus(), initial_status);
 }
 
 // Test that setting a null provider for a named domain does not change the
@@ -127,17 +129,17 @@ TEST_F(ProviderRepositoryTest, SetProviderWithNullProviderDoesNothing) {
 TEST_F(ProviderRepositoryTest, SetNamedProviderWithNullProviderDoesNothing) {
   const std::string domain = "my-domain";
   std::shared_ptr<FeatureProvider> initial_provider_for_domain =
-      repo.GetProvider(domain);
-  ProviderStatus initial_status = repo.GetProviderStatus(domain);
+      repo_.GetProvider(domain);
+  ProviderStatus initial_status = repo_.GetProviderStatus(domain);
 
   testing::internal::CaptureStderr();
 
-  repo.SetProvider(domain, nullptr, ctx, true);
+  repo_.SetProvider(domain, nullptr, ctx_, true);
   std::string output = testing::internal::GetCapturedStderr();
 
   EXPECT_THAT(output, testing::HasSubstr("Provider cannot be null"));
-  EXPECT_EQ(repo.GetProvider(domain), initial_provider_for_domain);
-  EXPECT_EQ(repo.GetProviderStatus(domain), initial_status);
+  EXPECT_EQ(repo_.GetProvider(domain), initial_provider_for_domain);
+  EXPECT_EQ(repo_.GetProviderStatus(domain), initial_status);
 }
 
 // Test to verify that SetProvider waits for initialization to complete.
@@ -147,9 +149,9 @@ TEST_F(ProviderRepositoryTest, SetProviderWaitsForInitialization) {
 
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  repo.SetProvider(mock_provider, ctx, true);
+  repo_.SetProvider(mock_provider, ctx_, true);
 
-  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
+  EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kReady);
 }
 
 // Test to verify that SetProvider initializes asynchronously.
@@ -165,14 +167,14 @@ TEST_F(ProviderRepositoryTest, SetProviderDoesNotWaitForInitialization) {
     return absl::OkStatus();
   });
 
-  repo.SetProvider(mock_provider, ctx, false);
+  repo_.SetProvider(mock_provider, ctx_, false);
 
-  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kNotReady);
+  EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kNotReady);
 
   init_can_complete.set_value();
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
+  EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kReady);
 }
 
 // Test to verify that a failed initialization sets the status to kError.
@@ -183,9 +185,9 @@ TEST_F(ProviderRepositoryTest, SetProviderWithFailedInitSetsErrorStatus) {
   EXPECT_CALL(*mock_provider, Init(_))
       .WillOnce(Return(absl::InternalError("Init failed")));
 
-  repo.SetProvider(mock_provider, ctx, true);
+  repo_.SetProvider(mock_provider, ctx_, true);
 
-  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kError);
+  EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kError);
 }
 
 // Test that Shutdown resets the repository to its initial
@@ -194,18 +196,18 @@ TEST_F(ProviderRepositoryTest, ShutdownResetsToReadyNoopProvider) {
   // Set a mock provider to ensure we're not in the initial state.
   auto mock_provider = std::make_shared<MockFeatureProvider>();
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
-  repo.SetProvider(mock_provider, ctx, true);
-  ASSERT_EQ(repo.GetProvider(), mock_provider);
+  repo_.SetProvider(mock_provider, ctx_, true);
+  ASSERT_EQ(repo_.GetProvider(), mock_provider);
 
   // Expect the mock provider to be shut down.
   EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
-  repo.Shutdown();
+  repo_.Shutdown();
 
   // After shutdown, the repository should be reset to the default NoopProvider.
-  auto provider = repo.GetProvider();
+  auto provider = repo_.GetProvider();
   ASSERT_NE(provider, nullptr);
   EXPECT_NE(dynamic_cast<NoopProvider*>(provider.get()), nullptr);
-  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
+  EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kReady);
 }
 
 // Test to verify the old provider is shutdown after a new one is ready.
@@ -216,9 +218,9 @@ TEST_F(ProviderRepositoryTest, OldProviderIsShutdownAfterNewOneIsReady) {
       std::make_shared<MockFeatureProvider>();
 
   EXPECT_CALL(*mock_provider1, Init(_)).WillOnce(Return(absl::OkStatus()));
-  repo.SetProvider(mock_provider1, ctx, true);
-  EXPECT_EQ(repo.GetProvider(), mock_provider1);
-  ASSERT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
+  repo_.SetProvider(mock_provider1, ctx_, true);
+  EXPECT_EQ(repo_.GetProvider(), mock_provider1);
+  ASSERT_EQ(repo_.GetProviderStatus(), ProviderStatus::kReady);
 
   {
     InSequence seq;
@@ -226,9 +228,9 @@ TEST_F(ProviderRepositoryTest, OldProviderIsShutdownAfterNewOneIsReady) {
     EXPECT_CALL(*mock_provider1, Shutdown()).WillOnce(Return(absl::OkStatus()));
   }
 
-  repo.SetProvider(mock_provider2, ctx, true);
-  EXPECT_EQ(repo.GetProvider(), mock_provider2);
-  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kReady);
+  repo_.SetProvider(mock_provider2, ctx_, true);
+  EXPECT_EQ(repo_.GetProvider(), mock_provider2);
+  EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kReady);
 }
 
 // Test to verify the old provider is shut down if the new one fails to
@@ -240,17 +242,17 @@ TEST_F(ProviderRepositoryTest, OldProviderIsShutdownIfNewOneFailsToInit) {
       std::make_shared<MockFeatureProvider>();
 
   EXPECT_CALL(*mock_provider1, Init(_)).WillOnce(Return(absl::OkStatus()));
-  repo.SetProvider(mock_provider1, ctx, true);
+  repo_.SetProvider(mock_provider1, ctx_, true);
 
   EXPECT_CALL(*mock_provider2, Init(_))
       .WillOnce(Return(absl::InternalError("Init failed")));
   EXPECT_CALL(*mock_provider1, Shutdown()).WillOnce(Return(absl::OkStatus()));
 
-  repo.SetProvider(mock_provider2, ctx, true);
+  repo_.SetProvider(mock_provider2, ctx_, true);
 
   // The new provider should be set, but in an error state.
-  EXPECT_EQ(repo.GetProvider(), mock_provider2);
-  EXPECT_EQ(repo.GetProviderStatus(), ProviderStatus::kError);
+  EXPECT_EQ(repo_.GetProvider(), mock_provider2);
+  EXPECT_EQ(repo_.GetProviderStatus(), ProviderStatus::kError);
 }
 
 // Test to verify Shutdown calls Shutdown on all registered providers.
@@ -269,10 +271,10 @@ TEST_F(ProviderRepositoryTest, ShutdownAllProviders) {
   EXPECT_CALL(*mock_named_1, Init(_)).WillOnce(Return(absl::OkStatus()));
   EXPECT_CALL(*mock_named_2, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  repo.SetProvider(mock_default, ctx, true);
-  repo.SetProvider(domain_1, mock_named_1, ctx, true);
-  repo.SetProvider(domain_2, mock_named_2, ctx, true);
-  repo.SetProvider(domain_3, mock_named_2, ctx, true);
+  repo_.SetProvider(mock_default, ctx_, true);
+  repo_.SetProvider(domain_1, mock_named_1, ctx_, true);
+  repo_.SetProvider(domain_2, mock_named_2, ctx_, true);
+  repo_.SetProvider(domain_3, mock_named_2, ctx_, true);
 
   EXPECT_CALL(*mock_default, Shutdown()).WillOnce(Return(absl::OkStatus()));
   EXPECT_CALL(*mock_named_1, Shutdown()).WillOnce(Return(absl::OkStatus()));
@@ -280,14 +282,14 @@ TEST_F(ProviderRepositoryTest, ShutdownAllProviders) {
 
   // Keep a reference to the old manager.
   std::shared_ptr<FeatureProviderStatusManager> old_manager =
-      repo.GetFeatureProviderStatusManager();
+      repo_.GetFeatureProviderStatusManager();
 
-  repo.Shutdown();
+  repo_.Shutdown();
 
   // Assert that a new default manager has been created and it's not the old
   // one.
   std::shared_ptr<FeatureProviderStatusManager> new_manager =
-      repo.GetFeatureProviderStatusManager();
+      repo_.GetFeatureProviderStatusManager();
   ASSERT_NE(new_manager, nullptr);
 
   ASSERT_NE(new_manager, old_manager);
@@ -319,7 +321,7 @@ TEST_F(ProviderRepositoryTest, ShutdownWaitsForAsyncInitializationToComplete) {
 
   EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
 
-  repo.SetProvider(mock_provider, ctx, false);
+  repo_.SetProvider(mock_provider, ctx_, false);
 
   // Wait until the background thread is confirmed to be inside the Init()
   // method.
@@ -327,7 +329,7 @@ TEST_F(ProviderRepositoryTest, ShutdownWaitsForAsyncInitializationToComplete) {
 
   // Run Shutdown() to verify that it blocks until init is allowed to complete.
   auto shutdown_future =
-      std::async(std::launch::async, [&]() { repo.Shutdown(); });
+      std::async(std::launch::async, [&]() { repo_.Shutdown(); });
 
   // We expect it to time out because the Init() is still blocked.
   auto status = shutdown_future.wait_for(std::chrono::milliseconds(100));
@@ -351,13 +353,13 @@ TEST_F(ProviderRepositoryTest, SetExistingProviderReusesManager) {
 
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  repo.SetProvider(mock_provider, ctx, true);
+  repo_.SetProvider(mock_provider, ctx_, true);
   std::shared_ptr<FeatureProviderStatusManager> default_manager =
-      repo.GetFeatureProviderStatusManager();
+      repo_.GetFeatureProviderStatusManager();
 
-  repo.SetProvider(domain, mock_provider, ctx, true);
+  repo_.SetProvider(domain, mock_provider, ctx_, true);
   std::shared_ptr<FeatureProviderStatusManager> named_manager =
-      repo.GetFeatureProviderStatusManager(domain);
+      repo_.GetFeatureProviderStatusManager(domain);
 
   EXPECT_EQ(default_manager, named_manager);
 }
@@ -373,20 +375,20 @@ TEST_F(ProviderRepositoryTest, ReplacingProviderDoesNotShutdownIfStillInUse) {
   EXPECT_CALL(*mock_provider1, Init(_)).WillOnce(Return(absl::OkStatus()));
   EXPECT_CALL(*mock_provider2, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  repo.SetProvider(mock_provider1, ctx, true);
-  repo.SetProvider(domain_a, mock_provider1, ctx, true);
+  repo_.SetProvider(mock_provider1, ctx_, true);
+  repo_.SetProvider(domain_a, mock_provider1, ctx_, true);
 
   std::shared_ptr<FeatureProviderStatusManager> manager_for_provider1 =
-      repo.GetFeatureProviderStatusManager();
+      repo_.GetFeatureProviderStatusManager();
   ASSERT_EQ(manager_for_provider1->GetProvider(), mock_provider1);
 
   EXPECT_CALL(*mock_provider1, Shutdown()).Times(0);
-  repo.SetProvider(mock_provider2, ctx, true);
+  repo_.SetProvider(mock_provider2, ctx_, true);
 
   EXPECT_EQ(manager_for_provider1->GetStatus(), ProviderStatus::kReady);
 
   EXPECT_CALL(*mock_provider1, Shutdown()).WillOnce(Return(absl::OkStatus()));
-  repo.SetProvider(domain_a, mock_provider2, ctx, true);
+  repo_.SetProvider(domain_a, mock_provider2, ctx_, true);
 
   EXPECT_EQ(manager_for_provider1->GetStatus(), ProviderStatus::kNotReady);
 }

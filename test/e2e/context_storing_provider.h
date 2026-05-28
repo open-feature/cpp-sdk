@@ -5,6 +5,8 @@
 #include <string>
 #include <string_view>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
@@ -22,25 +24,25 @@ class ContextStoringProvider : public openfeature::FeatureProvider {
 
   openfeature::Metadata GetMetadata() const override;
 
-  std::unique_ptr<openfeature::BoolResolutionDetails> GetBooleanEvaluation(
-      std::string_view key, bool default_value,
-      const openfeature::EvaluationContext& ctx) override;
+  absl::StatusOr<std::unique_ptr<openfeature::BoolResolutionDetails>>
+  GetBooleanEvaluation(std::string_view key, bool default_value,
+                       const openfeature::EvaluationContext& ctx) override;
 
-  std::unique_ptr<openfeature::StringResolutionDetails> GetStringEvaluation(
-      std::string_view key, std::string_view default_value,
-      const openfeature::EvaluationContext& ctx) override;
+  absl::StatusOr<std::unique_ptr<openfeature::StringResolutionDetails>>
+  GetStringEvaluation(std::string_view key, std::string_view default_value,
+                      const openfeature::EvaluationContext& ctx) override;
 
-  std::unique_ptr<openfeature::IntResolutionDetails> GetIntegerEvaluation(
-      std::string_view key, int64_t default_value,
-      const openfeature::EvaluationContext& ctx) override;
+  absl::StatusOr<std::unique_ptr<openfeature::IntResolutionDetails>>
+  GetIntegerEvaluation(std::string_view key, int64_t default_value,
+                       const openfeature::EvaluationContext& ctx) override;
 
-  std::unique_ptr<openfeature::DoubleResolutionDetails> GetDoubleEvaluation(
-      std::string_view key, double default_value,
-      const openfeature::EvaluationContext& ctx) override;
+  absl::StatusOr<std::unique_ptr<openfeature::DoubleResolutionDetails>>
+  GetDoubleEvaluation(std::string_view key, double default_value,
+                      const openfeature::EvaluationContext& ctx) override;
 
-  std::unique_ptr<openfeature::ObjectResolutionDetails> GetObjectEvaluation(
-      std::string_view key, openfeature::Value default_value,
-      const openfeature::EvaluationContext& ctx) override;
+  absl::StatusOr<std::unique_ptr<openfeature::ObjectResolutionDetails>>
+  GetObjectEvaluation(std::string_view key, openfeature::Value default_value,
+                      const openfeature::EvaluationContext& ctx) override;
 };
 
 }  // namespace openfeature_e2e

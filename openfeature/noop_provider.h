@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 
+#include "absl/status/statusor.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
@@ -23,27 +24,27 @@ class NoopProvider : public FeatureProvider {
   Metadata GetMetadata() const override;
 
   // BooleanEvaluation returns a boolean flag.
-  std::unique_ptr<BoolResolutionDetails> GetBooleanEvaluation(
+  absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> GetBooleanEvaluation(
       std::string_view flag, bool default_value,
       const EvaluationContext& ctx) override;
 
   // StringResolutionDetails returns a string flag.
-  std::unique_ptr<StringResolutionDetails> GetStringEvaluation(
+  absl::StatusOr<std::unique_ptr<StringResolutionDetails>> GetStringEvaluation(
       std::string_view flag, std::string_view default_value,
       const EvaluationContext& ctx) override;
 
   // IntResolutionDetails returns an integer flag.
-  std::unique_ptr<IntResolutionDetails> GetIntegerEvaluation(
+  absl::StatusOr<std::unique_ptr<IntResolutionDetails>> GetIntegerEvaluation(
       std::string_view flag, int64_t default_value,
       const EvaluationContext& ctx) override;
 
   // DoubleResolutionDetails returns a double flag.
-  std::unique_ptr<DoubleResolutionDetails> GetDoubleEvaluation(
+  absl::StatusOr<std::unique_ptr<DoubleResolutionDetails>> GetDoubleEvaluation(
       std::string_view flag, double default_value,
       const EvaluationContext& ctx) override;
 
   // ObjectResolutionDetails returns an object flag.
-  std::unique_ptr<ObjectResolutionDetails> GetObjectEvaluation(
+  absl::StatusOr<std::unique_ptr<ObjectResolutionDetails>> GetObjectEvaluation(
       std::string_view flag, Value default_value,
       const EvaluationContext& ctx) override;
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.0](https://github.com/open-feature/cpp-sdk/compare/v0.0.2...v0.1.0) (2026-06-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* provider exceptions crash the caller ([#97](https://github.com/open-feature/cpp-sdk/issues/97))
+
+### Bug Fixes
+
+* provider exceptions crash the caller ([#97](https://github.com/open-feature/cpp-sdk/issues/97)) ([f4d3423](https://github.com/open-feature/cpp-sdk/commit/f4d3423ab656291030ddf0349d4e158533cc0e79))
+
 ## [0.0.2](https://github.com/open-feature/cpp-sdk/compare/v0.0.1...v0.0.2) (2026-06-23)
 
 

@@ -132,10 +132,15 @@ std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
   try {
     auto result = provider_call(provider, merged_context);
 
-    if (!result.ok() || *result == nullptr) {
+    if (!result.ok()) {
       return std::make_unique<ResolutionDetailsType>(
           default_value, Reason::kError, std::nullopt, FlagMetadata(),
           ErrorCode::kGeneral, std::string(result.status().message()));
+    }
+    if (*result == nullptr) {
+      return std::make_unique<ResolutionDetailsType>(
+          default_value, Reason::kError, std::nullopt, FlagMetadata(),
+          ErrorCode::kGeneral, "Provider returned null resolution details");
     }
     return std::move(*result);
   } catch (const std::exception& e) {

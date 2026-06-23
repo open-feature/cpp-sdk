@@ -40,7 +40,7 @@ class ClientAPITest : public ::testing::Test {
   ProviderRepository repo_;
 };
 
-constexpr int unknown_exception_error = 43;
+constexpr int kUnknownExceptionError = 43;
 
 // Test that the constructor correctly sets the domain in the metadata.
 TEST_F(ClientAPITest, ConstructorSetsDomainMetadata) {
@@ -308,7 +308,7 @@ TEST_F(ClientAPITest, EvaluateFlagHandlesProviderUnknownException) {
       .WillRepeatedly(testing::Invoke(
           [](std::string_view, bool, const EvaluationContext&)
               -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
-            throw unknown_exception_error;
+            throw kUnknownExceptionError;
             return absl::InternalError("unreachable");
           }));
 

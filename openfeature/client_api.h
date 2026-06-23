@@ -134,8 +134,7 @@ std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
         ErrorCode::kProviderFatal, "Provider is in fatal error state");
   }
 
-  std::shared_ptr<FeatureProvider> provider =
-      provider_repository_.GetProvider(domain_);
+  std::shared_ptr<FeatureProvider> provider = manager->GetProvider();
   if (!provider) {
     return std::make_unique<ResolutionDetailsType>(
         default_value, Reason::kError, std::nullopt, FlagMetadata(),

@@ -14,7 +14,7 @@ openfeature::Metadata ContextStoringProvider::GetMetadata() const {
   return openfeature::Metadata{"ContextStoringProvider"};
 }
 
-std::unique_ptr<openfeature::BoolResolutionDetails>
+absl::StatusOr<std::unique_ptr<openfeature::BoolResolutionDetails>>
 ContextStoringProvider::GetBooleanEvaluation(
     std::string_view key, bool default_value,
     const openfeature::EvaluationContext& ctx) {
@@ -25,7 +25,7 @@ ContextStoringProvider::GetBooleanEvaluation(
       openfeature::FlagMetadata{}, std::nullopt, "");
 }
 
-std::unique_ptr<openfeature::StringResolutionDetails>
+absl::StatusOr<std::unique_ptr<openfeature::StringResolutionDetails>>
 ContextStoringProvider::GetStringEvaluation(
     std::string_view key, std::string_view default_value,
     const openfeature::EvaluationContext& ctx) {
@@ -36,7 +36,7 @@ ContextStoringProvider::GetStringEvaluation(
       openfeature::FlagMetadata{}, std::nullopt, "");
 }
 
-std::unique_ptr<openfeature::IntResolutionDetails>
+absl::StatusOr<std::unique_ptr<openfeature::IntResolutionDetails>>
 ContextStoringProvider::GetIntegerEvaluation(
     std::string_view key, int64_t default_value,
     const openfeature::EvaluationContext& ctx) {
@@ -47,7 +47,7 @@ ContextStoringProvider::GetIntegerEvaluation(
       openfeature::FlagMetadata{}, std::nullopt, "");
 }
 
-std::unique_ptr<openfeature::DoubleResolutionDetails>
+absl::StatusOr<std::unique_ptr<openfeature::DoubleResolutionDetails>>
 ContextStoringProvider::GetDoubleEvaluation(
     std::string_view key, double default_value,
     const openfeature::EvaluationContext& ctx) {
@@ -58,7 +58,7 @@ ContextStoringProvider::GetDoubleEvaluation(
       openfeature::FlagMetadata{}, std::nullopt, "");
 }
 
-std::unique_ptr<openfeature::ObjectResolutionDetails>
+absl::StatusOr<std::unique_ptr<openfeature::ObjectResolutionDetails>>
 ContextStoringProvider::GetObjectEvaluation(
     std::string_view key, const openfeature::Value default_value,
     const openfeature::EvaluationContext& ctx) {

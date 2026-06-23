@@ -23,6 +23,7 @@ using ::openfeature::ProviderRepository;
 using ::openfeature::ProviderStatus;
 using ::openfeature::Reason;
 using ::openfeature::Value;
+using ::openfeature::ErrorCode;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::NiceMock;
@@ -318,4 +319,65 @@ TEST_F(ClientAPITest, EvaluateFlagHandlesProviderUnknownException) {
 
   EXPECT_FALSE(client.GetBooleanValue("flag", false));
   EXPECT_TRUE(client.GetBooleanValue("flag", true));
+}
+
+TEST_F(ClientAPITest, EvaluateFlagBlocksWhenProviderNotReady) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+
+  auto status_manager = repo_.GetFeatureProviderStatusManager("test-domain");
+  ASSERT_NE(status_manager, nullptr);
+  status_manager->SetStatus(ProviderStatus::kNotReady);
+  ClientAPI client(repo_, "test-domain");
+
+  EXPECT_TRUE(client.GetBooleanValue("flag", true));
+  EXPECT_FALSE(client.GetBooleanValue("flag", false));
+}
+
+TEST_F(ClientAPITest, EvaluateFlagBlocksWhenProviderFatal) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+
+  auto status_manager = repo_.GetFeatureProviderStatusManager("test-domain");
+  ASSERT_NE(status_manager, nullptr);
+  status_manager->SetStatus(ProviderStatus::kFatal);
+  ClientAPI client(repo_, "test-domain");
+
+  EXPECT_TRUE(client.GetBooleanValue("flag", true));
+}
+
+TEST_F(ClientAPITest, EvaluateFlagProceedsWhenProviderInErrorState) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation("flag", false, _))
+      .WillOnce(Return(std::make_unique<BoolResolutionDetails>(
+          true, Reason::kCached, std::nullopt, FlagMetadata())));
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+
+  auto status_manager = repo_.GetFeatureProviderStatusManager("test-domain");
+  ASSERT_NE(status_manager, nullptr);
+  status_manager->SetStatus(ProviderStatus::kError);
+  ClientAPI client(repo_, "test-domain");
+
+  EXPECT_TRUE(client.GetBooleanValue("flag", false));
+}
+
+TEST_F(ClientAPITest, EvaluateFlagProceedsWhenProviderInStaleState) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation("flag", false, _))
+      .WillOnce(Return(std::make_unique<BoolResolutionDetails>(
+          true, Reason::kCached, std::nullopt, FlagMetadata())));
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+
+  auto status_manager = repo_.GetFeatureProviderStatusManager("test-domain");
+  ASSERT_NE(status_manager, nullptr);
+  status_manager->SetStatus(ProviderStatus::kStale);
+  ClientAPI client(repo_, "test-domain");
+
+  EXPECT_TRUE(client.GetBooleanValue("flag", false));
 }

@@ -124,6 +124,7 @@ cc_library(
         ":provider",
         ":resolution_details",
         ":value",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -165,6 +166,7 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
         ":evaluation_context",
         ":metadata",
         ":resolution_details",

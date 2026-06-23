@@ -23,7 +23,9 @@ cc_library(
         "//openfeature:reason",
         "//openfeature:value",
         "//openfeature:resolution_details",
-        "@googletest//:gtest", 
+        "@googletest//:gtest",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 

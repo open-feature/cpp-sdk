@@ -12,7 +12,17 @@
 #include "openfeature/global_context_manager.h"
 #include "openfeature/provider_status.h"
 
-using namespace openfeature;
+using ::openfeature::BoolResolutionDetails;
+using ::openfeature::ClientAPI;
+using ::openfeature::EvaluationContext;
+using ::openfeature::FlagMetadata;
+using ::openfeature::GlobalContextManager;
+using ::openfeature::Metadata;
+using ::openfeature::MockFeatureProvider;
+using ::openfeature::ProviderRepository;
+using ::openfeature::ProviderStatus;
+using ::openfeature::Reason;
+using ::openfeature::Value;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::NiceMock;
@@ -29,6 +39,8 @@ class ClientAPITest : public ::testing::Test {
   }
   ProviderRepository repo_;
 };
+
+constexpr int kUnknownExceptionError = 43;
 
 // Test that the constructor correctly sets the domain in the metadata.
 TEST_F(ClientAPITest, ConstructorSetsDomainMetadata) {
@@ -227,5 +239,83 @@ TEST_F(ClientAPITest, ContextMergingPrecedence) {
 TEST_F(ClientAPITest, WorksWithEmptyDomain) {
   ClientAPI client(repo_, "");
   EXPECT_EQ(client.GetMetadata().name, "");
+  EXPECT_TRUE(client.GetBooleanValue("flag", true));
+}
+
+TEST_F(ClientAPITest, EvaluateFlagHandlesProviderErrorStatus) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
+      .Times(2)
+      .WillRepeatedly(testing::Invoke(
+          [](std::string_view, bool, const EvaluationContext&)
+              -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
+            return absl::InternalError("Simulated provider error");
+          }));
+
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+  ClientAPI client(repo_, "test-domain");
+
+  EXPECT_FALSE(client.GetBooleanValue("flag", false));
+  EXPECT_TRUE(client.GetBooleanValue("flag", true));
+}
+
+TEST_F(ClientAPITest, EvaluateFlagHandlesProviderNullResolutionDetails) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
+      .Times(2)
+      .WillRepeatedly(testing::Invoke(
+          [](std::string_view, bool, const EvaluationContext&)
+              -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
+            return std::unique_ptr<BoolResolutionDetails>(nullptr);
+          }));
+
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+  ClientAPI client(repo_, "test-domain");
+
+  EXPECT_FALSE(client.GetBooleanValue("flag", false));
+  EXPECT_TRUE(client.GetBooleanValue("flag", true));
+}
+
+TEST_F(ClientAPITest, EvaluateFlagHandlesProviderStdException) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
+      .Times(2)
+      .WillRepeatedly(testing::Invoke(
+          [](std::string_view, bool, const EvaluationContext&)
+              -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
+            throw std::runtime_error("Simulated standard exception");
+            return absl::InternalError("unreachable");
+          }));
+
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+  ClientAPI client(repo_, "test-domain");
+
+  EXPECT_FALSE(client.GetBooleanValue("flag", false));
+  EXPECT_TRUE(client.GetBooleanValue("flag", true));
+}
+
+TEST_F(ClientAPITest, EvaluateFlagHandlesProviderUnknownException) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
+      .Times(2)
+      .WillRepeatedly(testing::Invoke(
+          [](std::string_view, bool, const EvaluationContext&)
+              -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
+            throw kUnknownExceptionError;
+            return absl::InternalError("unreachable");
+          }));
+
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+  ClientAPI client(repo_, "test-domain");
+
+  EXPECT_FALSE(client.GetBooleanValue("flag", false));
   EXPECT_TRUE(client.GetBooleanValue("flag", true));
 }

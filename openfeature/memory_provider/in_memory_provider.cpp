@@ -15,7 +15,7 @@ static constexpr std::string_view kName = "InMemoryProvider";
 
 InMemoryProvider::InMemoryProvider(
     std::unordered_map<std::string, std::any> flags)
-    : flags_(std::move(flags)), status_(ProviderStatus::kNotReady) {}
+    : flags_(std::move(flags)) {}
 
 Metadata InMemoryProvider::GetMetadata() const {
   return Metadata{std::string(kName)};
@@ -50,35 +50,43 @@ void InMemoryProvider::UpdateFlag(std::string key, std::any new_flag) {
   flags_.insert_or_assign(std::move(key), std::move(new_flag));
 }
 
-std::unique_ptr<BoolResolutionDetails> InMemoryProvider::GetBooleanEvaluation(
-    std::string_view key, bool default_value, const EvaluationContext& ctx) {
+absl::StatusOr<std::unique_ptr<BoolResolutionDetails>>
+InMemoryProvider::GetBooleanEvaluation(std::string_view key, bool default_value,
+                                       const EvaluationContext& ctx) {
   return Evaluate<bool>(key, default_value, ctx);
 }
 
-std::unique_ptr<StringResolutionDetails> InMemoryProvider::GetStringEvaluation(
-    std::string_view key, std::string_view default_value,
-    const EvaluationContext& ctx) {
+absl::StatusOr<std::unique_ptr<StringResolutionDetails>>
+InMemoryProvider::GetStringEvaluation(std::string_view key,
+                                      std::string_view default_value,
+                                      const EvaluationContext& ctx) {
   return Evaluate<std::string>(key, std::string(default_value), ctx);
 }
 
-std::unique_ptr<IntResolutionDetails> InMemoryProvider::GetIntegerEvaluation(
-    std::string_view key, int64_t default_value, const EvaluationContext& ctx) {
+absl::StatusOr<std::unique_ptr<IntResolutionDetails>>
+InMemoryProvider::GetIntegerEvaluation(std::string_view key,
+                                       int64_t default_value,
+                                       const EvaluationContext& ctx) {
   return Evaluate<int64_t>(key, default_value, ctx);
 }
 
-std::unique_ptr<DoubleResolutionDetails> InMemoryProvider::GetDoubleEvaluation(
-    std::string_view key, double default_value, const EvaluationContext& ctx) {
+absl::StatusOr<std::unique_ptr<DoubleResolutionDetails>>
+InMemoryProvider::GetDoubleEvaluation(std::string_view key,
+                                      double default_value,
+                                      const EvaluationContext& ctx) {
   return Evaluate<double>(key, default_value, ctx);
 }
 
-std::unique_ptr<ObjectResolutionDetails> InMemoryProvider::GetObjectEvaluation(
-    std::string_view key, Value default_value, const EvaluationContext& ctx) {
+absl::StatusOr<std::unique_ptr<ObjectResolutionDetails>>
+InMemoryProvider::GetObjectEvaluation(std::string_view key, Value default_value,
+                                      const EvaluationContext& ctx) {
   return Evaluate<Value>(key, default_value, ctx);
 }
 
 template <typename T>
 std::unique_ptr<ResolutionDetails<T>> InMemoryProvider::Evaluate(
-    std::string_view key, T default_value, const EvaluationContext& ctx) {
+    std::string_view key, const T& default_value,
+    const EvaluationContext& ctx) {
   std::shared_lock lock(mutex_);
 
   if (status_ != ProviderStatus::kReady) {
@@ -98,14 +106,14 @@ std::unique_ptr<ResolutionDetails<T>> InMemoryProvider::Evaluate(
   }
 
   std::string key_str{key};
-  auto it = flags_.find(key_str);
-  if (it == flags_.end()) {
+  auto flag_it = flags_.find(key_str);
+  if (flag_it == flags_.end()) {
     return std::make_unique<ResolutionDetails<T>>(
         default_value, Reason::kError, std::nullopt, FlagMetadata{},
         ErrorCode::kFlagNotFound, "Flag " + key_str + " not found");
   }
 
-  const Flag<T>* flag = std::any_cast<Flag<T>>(&it->second);
+  const Flag<T>* flag = std::any_cast<Flag<T>>(&flag_it->second);
 
   if (!flag) {
     return std::make_unique<ResolutionDetails<T>>(

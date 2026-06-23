@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/open-feature/cpp-sdk/compare/v0.1.0...v0.1.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* Correct logic for evaluation blocked for ERROR and STALE providers ([#96](https://github.com/open-feature/cpp-sdk/issues/96)) ([9610f71](https://github.com/open-feature/cpp-sdk/commit/9610f71570119dae5e888dbdc7a5cc64a6eb5291))
+
 ## [0.1.0](https://github.com/open-feature/cpp-sdk/compare/v0.0.2...v0.1.0) (2026-06-23)
 
 

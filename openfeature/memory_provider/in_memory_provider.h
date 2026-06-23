@@ -33,9 +33,10 @@ class InMemoryProvider : public FeatureProvider {
   absl::Status Init(const EvaluationContext& ctx) override;
   absl::Status Shutdown() override;
 
-  // Updates the provider flags configuration. All existing flags will be
-  // replaced with the new ones. If there are any new flags, they will be
-  // added to the configuration.
+  // Updates the provider flags configuration by merging the new flags. Existing
+  // flags with the same keys will be replaced with their new configurations,
+  // and any new flags will be added. Existing flags that are not present in the
+  // `new_flags` map are retained.
   void UpdateFlags(std::unordered_map<std::string, std::any> new_flags);
 
   // Updates a single flag in the provider configuration. If the flag already

@@ -12,17 +12,17 @@
 #include "openfeature/global_context_manager.h"
 #include "openfeature/provider_status.h"
 
-using ::openfeature::ClientAPI;
-using ::openfeature::ProviderRepository;
-using ::openfeature::EvaluationContext;
-using ::openfeature::GlobalContextManager;
-using ::openfeature::ProviderStatus;
 using ::openfeature::BoolResolutionDetails;
-using ::openfeature::Reason;
+using ::openfeature::ClientAPI;
+using ::openfeature::EvaluationContext;
 using ::openfeature::FlagMetadata;
-using ::openfeature::Value;
-using ::openfeature::MockFeatureProvider;
+using ::openfeature::GlobalContextManager;
 using ::openfeature::Metadata;
+using ::openfeature::MockFeatureProvider;
+using ::openfeature::ProviderRepository;
+using ::openfeature::ProviderStatus;
+using ::openfeature::Reason;
+using ::openfeature::Value;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::NiceMock;
@@ -39,6 +39,8 @@ class ClientAPITest : public ::testing::Test {
   }
   ProviderRepository repo_;
 };
+
+constexpr int unknown_exception_error = 43;
 
 // Test that the constructor correctly sets the domain in the metadata.
 TEST_F(ClientAPITest, ConstructorSetsDomainMetadata) {
@@ -306,7 +308,7 @@ TEST_F(ClientAPITest, EvaluateFlagHandlesProviderUnknownException) {
       .WillRepeatedly(testing::Invoke(
           [](std::string_view, bool, const EvaluationContext&)
               -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
-            throw 42;
+            throw unknown_exception_error;
             return absl::InternalError("unreachable");
           }));
 

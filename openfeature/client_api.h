@@ -118,7 +118,7 @@ std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
   if (!manager) {
     return std::make_unique<ResolutionDetailsType>(
         default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kProviderFatal,
+        ErrorCode::kGeneral,
         "Provider status manager not found for domain");
   }
 

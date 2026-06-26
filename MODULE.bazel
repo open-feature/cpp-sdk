@@ -23,7 +23,7 @@ git_repository(
     name = "cwt_cucumber",
     build_file = "//test/e2e:cwt_cucumber.BUILD",
     remote = "https://github.com/ThoSe1990/cwt-cucumber.git",
-    tag = "2.8",
+    tag = "2.9",
 )
 
 # Fetch OpenFeature spec for Gherkin scenarios

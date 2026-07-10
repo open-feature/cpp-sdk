@@ -70,7 +70,7 @@ TEST_F(HookDataTest, SetAndGetPrimitiveTypes) {
   ASSERT_NE(int_ptr, nullptr);
   EXPECT_EQ(*int_ptr, kIntValue);
 
-  std::string* str_ptr = hook_data_.GetAs<std::string>(kStringKey);
+  auto str_ptr = hook_data_.GetAs<std::string>(kStringKey);
   ASSERT_NE(str_ptr, nullptr);
   EXPECT_EQ(*str_ptr, kStringValue);
 
@@ -78,7 +78,7 @@ TEST_F(HookDataTest, SetAndGetPrimitiveTypes) {
   ASSERT_NE(bool_ptr, nullptr);
   EXPECT_EQ(*bool_ptr, kBoolValue);
 
-  double* double_ptr = hook_data_.GetAs<double>(kDoubleKey);
+  auto double_ptr = hook_data_.GetAs<double>(kDoubleKey);
   ASSERT_NE(double_ptr, nullptr);
   EXPECT_DOUBLE_EQ(*double_ptr, kDoubleValue);
 }
@@ -100,7 +100,7 @@ TEST_F(HookDataTest, SetOverwritesExistingKeyWithDifferentType) {
   hook_data_.Set(kDynamicKey, std::string(kDynamicStringValue));
   EXPECT_EQ(hook_data_.GetAs<int>(kDynamicKey), nullptr);
 
-  std::string* str_ptr = hook_data_.GetAs<std::string>(kDynamicKey);
+  auto str_ptr = hook_data_.GetAs<std::string>(kDynamicKey);
   ASSERT_NE(str_ptr, nullptr);
   EXPECT_EQ(*str_ptr, kDynamicStringValue);
 }
@@ -123,8 +123,7 @@ TEST_F(HookDataTest, SetAndGetCustomStruct) {
   CustomEvaluationState state{kInitialCallCount, std::string(kBeforeStageName)};
   hook_data_.Set(kCustomStateKey, state);
 
-  CustomEvaluationState* retrieved =
-      hook_data_.GetAs<CustomEvaluationState>(kCustomStateKey);
+  auto retrieved = hook_data_.GetAs<CustomEvaluationState>(kCustomStateKey);
   ASSERT_NE(retrieved, nullptr);
   EXPECT_EQ(retrieved->call_count, kInitialCallCount);
   EXPECT_EQ(retrieved->step_name, kBeforeStageName);
@@ -135,14 +134,12 @@ TEST_F(HookDataTest, ModifyStoredValueInPlaceViaGetAs) {
       kStageTrackerKey,
       CustomEvaluationState{kInitialCallCount, std::string(kBeforeStage)});
 
-  CustomEvaluationState* state_ptr =
-      hook_data_.GetAs<CustomEvaluationState>(kStageTrackerKey);
+  auto state_ptr = hook_data_.GetAs<CustomEvaluationState>(kStageTrackerKey);
   ASSERT_NE(state_ptr, nullptr);
   state_ptr->call_count++;
   state_ptr->step_name = kAfterStage;
 
-  CustomEvaluationState* updated_ptr =
-      hook_data_.GetAs<CustomEvaluationState>(kStageTrackerKey);
+  auto updated_ptr = hook_data_.GetAs<CustomEvaluationState>(kStageTrackerKey);
   ASSERT_NE(updated_ptr, nullptr);
   EXPECT_EQ(updated_ptr->call_count, kUpdatedCallCount);
   EXPECT_EQ(updated_ptr->step_name, kAfterStage);

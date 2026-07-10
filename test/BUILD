@@ -97,3 +97,12 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "hook_data_test",
+    srcs = ["hook_data_test.cpp"],
+    deps = [
+        "//openfeature:hook_data",
+        "@googletest//:gtest_main",
+    ],
+)

@@ -9,42 +9,42 @@
 namespace openfeature {
 namespace {
 
-constexpr char kNonExistentKey[] = "non_existent_key";
+constexpr std::string_view kNonExistentKey = "non_existent_key";
 
-constexpr char kIntKey[] = "int_attr";
+constexpr std::string_view kIntKey = "int_attr";
 constexpr int kIntValue = 42;
 
-constexpr char kStringKey[] = "string_attr";
-constexpr char kStringValue[] = "hello world";
+constexpr std::string_view kStringKey = "string_attr";
+constexpr std::string_view kStringValue = "hello world";
 
-constexpr char kBoolKey[] = "bool_attr";
+constexpr std::string_view kBoolKey = "bool_attr";
 constexpr bool kBoolValue = true;
 
-constexpr char kDoubleKey[] = "double_attr";
+constexpr std::string_view kDoubleKey = "double_attr";
 constexpr double kDoubleValue = 3.14159;
 
-constexpr char kCounterKey[] = "counter";
+constexpr std::string_view kCounterKey = "counter";
 constexpr int kInitialCounterValue = 100;
 constexpr int kUpdatedCounterValue = 200;
 
-constexpr char kDynamicKey[] = "dynamic_key";
+constexpr std::string_view kDynamicKey = "dynamic_key";
 constexpr int kDynamicIntValue = 12345;
-constexpr char kDynamicStringValue[] = "now a string";
+constexpr std::string_view kDynamicStringValue = "now a string";
 
-constexpr char kMyIntKey[] = "my_int";
+constexpr std::string_view kMyIntKey = "my_int";
 constexpr int kMyIntValue = 99;
 
-constexpr char kCustomStateKey[] = "custom_state";
+constexpr std::string_view kCustomStateKey = "custom_state";
 constexpr int kInitialCallCount = 1;
-constexpr char kBeforeStageName[] = "before_stage";
+constexpr std::string_view kBeforeStageName = "before_stage";
 
-constexpr char kStageTrackerKey[] = "stage_tracker";
-constexpr char kBeforeStage[] = "before";
-constexpr char kAfterStage[] = "after";
+constexpr std::string_view kStageTrackerKey = "stage_tracker";
+constexpr std::string_view kBeforeStage = "before";
+constexpr std::string_view kAfterStage = "after";
 constexpr int kUpdatedCallCount = 2;
 
-constexpr char kSharedKey[] = "shared_key";
-constexpr char kSharedDataValue[] = "shared data";
+constexpr std::string_view kSharedKey = "shared_key";
+constexpr std::string_view kSharedDataValue = "shared data";
 constexpr int kExpectedUseCount = 2;
 
 class HookDataTest : public ::testing::Test {

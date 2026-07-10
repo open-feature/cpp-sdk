@@ -20,9 +20,9 @@ class HookData {
 
   template <typename T>
   T* GetAs(const std::string& key) {
-    auto it = data_.find(key);
-    if (it != data_.end()) {
-      return std::any_cast<T>(&it->second);
+    auto it_key = data_.find(key);
+    if (it_key != data_.end()) {
+      return std::any_cast<T>(&it_key->second);
     }
     return nullptr;
   }

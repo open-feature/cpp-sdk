@@ -11,9 +11,9 @@ void HookData::Set(std::string key, std::any value) {
 }
 
 const std::any* HookData::Get(const std::string& key) const {
-  auto it = data_.find(key);
-  if (it != data_.end()) {
-    return &it->second;
+  auto it_key = data_.find(key);
+  if (it_key != data_.end()) {
+    return &it_key->second;
   }
   return nullptr;
 }

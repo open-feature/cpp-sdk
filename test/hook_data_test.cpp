@@ -7,7 +7,6 @@
 #include <string>
 
 namespace openfeature {
-namespace {
 
 constexpr std::string_view kNonExistentKey = "non_existent_key";
 
@@ -121,7 +120,7 @@ struct CustomEvaluationState {
 };
 
 TEST_F(HookDataTest, SetAndGetCustomStruct) {
-  CustomEvaluationState state{kInitialCallCount, kBeforeStageName};
+  CustomEvaluationState state{kInitialCallCount, std::string(kBeforeStageName)};
   hook_data_.Set(kCustomStateKey, state);
 
   CustomEvaluationState* retrieved =
@@ -132,8 +131,9 @@ TEST_F(HookDataTest, SetAndGetCustomStruct) {
 }
 
 TEST_F(HookDataTest, ModifyStoredValueInPlaceViaGetAs) {
-  hook_data_.Set(kStageTrackerKey,
-                 CustomEvaluationState{kInitialCallCount, kBeforeStage});
+  hook_data_.Set(
+      kStageTrackerKey,
+      CustomEvaluationState{kInitialCallCount, std::string(kBeforeStage)});
 
   CustomEvaluationState* state_ptr =
       hook_data_.GetAs<CustomEvaluationState>(kStageTrackerKey);
@@ -159,5 +159,4 @@ TEST_F(HookDataTest, SetAndGetSharedPtr) {
   EXPECT_EQ(retrieved->use_count(), kExpectedUseCount);
 }
 
-}  // namespace
 }  // namespace openfeature

@@ -3,6 +3,7 @@
 
 #include <any>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 namespace openfeature {
@@ -14,13 +15,13 @@ class HookData {
  public:
   HookData() = default;
 
-  void Set(std::string key, std::any value);
+  void Set(std::string_view key, std::any value);
 
-  const std::any* Get(const std::string& key) const;
+  const std::any* Get(std::string_view key) const;
 
   template <typename T>
-  T* GetAs(const std::string& key) {
-    auto it_key = data_.find(key);
+  T* GetAs(std::string_view key) {
+    auto it_key = data_.find(std::string(key));
     if (it_key != data_.end()) {
       return std::any_cast<T>(&it_key->second);
     }

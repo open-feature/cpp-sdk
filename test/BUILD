@@ -106,3 +106,15 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "hook_context_test",
+    srcs = ["hook_context_test.cpp"],
+    deps = [
+        "//openfeature:evaluation_context",
+        "//openfeature:hook_context",
+        "//openfeature:hook_data",
+        "//openfeature:value",
+        "@googletest//:gtest_main",
+    ],
+)

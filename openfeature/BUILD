@@ -97,6 +97,21 @@ cc_library(
 )
 
 cc_library(
+    name = "hook_context",
+    srcs = ["hook_context.cpp"],
+    hdrs = ["hook_context.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":evaluation_context",
+        ":flag_metadata",
+        ":flag_type_value",
+        ":hook_data",
+        ":metadata",
+        ":value",
+    ],
+)
+
+cc_library(
     name = "hook_data",
     srcs = ["hook_data.cpp"],
     hdrs = ["hook_data.h"],

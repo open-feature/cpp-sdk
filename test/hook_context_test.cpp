@@ -20,15 +20,12 @@ class HookContextTest : public ::testing::Test {
       : initial_ctx_(EvaluationContext::Builder()
                          .WithTargetingKey("initial-user")
                          .WithAttribute("env", std::string("test"))
-                         .build()),
-        client_metadata_{"test-client"},
-        provider_metadata_{"test-provider"},
-        hook_data_(std::make_shared<HookData>()) {}
+                         .build()) {}
 
   EvaluationContext initial_ctx_;
-  Metadata client_metadata_;
-  Metadata provider_metadata_;
-  std::shared_ptr<HookData> hook_data_;
+  Metadata client_metadata_{"test-client"};
+  Metadata provider_metadata_{"test-provider"};
+  std::shared_ptr<HookData> hook_data_{std::make_shared<HookData>()};
 };
 
 TEST_F(HookContextTest, ConstructorAndAccessorsForBool) {
@@ -53,14 +50,14 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForBool) {
 
 TEST_F(HookContextTest, ConstructorAndAccessorsForString) {
   constexpr FlagValueType kType = FlagValueType::kString;
-  const std::string kDefaultValue = "default-string";
+  const std::string default_value = "default-string";
 
-  StringHookContext hook_ctx("string-flag", kType, kDefaultValue, initial_ctx_,
+  StringHookContext hook_ctx("string-flag", kType, default_value, initial_ctx_,
                              client_metadata_, provider_metadata_, hook_data_);
 
   EXPECT_EQ(hook_ctx.GetFlagKey(), "string-flag");
   EXPECT_EQ(hook_ctx.GetType(), kType);
-  EXPECT_EQ(hook_ctx.GetDefaultValue(), kDefaultValue);
+  EXPECT_EQ(hook_ctx.GetDefaultValue(), default_value);
 
   ASSERT_TRUE(hook_ctx.GetEvaluationContext().GetTargetingKey().has_value());
   EXPECT_EQ(hook_ctx.GetEvaluationContext().GetTargetingKey().value(),
@@ -113,9 +110,9 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForDouble) {
 
 TEST_F(HookContextTest, ConstructorAndAccessorsForObject) {
   constexpr FlagValueType kType = FlagValueType::kObject;
-  Value kDefaultValue(std::string("json-or-structure"));
+  Value default_value(std::string("json-or-structure"));
 
-  ObjectHookContext hook_ctx("object-flag", kType, kDefaultValue, initial_ctx_,
+  ObjectHookContext hook_ctx("object-flag", kType, default_value, initial_ctx_,
                              client_metadata_, provider_metadata_, hook_data_);
 
   EXPECT_EQ(hook_ctx.GetFlagKey(), "object-flag");

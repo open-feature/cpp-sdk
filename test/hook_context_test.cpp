@@ -141,11 +141,10 @@ TEST_F(HookContextTest, SetEvaluationContextUpdatesContext) {
   EXPECT_EQ(hook_ctx.GetEvaluationContext().GetTargetingKey().value(),
             "initial-user");
 
-  EvaluationContext updated_ctx =
-      EvaluationContext::Builder()
-          .WithTargetingKey("updated-user")
-          .WithAttribute("env", std::string("prod"))
-          .build();
+  EvaluationContext updated_ctx = EvaluationContext::Builder()
+                                      .WithTargetingKey("updated-user")
+                                      .WithAttribute("env", std::string("prod"))
+                                      .build();
 
   hook_ctx.SetEvaluationContext(std::move(updated_ctx));
 
@@ -168,8 +167,7 @@ TEST_F(HookContextTest, HookDataSharesStateAndAllowsMutations) {
 
   hook_ctx.GetHookData()->Set("custom_key", std::string("stage_before"));
 
-  auto* retrieved =
-      hook_ctx.GetHookData()->GetAs<std::string>("custom_key");
+  auto* retrieved = hook_ctx.GetHookData()->GetAs<std::string>("custom_key");
   ASSERT_NE(retrieved, nullptr);
   EXPECT_EQ(*retrieved, "stage_before");
 }

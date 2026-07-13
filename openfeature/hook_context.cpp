@@ -15,7 +15,8 @@ namespace openfeature {
 template <typename T>
 HookContext<T>::HookContext(std::string flag_key, FlagValueType type,
                             T default_value, EvaluationContext ctx,
-                            Metadata client_metadata, Metadata provider_metadata,
+                            Metadata client_metadata,
+                            Metadata provider_metadata,
                             std::shared_ptr<HookData> hook_data)
     : flag_key_(std::move(flag_key)),
       type_(type),
@@ -26,13 +27,19 @@ HookContext<T>::HookContext(std::string flag_key, FlagValueType type,
       hook_data_(std::move(hook_data)) {}
 
 template <typename T>
-const std::string& HookContext<T>::GetFlagKey() const { return flag_key_; }
+const std::string& HookContext<T>::GetFlagKey() const {
+  return flag_key_;
+}
 
 template <typename T>
-FlagValueType HookContext<T>::GetType() const { return type_; }
+FlagValueType HookContext<T>::GetType() const {
+  return type_;
+}
 
 template <typename T>
-const T& HookContext<T>::GetDefaultValue() const { return default_value_; }
+const T& HookContext<T>::GetDefaultValue() const {
+  return default_value_;
+}
 
 template <typename T>
 const EvaluationContext& HookContext<T>::GetEvaluationContext() const {

@@ -112,8 +112,11 @@ cc_test(
     srcs = ["hook_context_test.cpp"],
     deps = [
         "//openfeature:evaluation_context",
+        "//openfeature:flag_metadata",
+        "//openfeature:flag_type_value",
         "//openfeature:hook_context",
         "//openfeature:hook_data",
+        "//openfeature:metadata",
         "//openfeature:value",
         "@googletest//:gtest_main",
     ],

@@ -26,61 +26,61 @@ class TrackingHook : public Hook<T> {
 
   std::optional<EvaluationContext> Before(HookContext<T>& ctx,
                                           const HookHints& hints) override {
-    before_called_ = true;
-    last_flag_key_ = ctx.GetFlagKey();
+    before_called = true;
+    last_flag_key = ctx.GetFlagKey();
     if (auto it_hints = hints.find("before_hint"); it_hints != hints.end()) {
-      last_hint_value_ = std::any_cast<std::string>(it_hints->second);
+      last_hint_value = std::any_cast<std::string>(it_hints->second);
     }
-    if (return_context_.has_value()) {
-      return return_context_;
+    if (return_context.has_value()) {
+      return return_context;
     }
     return std::nullopt;
   }
 
   void After(const HookContext<T>& ctx, const FlagEvaluationDetails<T>& details,
              const HookHints& hints) override {
-    after_called_ = true;
-    last_flag_key_ = ctx.GetFlagKey();
-    last_reason_ = details.GetReason();
+    after_called = true;
+    last_flag_key = ctx.GetFlagKey();
+    last_reason = details.GetReason();
     if (auto it_hints = hints.find("after_hint"); it_hints != hints.end()) {
-      last_hint_value_ = std::any_cast<std::string>(it_hints->second);
+      last_hint_value = std::any_cast<std::string>(it_hints->second);
     }
   }
 
   void Error(const HookContext<T>& ctx, const std::exception& error,
              const HookHints& hints) override {
-    error_called_ = true;
-    last_flag_key_ = ctx.GetFlagKey();
-    last_error_message_ = error.what();
+    error_called = true;
+    last_flag_key = ctx.GetFlagKey();
+    last_error_message = error.what();
     if (auto it_hints = hints.find("error_hint"); it_hints != hints.end()) {
-      last_hint_value_ = std::any_cast<std::string>(it_hints->second);
+      last_hint_value = std::any_cast<std::string>(it_hints->second);
     }
   }
 
   void Finally(const HookContext<T>& ctx,
                const FlagEvaluationDetails<T>& details,
                const HookHints& hints) override {
-    finally_called_ = true;
-    last_flag_key_ = ctx.GetFlagKey();
-    last_reason_ = details.GetReason();
+    finally_called = true;
+    last_flag_key = ctx.GetFlagKey();
+    last_reason = details.GetReason();
     if (auto it_hints = hints.find("finally_hint"); it_hints != hints.end()) {
-      last_hint_value_ = std::any_cast<std::string>(it_hints->second);
+      last_hint_value = std::any_cast<std::string>(it_hints->second);
     }
   }
 
   void SetReturnContext(std::optional<EvaluationContext> ctx) {
-    return_context_ = std::move(ctx);
+    return_context = std::move(ctx);
   }
 
-  bool before_called_ = false;
-  bool after_called_ = false;
-  bool error_called_ = false;
-  bool finally_called_ = false;
-  std::string last_flag_key_;
-  std::string last_hint_value_;
-  std::string last_error_message_;
-  Reason last_reason_ = Reason::kUnknown;
-  std::optional<EvaluationContext> return_context_;
+  bool before_called = false;
+  bool after_called = false;
+  bool error_called = false;
+  bool finally_called = false;
+  std::string last_flag_key;
+  std::string last_hint_value;
+  std::string last_error_message;
+  Reason last_reason = Reason::kUnknown;
+  std::optional<EvaluationContext> return_context;
 };
 
 class HookTest : public ::testing::Test {
@@ -99,43 +99,50 @@ class HookTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(HookTest, DefaultBeforeReturnsNulloptForAllSpecializations) {
+  constexpr bool kBoolValue = true;
+  constexpr int kIntValue = 100;
+  constexpr double kDoubleValue = 3.14;
+  constexpr std::string kStringValue = "val";
+  constexpr Value kObjectValue = Value("obj");
   HookHints hints;
 
   BoolHook bool_hook;
-  BoolHookContext bool_ctx("bool-flag", FlagValueType::kBoolean, true,
+  BoolHookContext bool_ctx("bool-flag", FlagValueType::kBoolean, kBoolValue,
                            initial_ctx_, client_metadata_, provider_metadata_,
                            hook_data_);
   EXPECT_FALSE(bool_hook.Before(bool_ctx, hints).has_value());
 
   StringHook string_hook;
-  StringHookContext string_ctx("string-flag", FlagValueType::kString, "val",
+  StringHookContext string_ctx("string-flag", FlagValueType::kString, kStringValue,
                                initial_ctx_, client_metadata_,
                                provider_metadata_, hook_data_);
   EXPECT_FALSE(string_hook.Before(string_ctx, hints).has_value());
 
   IntHook int_hook;
-  IntHookContext int_ctx("int-flag", FlagValueType::kInteger, 100, initial_ctx_,
+  IntHookContext int_ctx("int-flag", FlagValueType::kInteger, kIntValue, initial_ctx_,
                          client_metadata_, provider_metadata_, hook_data_);
   EXPECT_FALSE(int_hook.Before(int_ctx, hints).has_value());
 
   DoubleHook double_hook;
-  DoubleHookContext double_ctx("double-flag", FlagValueType::kDouble, 3.14,
+  DoubleHookContext double_ctx("double-flag", FlagValueType::kDouble, kDoubleValue,
                                initial_ctx_, client_metadata_,
                                provider_metadata_, hook_data_);
   EXPECT_FALSE(double_hook.Before(double_ctx, hints).has_value());
 
   ObjectHook object_hook;
   ObjectHookContext object_ctx("object-flag", FlagValueType::kObject,
-                               Value("obj"), initial_ctx_, client_metadata_,
+                               kObjectValue, initial_ctx_, client_metadata_,
                                provider_metadata_, hook_data_);
   EXPECT_FALSE(object_hook.Before(object_ctx, hints).has_value());
 }
 
 TEST_F(HookTest, DefaultAfterErrorAndFinallyAreNoOpsWithoutThrowing) {
+  constexpr bool kBoolValue = true;
   BoolHook hook;
-  BoolHookContext ctx("bool-flag", FlagValueType::kBoolean, true, initial_ctx_,
+
+  BoolHookContext ctx("bool-flag", FlagValueType::kBoolean, kBoolValue, initial_ctx_,
                       client_metadata_, provider_metadata_, hook_data_);
-  BoolFlagEvaluationDetails details("bool-flag", true, Reason::kStatic,
+  BoolFlagEvaluationDetails details("bool-flag", kBoolValue, Reason::kStatic,
                                     std::nullopt, FlagMetadata());
   HookHints hints;
   std::runtime_error error("simulated error");
@@ -146,8 +153,9 @@ TEST_F(HookTest, DefaultAfterErrorAndFinallyAreNoOpsWithoutThrowing) {
 }
 
 TEST_F(HookTest, OverriddenBeforeCanModifyAndReturnEvaluationContext) {
+  constexpr bool kBoolValue = true;
   TrackingHook<bool> hook;
-  BoolHookContext ctx("bool-flag", FlagValueType::kBoolean, true, initial_ctx_,
+  BoolHookContext ctx("bool-flag", FlagValueType::kBoolean, kBoolValue, initial_ctx_,
                       client_metadata_, provider_metadata_, hook_data_);
   HookHints hints{{"before_hint", std::any(std::string("hint-val"))}};
 
@@ -160,17 +168,18 @@ TEST_F(HookTest, OverriddenBeforeCanModifyAndReturnEvaluationContext) {
 
   std::optional<EvaluationContext> result = hook.Before(ctx, hints);
 
-  EXPECT_TRUE(hook.before_called_);
-  EXPECT_EQ(hook.last_flag_key_, "bool-flag");
-  EXPECT_EQ(hook.last_hint_value_, "hint-val");
+  EXPECT_TRUE(hook.before_called);
+  EXPECT_EQ(hook.last_flag_key, "bool-flag");
+  EXPECT_EQ(hook.last_hint_value, "hint-val");
   ASSERT_TRUE(result.has_value());
   ASSERT_TRUE(result->GetTargetingKey().has_value());
   EXPECT_EQ(result->GetTargetingKey().value(), "mutated-user");
 }
 
 TEST_F(HookTest, OverriddenAfterReceivesContextDetailsAndHints) {
+  constexpr std::string kStringValue = "default";
   TrackingHook<std::string> hook;
-  StringHookContext ctx("string-flag", FlagValueType::kString, "default",
+  StringHookContext ctx("string-flag", FlagValueType::kString, kStringValue,
                         initial_ctx_, client_metadata_, provider_metadata_,
                         hook_data_);
   StringFlagEvaluationDetails details("string-flag", "variant-val",
@@ -180,42 +189,45 @@ TEST_F(HookTest, OverriddenAfterReceivesContextDetailsAndHints) {
 
   hook.After(ctx, details, hints);
 
-  EXPECT_TRUE(hook.after_called_);
-  EXPECT_EQ(hook.last_flag_key_, "string-flag");
-  EXPECT_EQ(hook.last_reason_, Reason::kTargetingMatch);
-  EXPECT_EQ(hook.last_hint_value_, "after-data");
+  EXPECT_TRUE(hook.after_called);
+  EXPECT_EQ(hook.last_flag_key, "string-flag");
+  EXPECT_EQ(hook.last_reason, Reason::kTargetingMatch);
+  EXPECT_EQ(hook.last_hint_value, "after-data");
 }
 
 TEST_F(HookTest, OverriddenErrorReceivesExceptionAndHints) {
+  constexpr int64_t kIntValue = 42;
   TrackingHook<int64_t> hook;
-  IntHookContext ctx("int-flag", FlagValueType::kInteger, 42, initial_ctx_,
+  IntHookContext ctx("int-flag", FlagValueType::kInteger, kIntValue, initial_ctx_,
                      client_metadata_, provider_metadata_, hook_data_);
   std::runtime_error error("provider timeout error");
   HookHints hints{{"error_hint", std::any(std::string("error-data"))}};
 
   hook.Error(ctx, error, hints);
 
-  EXPECT_TRUE(hook.error_called_);
-  EXPECT_EQ(hook.last_flag_key_, "int-flag");
-  EXPECT_EQ(hook.last_error_message_, "provider timeout error");
-  EXPECT_EQ(hook.last_hint_value_, "error-data");
+  EXPECT_TRUE(hook.error_called);
+  EXPECT_EQ(hook.last_flag_key, "int-flag");
+  EXPECT_EQ(hook.last_error_message, "provider timeout error");
+  EXPECT_EQ(hook.last_hint_value, "error-data");
 }
 
 TEST_F(HookTest, OverriddenFinallyReceivesContextDetailsAndHints) {
+  constexpr double kDoubleValue = 1.0;
+  constexpr double kSecondDoubleValue = 2.718;
   TrackingHook<double> hook;
-  DoubleHookContext ctx("double-flag", FlagValueType::kDouble, 1.0,
+  DoubleHookContext ctx("double-flag", FlagValueType::kDouble, kDoubleValue,
                         initial_ctx_, client_metadata_, provider_metadata_,
                         hook_data_);
-  DoubleFlagEvaluationDetails details("double-flag", 2.718, Reason::kCached,
+  DoubleFlagEvaluationDetails details("double-flag", kSecondDoubleValue, Reason::kCached,
                                       std::nullopt, FlagMetadata());
   HookHints hints{{"finally_hint", std::any(std::string("finally-data"))}};
 
   hook.Finally(ctx, details, hints);
 
-  EXPECT_TRUE(hook.finally_called_);
-  EXPECT_EQ(hook.last_flag_key_, "double-flag");
-  EXPECT_EQ(hook.last_reason_, Reason::kCached);
-  EXPECT_EQ(hook.last_hint_value_, "finally-data");
+  EXPECT_TRUE(hook.finally_called);
+  EXPECT_EQ(hook.last_flag_key, "double-flag");
+  EXPECT_EQ(hook.last_reason, Reason::kCached);
+  EXPECT_EQ(hook.last_hint_value, "finally-data");
 }
 
 TEST_F(HookTest, PolymorphicDestructionViaBaseHookPointer) {

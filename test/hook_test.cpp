@@ -102,8 +102,8 @@ TEST_F(HookTest, DefaultBeforeReturnsNulloptForAllSpecializations) {
   constexpr bool kBoolValue = true;
   constexpr int kIntValue = 100;
   constexpr double kDoubleValue = 3.14;
-  const std::string kStringValue = "val";
-  const Value kObjectValue = Value("obj");
+  const std::string string_value = "val";
+  const Value object_value = Value("obj");
   HookHints hints;
 
   BoolHook bool_hook;
@@ -114,7 +114,7 @@ TEST_F(HookTest, DefaultBeforeReturnsNulloptForAllSpecializations) {
 
   StringHook string_hook;
   StringHookContext string_ctx("string-flag", FlagValueType::kString,
-                               kStringValue, initial_ctx_, client_metadata_,
+                               string_value, initial_ctx_, client_metadata_,
                                provider_metadata_, hook_data_);
   EXPECT_FALSE(string_hook.Before(string_ctx, hints).has_value());
 
@@ -132,7 +132,7 @@ TEST_F(HookTest, DefaultBeforeReturnsNulloptForAllSpecializations) {
 
   ObjectHook object_hook;
   ObjectHookContext object_ctx("object-flag", FlagValueType::kObject,
-                               kObjectValue, initial_ctx_, client_metadata_,
+                               object_value, initial_ctx_, client_metadata_,
                                provider_metadata_, hook_data_);
   EXPECT_FALSE(object_hook.Before(object_ctx, hints).has_value());
 }
@@ -180,9 +180,9 @@ TEST_F(HookTest, OverriddenBeforeCanModifyAndReturnEvaluationContext) {
 }
 
 TEST_F(HookTest, OverriddenAfterReceivesContextDetailsAndHints) {
-  const std::string kStringValue = "default";
+  const std::string string_value = "default";
   TrackingHook<std::string> hook;
-  StringHookContext ctx("string-flag", FlagValueType::kString, kStringValue,
+  StringHookContext ctx("string-flag", FlagValueType::kString, string_value,
                         initial_ctx_, client_metadata_, provider_metadata_,
                         hook_data_);
   StringFlagEvaluationDetails details("string-flag", "variant-val",

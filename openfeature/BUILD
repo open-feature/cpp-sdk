@@ -5,6 +5,12 @@ package(
 )
 
 cc_library(
+    name = "base_hook",
+    hdrs = ["base_hook.h"],
+    include_prefix = "openfeature",
+)
+
+cc_library(
     name = "client",
     hdrs = ["client.h"],
     include_prefix = "openfeature",
@@ -75,6 +81,20 @@ cc_library(
 )
 
 cc_library(
+    name = "flag_evaluation_details",
+    srcs = ["flag_evaluation_details.cpp"],
+    hdrs = ["flag_evaluation_details.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":error_code",
+        ":flag_metadata",
+        ":reason",
+        ":resolution_details",
+        ":value"
+    ],
+)
+
+cc_library(
     name = "flag_metadata",
     hdrs = ["flag_metadata.h"],
     include_prefix = "openfeature",
@@ -122,6 +142,21 @@ cc_library(
     name = "hook_hints",
     hdrs = ["hook_hints.h"],
     include_prefix = "openfeature",
+)
+
+cc_library(
+    name = "hook",
+    srcs = ["hook.cpp"],
+    hdrs = ["hook.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":base_hook",
+        ":evaluation_context",
+        ":flag_evaluation_details",
+        ":hook_context",
+        ":hook_hints",
+        ":value",
+    ],
 )
 
 cc_library(

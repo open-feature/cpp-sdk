@@ -97,6 +97,13 @@ cc_library(
 )
 
 cc_library(
+    name = "hook_data",
+    srcs = ["hook_data.cpp"],
+    hdrs = ["hook_data.h"],
+    include_prefix = "openfeature",
+)
+
+cc_library(
     name = "hook_hints",
     hdrs = ["hook_hints.h"],
     include_prefix = "openfeature",

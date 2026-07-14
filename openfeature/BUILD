@@ -81,6 +81,12 @@ cc_library(
 )
 
 cc_library(
+    name = "flag_type_value",
+    hdrs = ["flag_type_value.h"],
+    include_prefix = "openfeature",
+)
+
+cc_library(
     name = "global_context_manager",
     srcs = ["global_context_manager.cpp"],
     hdrs = ["global_context_manager.h"],
@@ -88,6 +94,12 @@ cc_library(
     deps = [
         ":evaluation_context",
     ],
+)
+
+cc_library(
+    name = "hook_hints",
+    hdrs = ["hook_hints.h"],
+    include_prefix = "openfeature",
 )
 
 cc_library(

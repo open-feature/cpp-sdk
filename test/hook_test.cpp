@@ -102,8 +102,8 @@ TEST_F(HookTest, DefaultBeforeReturnsNulloptForAllSpecializations) {
   constexpr bool kBoolValue = true;
   constexpr int kIntValue = 100;
   constexpr double kDoubleValue = 3.14;
-  constexpr std::string kStringValue = "val";
-  constexpr Value kObjectValue = Value("obj");
+  const std::string kStringValue = "val";
+  const Value kObjectValue = Value("obj");
   HookHints hints;
 
   BoolHook bool_hook;
@@ -180,7 +180,7 @@ TEST_F(HookTest, OverriddenBeforeCanModifyAndReturnEvaluationContext) {
 }
 
 TEST_F(HookTest, OverriddenAfterReceivesContextDetailsAndHints) {
-  constexpr std::string kStringValue = "default";
+  const std::string kStringValue = "default";
   TrackingHook<std::string> hook;
   StringHookContext ctx("string-flag", FlagValueType::kString, kStringValue,
                         initial_ctx_, client_metadata_, provider_metadata_,

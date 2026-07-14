@@ -10,9 +10,9 @@ class BaseHook {
  public:
   BaseHook() = default;
   BaseHook(const BaseHook&) = delete;
-  BaseHook(BaseHook&&) = default;
+  BaseHook(BaseHook&&) = delete;
   BaseHook& operator=(const BaseHook&) = delete;
-  BaseHook& operator=(BaseHook&&) = default;
+  BaseHook& operator=(BaseHook&&) = delete;
   virtual ~BaseHook() = default;
 };
 

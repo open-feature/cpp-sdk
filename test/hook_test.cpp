@@ -7,6 +7,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "openfeature/base_hook.h"
 #include "openfeature/evaluation_context.h"

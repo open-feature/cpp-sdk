@@ -113,19 +113,20 @@ TEST_F(HookTest, DefaultBeforeReturnsNulloptForAllSpecializations) {
   EXPECT_FALSE(bool_hook.Before(bool_ctx, hints).has_value());
 
   StringHook string_hook;
-  StringHookContext string_ctx("string-flag", FlagValueType::kString, kStringValue,
-                               initial_ctx_, client_metadata_,
+  StringHookContext string_ctx("string-flag", FlagValueType::kString,
+                               kStringValue, initial_ctx_, client_metadata_,
                                provider_metadata_, hook_data_);
   EXPECT_FALSE(string_hook.Before(string_ctx, hints).has_value());
 
   IntHook int_hook;
-  IntHookContext int_ctx("int-flag", FlagValueType::kInteger, kIntValue, initial_ctx_,
-                         client_metadata_, provider_metadata_, hook_data_);
+  IntHookContext int_ctx("int-flag", FlagValueType::kInteger, kIntValue,
+                         initial_ctx_, client_metadata_, provider_metadata_,
+                         hook_data_);
   EXPECT_FALSE(int_hook.Before(int_ctx, hints).has_value());
 
   DoubleHook double_hook;
-  DoubleHookContext double_ctx("double-flag", FlagValueType::kDouble, kDoubleValue,
-                               initial_ctx_, client_metadata_,
+  DoubleHookContext double_ctx("double-flag", FlagValueType::kDouble,
+                               kDoubleValue, initial_ctx_, client_metadata_,
                                provider_metadata_, hook_data_);
   EXPECT_FALSE(double_hook.Before(double_ctx, hints).has_value());
 
@@ -140,8 +141,9 @@ TEST_F(HookTest, DefaultAfterErrorAndFinallyAreNoOpsWithoutThrowing) {
   constexpr bool kBoolValue = true;
   BoolHook hook;
 
-  BoolHookContext ctx("bool-flag", FlagValueType::kBoolean, kBoolValue, initial_ctx_,
-                      client_metadata_, provider_metadata_, hook_data_);
+  BoolHookContext ctx("bool-flag", FlagValueType::kBoolean, kBoolValue,
+                      initial_ctx_, client_metadata_, provider_metadata_,
+                      hook_data_);
   BoolFlagEvaluationDetails details("bool-flag", kBoolValue, Reason::kStatic,
                                     std::nullopt, FlagMetadata());
   HookHints hints;
@@ -155,8 +157,9 @@ TEST_F(HookTest, DefaultAfterErrorAndFinallyAreNoOpsWithoutThrowing) {
 TEST_F(HookTest, OverriddenBeforeCanModifyAndReturnEvaluationContext) {
   constexpr bool kBoolValue = true;
   TrackingHook<bool> hook;
-  BoolHookContext ctx("bool-flag", FlagValueType::kBoolean, kBoolValue, initial_ctx_,
-                      client_metadata_, provider_metadata_, hook_data_);
+  BoolHookContext ctx("bool-flag", FlagValueType::kBoolean, kBoolValue,
+                      initial_ctx_, client_metadata_, provider_metadata_,
+                      hook_data_);
   HookHints hints{{"before_hint", std::any(std::string("hint-val"))}};
 
   EvaluationContext modified_ctx =
@@ -198,8 +201,9 @@ TEST_F(HookTest, OverriddenAfterReceivesContextDetailsAndHints) {
 TEST_F(HookTest, OverriddenErrorReceivesExceptionAndHints) {
   constexpr int64_t kIntValue = 42;
   TrackingHook<int64_t> hook;
-  IntHookContext ctx("int-flag", FlagValueType::kInteger, kIntValue, initial_ctx_,
-                     client_metadata_, provider_metadata_, hook_data_);
+  IntHookContext ctx("int-flag", FlagValueType::kInteger, kIntValue,
+                     initial_ctx_, client_metadata_, provider_metadata_,
+                     hook_data_);
   std::runtime_error error("provider timeout error");
   HookHints hints{{"error_hint", std::any(std::string("error-data"))}};
 
@@ -218,8 +222,9 @@ TEST_F(HookTest, OverriddenFinallyReceivesContextDetailsAndHints) {
   DoubleHookContext ctx("double-flag", FlagValueType::kDouble, kDoubleValue,
                         initial_ctx_, client_metadata_, provider_metadata_,
                         hook_data_);
-  DoubleFlagEvaluationDetails details("double-flag", kSecondDoubleValue, Reason::kCached,
-                                      std::nullopt, FlagMetadata());
+  DoubleFlagEvaluationDetails details("double-flag", kSecondDoubleValue,
+                                      Reason::kCached, std::nullopt,
+                                      FlagMetadata());
   HookHints hints{{"finally_hint", std::any(std::string("finally-data"))}};
 
   hook.Finally(ctx, details, hints);

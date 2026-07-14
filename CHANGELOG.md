@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.2](https://github.com/open-feature/cpp-sdk/compare/v0.1.1...v0.1.2) (2026-07-14)
+
+
+### Features
+
+* Add HookContext class ([#115](https://github.com/open-feature/cpp-sdk/issues/115)) ([ec5a971](https://github.com/open-feature/cpp-sdk/commit/ec5a97101d886fc256803353808957ac9b5885b7))
+* Add HookData class.  ([#114](https://github.com/open-feature/cpp-sdk/issues/114)) ([fdac1e0](https://github.com/open-feature/cpp-sdk/commit/fdac1e00715884662c5a1a96054625c2696b9f55))
+* Base data structures fot hook implementation. ([#112](https://github.com/open-feature/cpp-sdk/issues/112)) ([91d1b13](https://github.com/open-feature/cpp-sdk/commit/91d1b13a2cc74bc456dd31d3483be19ad619ac4f))
+
 ## [0.1.1](https://github.com/open-feature/cpp-sdk/compare/v0.1.0...v0.1.1) (2026-06-23)
 
 

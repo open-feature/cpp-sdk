@@ -44,6 +44,8 @@ class InMemoryProvider : public FeatureProvider {
   // will be added to the configuration.
   void UpdateFlag(std::string key, std::any new_flag);
 
+  std::vector<std::shared_ptr<BaseHook>> GetHooks() const override;
+
   absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> GetBooleanEvaluation(
       std::string_view key, bool default_value,
       const EvaluationContext& ctx) override;

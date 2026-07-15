@@ -4,6 +4,10 @@ namespace openfeature {
 
 Metadata NoopProvider::GetMetadata() const { return Metadata{name_}; }
 
+std::vector<std::shared_ptr<BaseHook>> NoopProvider::GetHooks() const {
+  return {};
+}
+
 absl::StatusOr<std::unique_ptr<BoolResolutionDetails>>
 NoopProvider::GetBooleanEvaluation(std::string_view flag, bool default_value,
                                    const EvaluationContext& ctx) {

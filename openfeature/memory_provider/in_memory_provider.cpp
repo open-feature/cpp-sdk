@@ -21,6 +21,10 @@ Metadata InMemoryProvider::GetMetadata() const {
   return Metadata{std::string(kName)};
 }
 
+std::vector<std::shared_ptr<BaseHook>> InMemoryProvider::GetHooks() const {
+  return {};
+}
+
 absl::Status InMemoryProvider::Init(const EvaluationContext& ctx) {
   {
     std::unique_lock lock(mutex_);

@@ -23,6 +23,9 @@ class NoopProvider : public FeatureProvider {
   // Metadata returns the metadata of the provider.
   Metadata GetMetadata() const override;
 
+  // GetHooks returns an empty vector of hooks.
+  std::vector<std::shared_ptr<BaseHook>> GetHooks() const override;
+
   // BooleanEvaluation returns a boolean flag.
   absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> GetBooleanEvaluation(
       std::string_view flag, bool default_value,

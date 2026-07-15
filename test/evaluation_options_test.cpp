@@ -105,15 +105,17 @@ TEST(EvaluationOptionsTest, SupportsCopyAndMoveSemantics) {
   EvaluationOptions copy_constructed(original);
   EXPECT_EQ(copy_constructed.hooks.size(), 1);
   EXPECT_EQ(copy_constructed.hooks[0], hook);
-  EXPECT_EQ(std::any_cast<std::string>(copy_constructed.hook_hints[trace_id_key]),
-            trace_id_value);
+  EXPECT_EQ(
+      std::any_cast<std::string>(copy_constructed.hook_hints[trace_id_key]),
+      trace_id_value);
 
   // Move construction
   EvaluationOptions moved_constructed(std::move(original));
   EXPECT_EQ(moved_constructed.hooks.size(), 1);
   EXPECT_EQ(moved_constructed.hooks[0], hook);
-  EXPECT_EQ(std::any_cast<std::string>(moved_constructed.hook_hints[trace_id_key]),
-            trace_id_value);
+  EXPECT_EQ(
+      std::any_cast<std::string>(moved_constructed.hook_hints[trace_id_key]),
+      trace_id_value);
 }
 
 }  // namespace openfeature

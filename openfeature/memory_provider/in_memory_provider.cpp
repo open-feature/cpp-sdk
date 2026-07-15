@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "absl/status/statusor.h"
+#include "openfeature/base_hook.h"
 #include "openfeature/error_code.h"
 #include "openfeature/memory_provider/flag.h"
 #include "openfeature/reason.h"

@@ -198,6 +198,7 @@ cc_library(
     hdrs = ["noop_provider.h"],
     include_prefix = "openfeature",
     deps = [
+        ":base_hook",
         ":evaluation_context",
         ":metadata",
         ":provider",

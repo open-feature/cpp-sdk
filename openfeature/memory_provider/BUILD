@@ -21,6 +21,7 @@ cc_library(
     hdrs = ["in_memory_provider.h"],
     include_prefix = "openfeature",
     deps = [
+        "//openfeature:base_hook",
         "//openfeature:error_code",
         "//openfeature:evaluation_context",
         ":flag",

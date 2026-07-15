@@ -8,6 +8,7 @@ cc_library(
     name = "mock_feature_provider",
     hdrs = ["mocks/mock_feature_provider.h"],
     deps = [
+        "//openfeature:base_hook",
         "//openfeature:provider",
         "@googletest//:gtest",
     ],

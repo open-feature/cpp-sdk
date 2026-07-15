@@ -10,6 +10,7 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "openfeature/base_hook.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"

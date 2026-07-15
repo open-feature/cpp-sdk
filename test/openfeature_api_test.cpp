@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "mocks/mock_feature_provider.h"
+#include "openfeature/hook.h"
 #include "openfeature/noop_provider.h"
 
 using namespace openfeature;
@@ -20,7 +21,7 @@ class OpenFeatureAPITest : public ::testing::Test {
   void SetUp() override {}
   void TearDown() override {
     api.Shutdown();
-    api.SetEvaluationContext(EvaluationContext ::Builder().build());
+    api.SetEvaluationContext(EvaluationContext::Builder().build());
   }
 
   OpenFeatureAPI& api = OpenFeatureAPI::GetInstance();
@@ -200,5 +201,106 @@ TEST_F(OpenFeatureAPITest, GetNamedClient) {
   EXPECT_EQ(named_client->GetMetadata().name, "some-domain");
 }
 
-// TODO: Add tests for "GetEvaluationContext" and "SetEvaluationContext" once.
-// EvaluationContext logic is implemented.
+// Test that default global evaluation context is empty.
+TEST_F(OpenFeatureAPITest, DefaultEvaluationContextIsEmpty) {
+  EvaluationContext ctx = api.GetEvaluationContext();
+  EXPECT_FALSE(ctx.GetTargetingKey().has_value());
+  EXPECT_TRUE(ctx.GetAttributes().empty());
+}
+
+// Test setting and retrieving the global evaluation context.
+TEST_F(OpenFeatureAPITest, SetAndGetGlobalEvaluationContext) {
+  EvaluationContext new_ctx =
+      EvaluationContext::Builder()
+          .WithTargetingKey("global-user-123")
+          .WithAttribute("environment", std::string("production"))
+          .WithAttribute("app_version", std::string("2.1.0"))
+          .build();
+
+  api.SetEvaluationContext(new_ctx);
+
+  EvaluationContext retrieved_ctx = api.GetEvaluationContext();
+  ASSERT_TRUE(retrieved_ctx.GetTargetingKey().has_value());
+  EXPECT_EQ(retrieved_ctx.GetTargetingKey().value(), "global-user-123");
+
+  const std::any* env_val = retrieved_ctx.GetValue("environment");
+  ASSERT_NE(env_val, nullptr);
+  EXPECT_EQ(std::any_cast<std::string>(*env_val), "production");
+
+  const std::any* version_val = retrieved_ctx.GetValue("app_version");
+  ASSERT_NE(version_val, nullptr);
+  EXPECT_EQ(std::any_cast<std::string>(*version_val), "2.1.0");
+}
+
+// Test overwriting an existing global evaluation context.
+TEST_F(OpenFeatureAPITest, OverwriteGlobalEvaluationContext) {
+  EvaluationContext first_ctx =
+      EvaluationContext::Builder().WithTargetingKey("user-initial").build();
+  api.SetEvaluationContext(first_ctx);
+  EXPECT_EQ(api.GetEvaluationContext().GetTargetingKey().value(),
+            "user-initial");
+
+  EvaluationContext updated_ctx =
+      EvaluationContext::Builder().WithTargetingKey("user-updated").build();
+  api.SetEvaluationContext(updated_ctx);
+  EXPECT_EQ(api.GetEvaluationContext().GetTargetingKey().value(),
+            "user-updated");
+}
+
+namespace {
+class DummyHook1 : public BoolHook {};
+class DummyHook2 : public StringHook {};
+}  // namespace
+
+// Test that GetHooks returns an empty vector initially.
+TEST_F(OpenFeatureAPITest, InitialStateHasEmptyHooks) {
+  EXPECT_TRUE(api.GetHooks().empty());
+}
+
+// Test adding a single hook via AddHook.
+TEST_F(OpenFeatureAPITest, AddHookAppendsSingleHook) {
+  std::shared_ptr<BaseHook> hook1 = std::make_shared<DummyHook1>();
+  api.AddHook(hook1);
+
+  auto hooks = api.GetHooks();
+  ASSERT_EQ(hooks.size(), 1);
+  EXPECT_EQ(hooks[0], hook1);
+}
+
+// Test adding multiple hooks via AddHooks and preserving registration order.
+TEST_F(OpenFeatureAPITest, AddHooksAppendsMultipleHooksAndPreservesOrder) {
+  std::shared_ptr<BaseHook> hook1 = std::make_shared<DummyHook1>();
+  std::shared_ptr<BaseHook> hook2 = std::make_shared<DummyHook2>();
+
+  api.AddHooks({hook1, hook2});
+
+  auto hooks = api.GetHooks();
+  ASSERT_EQ(hooks.size(), 2);
+  EXPECT_EQ(hooks[0], hook1);
+  EXPECT_EQ(hooks[1], hook2);
+
+  // Adding another hook appends without clearing existing ones (Req 1.1.4)
+  std::shared_ptr<BaseHook> hook3 = std::make_shared<DummyHook1>();
+  api.AddHook(hook3);
+
+  hooks = api.GetHooks();
+  ASSERT_EQ(hooks.size(), 3);
+  EXPECT_EQ(hooks[0], hook1);
+  EXPECT_EQ(hooks[1], hook2);
+  EXPECT_EQ(hooks[2], hook3);
+}
+
+// Test that Shutdown clears all registered global hooks (Req 1.6.2).
+TEST_F(OpenFeatureAPITest, ShutdownClearsAllGlobalHooks) {
+  std::shared_ptr<BaseHook> hook1 = std::make_shared<DummyHook1>();
+  std::shared_ptr<BaseHook> hook2 = std::make_shared<DummyHook2>();
+  api.AddHooks({hook1, hook2});
+
+  ASSERT_EQ(api.GetHooks().size(), 2);
+
+  api.Shutdown();
+
+  EXPECT_TRUE(api.GetHooks().empty())
+      << "Shutdown must clear all registered global hooks.";
+}
+

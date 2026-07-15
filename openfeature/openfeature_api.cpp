@@ -77,6 +77,27 @@ ProviderStatus OpenFeatureAPI::GetProviderStatus(
   return provider_repository_.GetProviderStatus(domain);
 }
 
-void OpenFeatureAPI::Shutdown() { provider_repository_.Shutdown(); }
+void OpenFeatureAPI::AddHooks(std::vector<std::shared_ptr<BaseHook>> hooks) {
+  std::unique_lock lock(hooks_mutex_);
+  hooks_.insert(hooks_.end(), std::make_move_iterator(hooks.begin()),
+                std::make_move_iterator(hooks.end()));
+}
+
+void OpenFeatureAPI::AddHook(std::shared_ptr<BaseHook> hook) {
+  if (hook == nullptr) return;
+  std::unique_lock lock(hooks_mutex_);
+  hooks_.push_back(std::move(hook));
+}
+
+std::vector<std::shared_ptr<BaseHook>> OpenFeatureAPI::GetHooks() const {
+  std::shared_lock lock(hooks_mutex_);
+  return hooks_;
+}
+
+void OpenFeatureAPI::Shutdown() {
+  provider_repository_.Shutdown();
+  std::unique_lock lock(hooks_mutex_);
+  hooks_.clear();
+}
 
 }  // namespace openfeature

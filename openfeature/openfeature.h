@@ -5,7 +5,9 @@
 #include <memory>
 #include <shared_mutex>
 #include <string_view>
+#include <vector>
 
+#include "openfeature/base_hook.h"
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
@@ -56,10 +58,17 @@ class OpenFeature {
   virtual ProviderStatus GetProviderStatus(
       std::string_view domain = "") const = 0;
 
+  // Adds one or more global hooks. Previously added hooks are not removed.
+  virtual void AddHooks(std::vector<std::shared_ptr<BaseHook>> hooks) = 0;
+
+  // Adds a single hook to the global hook repository.
+  virtual void AddHook(std::shared_ptr<BaseHook> hook) = 0;
+
+  // Retrieves all configured global hooks.
+  virtual std::vector<std::shared_ptr<BaseHook>> GetHooks() const = 0;
+
   // Shuts down all providers and resets the API to its initial state.
   virtual void Shutdown() = 0;
-
-  // TODO: Add methods to add and get Hooks.
 };
 
 }  // namespace openfeature

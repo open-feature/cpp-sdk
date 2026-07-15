@@ -85,6 +85,8 @@ cc_test(
     srcs = ["openfeature_api_test.cpp"],
     deps = [
         ":mock_feature_provider",
+        "//openfeature:base_hook",
+        "//openfeature:hook",
         "//openfeature:openfeature_api",
         "@googletest//:gtest_main",
     ],

@@ -246,6 +246,7 @@ cc_library(
     deps = [
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
+        ":base_hook",
         ":evaluation_context",
         ":metadata",
         ":resolution_details",

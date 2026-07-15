@@ -143,3 +143,15 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "evaluation_options_test",
+    srcs = ["evaluation_options_test.cpp"],
+    deps = [
+        "//openfeature:base_hook",
+        "//openfeature:evaluation_options",
+        "//openfeature:hook",
+        "//openfeature:hook_hints",
+        "@googletest//:gtest_main",
+    ],
+)

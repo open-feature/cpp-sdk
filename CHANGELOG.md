@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/open-feature/cpp-sdk/compare/v0.1.2...v0.1.3) (2026-07-16)
+
+
+### Bug Fixes
+
+* race condition between status check and provider lookup ([#108](https://github.com/open-feature/cpp-sdk/issues/108)) ([59b2342](https://github.com/open-feature/cpp-sdk/commit/59b234239bfb5af3c92e3101b24da71e0a38969f))
+
 ## [0.1.2](https://github.com/open-feature/cpp-sdk/compare/v0.1.1...v0.1.2) (2026-07-14)
 
 

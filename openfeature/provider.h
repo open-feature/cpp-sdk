@@ -6,6 +6,7 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "openfeature/base_hook.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
 #include "openfeature/resolution_details.h"
@@ -24,6 +25,7 @@ class FeatureProvider {
  public:
   virtual ~FeatureProvider() = default;
   virtual Metadata GetMetadata() const = 0;
+  virtual std::vector<std::shared_ptr<BaseHook>> GetHooks() const = 0;
   virtual absl::StatusOr<std::unique_ptr<BoolResolutionDetails>>
   GetBooleanEvaluation(std::string_view flag, bool default_value,
                        const EvaluationContext& ctx) = 0;

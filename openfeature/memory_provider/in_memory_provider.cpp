@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "absl/status/statusor.h"
+#include "openfeature/base_hook.h"
 #include "openfeature/error_code.h"
 #include "openfeature/memory_provider/flag.h"
 #include "openfeature/reason.h"
@@ -19,6 +20,10 @@ InMemoryProvider::InMemoryProvider(
 
 Metadata InMemoryProvider::GetMetadata() const {
   return Metadata{std::string(kName)};
+}
+
+std::vector<std::shared_ptr<BaseHook>> InMemoryProvider::GetHooks() const {
+  return {};
 }
 
 absl::Status InMemoryProvider::Init(const EvaluationContext& ctx) {

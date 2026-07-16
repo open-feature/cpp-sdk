@@ -8,6 +8,7 @@ cc_library(
     name = "mock_feature_provider",
     hdrs = ["mocks/mock_feature_provider.h"],
     deps = [
+        "//openfeature:base_hook",
         "//openfeature:provider",
         "@googletest//:gtest",
     ],
@@ -38,6 +39,15 @@ cc_test(
     srcs = ["resolution_details_test.cpp"],
     deps = [
         "//openfeature:resolution_details",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "flag_evaluation_details_test",
+    srcs = ["flag_evaluation_details_test.cpp"],
+    deps = [
+        "//openfeature:flag_evaluation_details",
         "@googletest//:gtest_main",
     ],
 )
@@ -112,12 +122,37 @@ cc_test(
     srcs = ["hook_context_test.cpp"],
     deps = [
         "//openfeature:evaluation_context",
-        "//openfeature:flag_metadata",
-        "//openfeature:flag_type_value",
         "//openfeature:hook_context",
         "//openfeature:hook_data",
-        "//openfeature:metadata",
         "//openfeature:value",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "hook_test",
+    srcs = ["hook_test.cpp"],
+    deps = [
+        "//openfeature:base_hook",
+        "//openfeature:evaluation_context",
+        "//openfeature:flag_evaluation_details",
+        "//openfeature:flag_metadata",
+        "//openfeature:hook",
+        "//openfeature:hook_context",
+        "//openfeature:hook_hints",
+        "//openfeature:value",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "evaluation_options_test",
+    srcs = ["evaluation_options_test.cpp"],
+    deps = [
+        "//openfeature:base_hook",
+        "//openfeature:evaluation_options",
+        "//openfeature:hook",
+        "//openfeature:hook_hints",
         "@googletest//:gtest_main",
     ],
 )

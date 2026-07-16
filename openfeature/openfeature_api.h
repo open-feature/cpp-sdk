@@ -21,7 +21,7 @@ namespace openfeature {
 // library.
 class OpenFeatureAPI : public OpenFeature {
  public:
-  ~OpenFeatureAPI() = default;
+  ~OpenFeatureAPI() override = default;
 
   // Get the singleton instance of the OpenFeatureAPI.
   static OpenFeatureAPI& GetInstance();
@@ -45,8 +45,9 @@ class OpenFeatureAPI : public OpenFeature {
   // If the domain is empty then GetProvider returns the default provider
   // otherwise it returns the provider for the domain. If this domain has no
   // provider bound, it returns the default provider.
+  std::shared_ptr<FeatureProvider> GetProvider() const override;
   std::shared_ptr<FeatureProvider> GetProvider(
-      std::string_view domain = "") const override;
+      std::string_view domain) const override;
 
   // Gets a client for the default domain.
   std::shared_ptr<Client> GetClient() override;
@@ -62,11 +63,13 @@ class OpenFeatureAPI : public OpenFeature {
 
   // Get metadata about the default provider if domain is empty
   // or about a named provider if domain is provided.
-  Metadata GetProviderMetadata(std::string_view domain = "") const override;
+  Metadata GetProviderMetadata() const override;
+  Metadata GetProviderMetadata(std::string_view domain) const override;
 
   // Fetches the status of a provider for a domain. If the domain is not set or
   // not found, it returns the default provider status.
-  ProviderStatus GetProviderStatus(std::string_view domain = "") const override;
+  ProviderStatus GetProviderStatus() const override;
+  ProviderStatus GetProviderStatus(std::string_view domain) const override;
 
   // Adds one or more global hooks. Previously added hooks are not removed.
   void AddHooks(std::vector<std::shared_ptr<BaseHook>> hooks) override;

@@ -5,11 +5,7 @@
 
 namespace openfeature {
 
-OpenFeatureAPI::OpenFeatureAPI() {
-  // provider_repository_ is automatically constructed.
-  // It guarantees a NoopProvider is set by default.
-  // TODO: init hooks & events.
-}
+OpenFeatureAPI::OpenFeatureAPI() = default;
 
 OpenFeatureAPI& OpenFeatureAPI::GetInstance() {
   static OpenFeatureAPI instance;
@@ -43,6 +39,10 @@ void OpenFeatureAPI::SetProviderAndWait(
       GlobalContextManager::GetInstance().GetGlobalEvaluationContext(), true);
 }
 
+std::shared_ptr<FeatureProvider> OpenFeatureAPI::GetProvider() const {
+  return GetProvider("");
+}
+
 std::shared_ptr<FeatureProvider> OpenFeatureAPI::GetProvider(
     std::string_view domain) const {
   return provider_repository_.GetProvider(domain);
@@ -63,13 +63,21 @@ EvaluationContext OpenFeatureAPI::GetEvaluationContext() const {
   return GlobalContextManager::GetInstance().GetGlobalEvaluationContext();
 }
 
+Metadata OpenFeatureAPI::GetProviderMetadata() const {
+  return GetProviderMetadata("");
+}
+
 Metadata OpenFeatureAPI::GetProviderMetadata(std::string_view domain) const {
   std::shared_ptr<FeatureProvider> provider =
       provider_repository_.GetProvider(domain);
   if (provider) {
     return provider->GetMetadata();
   }
-  return Metadata();  // Return empty metadata if provider not found
+  return {};  // Return empty metadata if provider not found
+}
+
+ProviderStatus OpenFeatureAPI::GetProviderStatus() const {
+  return GetProviderStatus("");
 }
 
 ProviderStatus OpenFeatureAPI::GetProviderStatus(
@@ -78,9 +86,12 @@ ProviderStatus OpenFeatureAPI::GetProviderStatus(
 }
 
 void OpenFeatureAPI::AddHooks(std::vector<std::shared_ptr<BaseHook>> hooks) {
-  std::unique_lock lock(hooks_mutex_);
-  hooks_.insert(hooks_.end(), std::make_move_iterator(hooks.begin()),
-                std::make_move_iterator(hooks.end()));
+  hooks_.reserve(hooks_.size() + hooks.size());
+  for (auto& hook : hooks) {
+    if (hook != nullptr) {
+      hooks_.push_back(std::move(hook));
+    }
+  }
 }
 
 void OpenFeatureAPI::AddHook(std::shared_ptr<BaseHook> hook) {

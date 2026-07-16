@@ -290,6 +290,39 @@ TEST_F(OpenFeatureAPITest, AddHooksAppendsMultipleHooksAndPreservesOrder) {
   EXPECT_EQ(hooks[2], hook3);
 }
 
+// Test fetching status for default and named providers.
+TEST_F(OpenFeatureAPITest, GetProviderStatusDefaultAndNamed) {
+  // Default provider (NoopProvider) is READY upon initialization
+  EXPECT_EQ(api.GetProviderStatus(), ProviderStatus::kReady);
+
+  std::shared_ptr<MockFeatureProvider> mock_provider =
+      std::make_shared<MockFeatureProvider>();
+  std::string domain = "status-domain";
+
+  EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
+
+  // Prior to registration, provider status for unknown domain returns default
+  // status (kReady)
+  EXPECT_EQ(api.GetProviderStatus(domain), ProviderStatus::kReady);
+
+  api.SetProviderAndWait(domain, mock_provider);
+
+  EXPECT_EQ(api.GetProviderStatus(domain), ProviderStatus::kReady);
+}
+
+// Test that AddHook and AddHooks filter out nullptr entries.
+TEST_F(OpenFeatureAPITest, AddHookAndAddHooksFiltersNullptrs) {
+  api.AddHook(nullptr);
+  EXPECT_TRUE(api.GetHooks().empty());
+
+  std::shared_ptr<BaseHook> valid_hook = std::make_shared<DummyHook1>();
+  api.AddHooks({nullptr, valid_hook, nullptr});
+
+  auto hooks = api.GetHooks();
+  ASSERT_EQ(hooks.size(), 1);
+  EXPECT_EQ(hooks[0], valid_hook);
+}
+
 // Test that Shutdown clears all registered global hooks (Req 1.6.2).
 TEST_F(OpenFeatureAPITest, ShutdownClearsAllGlobalHooks) {
   std::shared_ptr<BaseHook> hook1 = std::make_shared<DummyHook1>();
@@ -303,4 +336,3 @@ TEST_F(OpenFeatureAPITest, ShutdownClearsAllGlobalHooks) {
   EXPECT_TRUE(api.GetHooks().empty())
       << "Shutdown must clear all registered global hooks.";
 }
-

@@ -86,6 +86,7 @@ ProviderStatus OpenFeatureAPI::GetProviderStatus(
 }
 
 void OpenFeatureAPI::AddHooks(std::vector<std::shared_ptr<BaseHook>> hooks) {
+  std::unique_lock lock(hooks_mutex_);
   hooks_.reserve(hooks_.size() + hooks.size());
   for (auto& hook : hooks) {
     if (hook != nullptr) {

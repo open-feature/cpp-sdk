@@ -5,7 +5,9 @@
 #include <memory>
 #include <shared_mutex>
 #include <string_view>
+#include <vector>
 
+#include "openfeature/base_hook.h"
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/metadata.h"
@@ -35,8 +37,9 @@ class OpenFeature {
   // If the domain is empty then GetProvider returns the default provider
   // otherwise it returns the provider for the domain. If this domain has no
   // provider bound, it returns the default provider.
+  virtual std::shared_ptr<FeatureProvider> GetProvider() const = 0;
   virtual std::shared_ptr<FeatureProvider> GetProvider(
-      std::string_view domain = "") const = 0;
+      std::string_view domain) const = 0;
 
   virtual std::shared_ptr<Client> GetClient() = 0;
 
@@ -48,18 +51,27 @@ class OpenFeature {
   // Gets the global evaluation context.
   virtual EvaluationContext GetEvaluationContext() const = 0;
 
-  // Gets the metadata for a provider bound to a specific domain.
-  virtual Metadata GetProviderMetadata(std::string_view domain = "") const = 0;
+  // Gets the metadata for the default provider or a provider bound to a
+  // specific domain.
+  virtual Metadata GetProviderMetadata() const = 0;
+  virtual Metadata GetProviderMetadata(std::string_view domain) const = 0;
 
   // Fetches the status of a provider for a domain. If the domain is not set or
   // not found, it returns the default provider status.
-  virtual ProviderStatus GetProviderStatus(
-      std::string_view domain = "") const = 0;
+  virtual ProviderStatus GetProviderStatus() const = 0;
+  virtual ProviderStatus GetProviderStatus(std::string_view domain) const = 0;
+
+  // Adds one or more global hooks. Previously added hooks are not removed.
+  virtual void AddHooks(std::vector<std::shared_ptr<BaseHook>> hooks) = 0;
+
+  // Adds a single hook to the global hook repository.
+  virtual void AddHook(std::shared_ptr<BaseHook> hook) = 0;
+
+  // Retrieves all configured global hooks.
+  virtual std::vector<std::shared_ptr<BaseHook>> GetHooks() const = 0;
 
   // Shuts down all providers and resets the API to its initial state.
   virtual void Shutdown() = 0;
-
-  // TODO: Add methods to add and get Hooks.
 };
 
 }  // namespace openfeature

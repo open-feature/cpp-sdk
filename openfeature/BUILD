@@ -5,6 +5,12 @@ package(
 )
 
 cc_library(
+    name = "base_hook",
+    hdrs = ["base_hook.h"],
+    include_prefix = "openfeature",
+)
+
+cc_library(
     name = "client",
     hdrs = ["client.h"],
     include_prefix = "openfeature",
@@ -51,6 +57,16 @@ cc_library(
 )
 
 cc_library(
+    name = "evaluation_options",
+    hdrs = ["evaluation_options.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":base_hook",
+        ":hook_hints",
+    ],
+)
+
+cc_library(
     name = "feature_provider_status_manager",
     srcs = ["feature_provider_status_manager.cpp"],
     hdrs = ["feature_provider_status_manager.h"],
@@ -70,6 +86,20 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         ":evaluation_context",
+        ":value"
+    ],
+)
+
+cc_library(
+    name = "flag_evaluation_details",
+    srcs = ["flag_evaluation_details.cpp"],
+    hdrs = ["flag_evaluation_details.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":error_code",
+        ":flag_metadata",
+        ":reason",
+        ":resolution_details",
         ":value"
     ],
 )
@@ -125,6 +155,21 @@ cc_library(
 )
 
 cc_library(
+    name = "hook",
+    srcs = ["hook.cpp"],
+    hdrs = ["hook.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":base_hook",
+        ":evaluation_context",
+        ":flag_evaluation_details",
+        ":hook_context",
+        ":hook_hints",
+        ":value",
+    ],
+)
+
+cc_library(
     name = "metadata",
     hdrs = ["metadata.h"],
     include_prefix = "openfeature",
@@ -136,6 +181,7 @@ cc_library(
     hdrs = ["openfeature_api.h"],
     include_prefix = "openfeature",
     deps = [
+        ":base_hook",
         ":client",
         ":client_api",
         ":evaluation_context",
@@ -153,6 +199,7 @@ cc_library(
     hdrs = ["noop_provider.h"],
     include_prefix = "openfeature",
     deps = [
+        ":base_hook",
         ":evaluation_context",
         ":metadata",
         ":provider",
@@ -167,6 +214,7 @@ cc_library(
     hdrs = ["openfeature.h"],
     include_prefix = "openfeature",
     deps = [
+        ":base_hook",
         ":client",
         ":evaluation_context",
         ":metadata",
@@ -201,6 +249,7 @@ cc_library(
     deps = [
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
+        ":base_hook",
         ":evaluation_context",
         ":metadata",
         ":resolution_details",

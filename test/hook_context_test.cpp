@@ -200,10 +200,14 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForDouble) {
 
 TEST_F(HookContextTest, ConstructorAndAccessorsForObject) {
   constexpr FlagValueType kType = FlagValueType::kObject;
+  constexpr bool kFeatureEnabled = true;
+  constexpr int64_t kMaxItems = 100LL;
+  const std::string default_theme = "dark";
+
   std::map<std::string, Value> object_map{
-      {"feature_enabled", Value(true)},
-      {"max_items", Value(int64_t(100LL))},
-      {"theme", Value(std::string("dark"))}};
+      {"feature_enabled", Value(kFeatureEnabled)},
+      {"max_items", Value(kMaxItems)},
+      {"theme", Value(std::string(default_theme))}};
   Value default_value(object_map);
 
   ObjectHookContext hook_ctx("object-flag", kType, default_value, initial_ctx_,
@@ -214,9 +218,10 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForObject) {
   ASSERT_TRUE(hook_ctx.GetDefaultValue().IsStructure());
   const auto* struct_map = hook_ctx.GetDefaultValue().AsStructure();
   ASSERT_NE(struct_map, nullptr);
-  EXPECT_EQ(struct_map->at("feature_enabled").AsBool().value(), true);
-  EXPECT_EQ(struct_map->at("max_items").AsInt().value(), 100LL);
-  EXPECT_EQ(struct_map->at("theme").AsString().value(), "dark");
+  EXPECT_EQ(struct_map->at("feature_enabled").AsBool().value(),
+            kFeatureEnabled);
+  EXPECT_EQ(struct_map->at("max_items").AsInt().value(), kMaxItems);
+  EXPECT_EQ(struct_map->at("theme").AsString().value(), default_theme);
 
   ASSERT_TRUE(hook_ctx.GetEvaluationContext().GetTargetingKey().has_value());
   EXPECT_EQ(hook_ctx.GetEvaluationContext().GetTargetingKey().value(),
@@ -230,9 +235,11 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForObject) {
   ASSERT_TRUE(default_val.IsStructure());
   ASSERT_NE(default_val.AsStructure(), nullptr);
   EXPECT_EQ(default_val.AsStructure()->at("feature_enabled").AsBool().value(),
-            true);
-  EXPECT_EQ(default_val.AsStructure()->at("max_items").AsInt().value(), 100LL);
-  EXPECT_EQ(default_val.AsStructure()->at("theme").AsString().value(), "dark");
+            kFeatureEnabled);
+  EXPECT_EQ(default_val.AsStructure()->at("max_items").AsInt().value(),
+            kMaxItems);
+  EXPECT_EQ(default_val.AsStructure()->at("theme").AsString().value(),
+            default_theme);
 
   // Upcast to general interface reference (as a General Hook receives):
   GeneralHookContext& general_ctx = hook_ctx;

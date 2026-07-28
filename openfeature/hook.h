@@ -31,11 +31,11 @@ class Hook : public GeneralHook {
   Hook& operator=(const Hook&) = delete;
   Hook(Hook&&) = delete;
   Hook& operator=(Hook&&) = delete;
-  ~Hook() override = default;
+  ~Hook() = default;
 
   // Runs before the flag evaluation occurs.
-  std::optional<EvaluationContext> Before(
-      GeneralHookContext& ctx, const HookHints& hints) override final {
+  std::optional<EvaluationContext> Before(GeneralHookContext& ctx,
+                                          const HookHints& hints) final {
     if (auto* typed_ctx = dynamic_cast<HookContext<T>*>(&ctx)) {
       return Before(*typed_ctx, hints);
     }
@@ -45,7 +45,7 @@ class Hook : public GeneralHook {
   // Runs immediately after successful flag evaluation occurs.
   void After(const GeneralHookContext& ctx,
              const GeneralFlagEvaluationDetails& details,
-             const HookHints& hints) override final {
+             const HookHints& hints) final {
     auto* typed_ctx = dynamic_cast<const HookContext<T>*>(&ctx);
     auto* typed_details =
         dynamic_cast<const FlagEvaluationDetails<T>*>(&details);
@@ -55,9 +55,9 @@ class Hook : public GeneralHook {
   }
 
   // Runs if an error occurs during flag evaluation or in `Before`/`After`
-  // stages.§
+  // stages.
   void Error(const GeneralHookContext& ctx, const std::exception& error,
-             const HookHints& hints) override final {
+             const HookHints& hints) final {
     if (auto* typed_ctx = dynamic_cast<const HookContext<T>*>(&ctx)) {
       Error(*typed_ctx, error, hints);
     }
@@ -67,7 +67,7 @@ class Hook : public GeneralHook {
   // successful or not.
   void Finally(const GeneralHookContext& ctx,
                const GeneralFlagEvaluationDetails& details,
-               const HookHints& hints) override final {
+               const HookHints& hints) final {
     auto* typed_ctx = dynamic_cast<const HookContext<T>*>(&ctx);
     auto* typed_details =
         dynamic_cast<const FlagEvaluationDetails<T>*>(&details);

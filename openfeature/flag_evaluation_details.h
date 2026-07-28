@@ -31,7 +31,7 @@ class FlagEvaluationDetails : public ResolutionDetails<T>,
   FlagEvaluationDetails& operator=(const FlagEvaluationDetails&) = default;
   FlagEvaluationDetails(FlagEvaluationDetails&&) noexcept = default;
   FlagEvaluationDetails& operator=(FlagEvaluationDetails&&) noexcept = default;
-  ~FlagEvaluationDetails() = default;
+  ~FlagEvaluationDetails() override = default;
 
   std::string_view GetFlagKey() const override;
   Reason GetReason() const override;

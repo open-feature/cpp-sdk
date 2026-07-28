@@ -5,9 +5,41 @@ package(
 )
 
 cc_library(
-    name = "base_hook",
-    hdrs = ["base_hook.h"],
+    name = "general_flag_evaluation_details",
+    hdrs = ["general_flag_evaluation_details.h"],
     include_prefix = "openfeature",
+    deps = [
+        ":error_code",
+        ":flag_metadata",
+        ":reason",
+        ":value",
+    ],
+)
+
+cc_library(
+    name = "general_hook_context",
+    hdrs = ["general_hook_context.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":evaluation_context",
+        ":flag_type_value",
+        ":hook_data",
+        ":metadata",
+        ":value",
+    ],
+)
+
+cc_library(
+    name = "general_hook",
+    hdrs = ["general_hook.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":evaluation_context",
+        ":general_flag_evaluation_details",
+        ":general_hook_context",
+        ":hook_hints",
+        ":value",
+    ],
 )
 
 cc_library(
@@ -86,6 +118,7 @@ cc_library(
     hdrs = ["flag_evaluation_details.h"],
     include_prefix = "openfeature",
     deps = [
+        ":general_flag_evaluation_details",
         ":error_code",
         ":flag_metadata",
         ":reason",
@@ -122,6 +155,7 @@ cc_library(
     hdrs = ["hook_context.h"],
     include_prefix = "openfeature",
     deps = [
+        "general_hook_context",
         ":evaluation_context",
         ":flag_metadata",
         ":flag_type_value",
@@ -150,7 +184,9 @@ cc_library(
     hdrs = ["hook.h"],
     include_prefix = "openfeature",
     deps = [
-        ":base_hook",
+        ":general_flag_evaluation_details",
+        ":general_hook_context",
+        ":general_hook",
         ":evaluation_context",
         ":flag_evaluation_details",
         ":hook_context",

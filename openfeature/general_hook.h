@@ -26,7 +26,7 @@ class GeneralHook {
   virtual ~GeneralHook() = default;
 
   // 1. Before: Runs before flag evaluation occurs.
-  virtual std::optional<EvaluationContext> Before(GeneralHookContext& ctx,
+  virtual std::optional<EvaluationContext> Before(const GeneralHookContext& ctx,
                                                   const HookHints& hints) {
     return std::nullopt;
   }

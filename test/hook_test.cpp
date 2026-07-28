@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "openfeature/general_hook.h"
 #include "openfeature/evaluation_context.h"
-#include "openfeature/general_flag_evaluation_details.h"
 #include "openfeature/flag_metadata.h"
+#include "openfeature/general_flag_evaluation_details.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/hook_context.h"
 #include "openfeature/hook_hints.h"
 #include "openfeature/value.h"
@@ -25,7 +25,7 @@ class TrackingHook : public Hook<T> {
  public:
   TrackingHook() = default;
 
-  std::optional<EvaluationContext> Before(HookContext<T>& ctx,
+  std::optional<EvaluationContext> Before(const HookContext<T>& ctx,
                                           const HookHints& hints) override {
     before_called = true;
     last_flag_key = ctx.GetFlagKey();
@@ -86,7 +86,7 @@ class TrackingHook : public Hook<T> {
 
 class GeneralTrackingHook : public GeneralHook {
  public:
-  std::optional<EvaluationContext> Before(GeneralHookContext& ctx,
+  std::optional<EvaluationContext> Before(const GeneralHookContext& ctx,
                                           const HookHints& hints) override {
     before_called = true;
     last_flag_key = ctx.GetFlagKey();

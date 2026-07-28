@@ -31,12 +31,12 @@ class Hook : public GeneralHook {
   Hook& operator=(const Hook&) = delete;
   Hook(Hook&&) = delete;
   Hook& operator=(Hook&&) = delete;
-  ~Hook() = default;
+  ~Hook() override = default;
 
   // Runs before the flag evaluation occurs.
-  std::optional<EvaluationContext> Before(GeneralHookContext& ctx,
+  std::optional<EvaluationContext> Before(const GeneralHookContext& ctx,
                                           const HookHints& hints) final {
-    if (auto* typed_ctx = dynamic_cast<HookContext<T>*>(&ctx)) {
+    if (auto* typed_ctx = dynamic_cast<const HookContext<T>*>(&ctx)) {
       return Before(*typed_ctx, hints);
     }
     return std::nullopt;
@@ -77,7 +77,7 @@ class Hook : public GeneralHook {
   }
 
   // Typed virtual methods for type-specific subclasses to override:
-  virtual std::optional<EvaluationContext> Before(HookContext<T>& ctx,
+  virtual std::optional<EvaluationContext> Before(const HookContext<T>& ctx,
                                                   const HookHints& hints) {
     return std::nullopt;
   }

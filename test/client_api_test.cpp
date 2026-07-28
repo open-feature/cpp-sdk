@@ -3,8 +3,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <atomic>
+#include <chrono>
+#include <future>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include "absl/status/status.h"
 #include "mocks/mock_feature_provider.h"
@@ -42,6 +46,7 @@ class ClientAPITest : public ::testing::Test {
 };
 
 constexpr int kUnknownExceptionError = 43;
+constexpr int kSleepTimeMs = 10;
 
 // Test that the constructor correctly sets the domain in the metadata.
 TEST_F(ClientAPITest, ConstructorSetsDomainMetadata) {
@@ -380,4 +385,58 @@ TEST_F(ClientAPITest, EvaluateFlagProceedsWhenProviderInStaleState) {
   ClientAPI client(repo_, "test-domain");
 
   EXPECT_TRUE(client.GetBooleanValue("flag", false));
+}
+
+TEST_F(ClientAPITest, ParallelProviderSwapRaceCondition) {
+  std::string domain = "race-domain";
+  ClientAPI client(repo_, domain);
+  std::atomic<bool> running{true};
+
+  auto ready_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  ON_CALL(*ready_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
+  ON_CALL(*ready_provider, GetBooleanEvaluation(_, _, _))
+      .WillByDefault(testing::Invoke(
+          [](std::string_view, bool, const EvaluationContext&)
+              -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
+            return std::make_unique<BoolResolutionDetails>(
+                true, Reason::kTargetingMatch, std::nullopt, FlagMetadata());
+          }));
+  repo_.SetProvider(domain, ready_provider,
+                    EvaluationContext::Builder().build(), true);
+
+  std::thread evaluation_thread([&]() {
+    while (running) {
+      client.GetBooleanValue("flag", false);
+      std::this_thread::yield();  // Friendly to single-core CI runners
+    }
+  });
+
+  auto not_ready_provider = std::make_shared<StrictMock<MockFeatureProvider>>();
+
+  auto init_called = std::make_shared<std::promise<void>>();
+  auto proceed_init = std::make_shared<std::promise<void>>();
+  std::shared_future<void> proceed_future = proceed_init->get_future().share();
+
+  EXPECT_CALL(*not_ready_provider, Init(_))
+      .WillOnce(testing::Invoke([init_called, proceed_future](
+                                    const EvaluationContext&) -> absl::Status {
+        init_called->set_value();
+        proceed_future.wait();
+        return absl::OkStatus();
+      }));
+
+  EXPECT_CALL(*not_ready_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+  EXPECT_CALL(*not_ready_provider, Shutdown())
+      .Times(testing::AtMost(1))
+      .WillOnce(Return(absl::OkStatus()));
+
+  repo_.SetProvider(domain, not_ready_provider,
+                    EvaluationContext::Builder().build(), false);
+
+  init_called->get_future().wait();
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(kSleepTimeMs));
+  running = false;
+  evaluation_thread.join();
+  proceed_init->set_value();
 }

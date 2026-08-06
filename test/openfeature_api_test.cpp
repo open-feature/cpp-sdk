@@ -20,7 +20,7 @@ class OpenFeatureAPITest : public ::testing::Test {
   void SetUp() override {}
   void TearDown() override {
     api.Shutdown();
-    api.SetEvaluationContext(EvaluationContext ::Builder().build());
+    api.SetEvaluationContext(EvaluationContext::Builder().build());
   }
 
   OpenFeatureAPI& api = OpenFeatureAPI::GetInstance();

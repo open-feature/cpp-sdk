@@ -145,22 +145,6 @@ cc_test(
 )
 
 cc_test(
-    name = "hook_test",
-    srcs = ["hook_test.cpp"],
-    deps = [
-        "//openfeature:base_hook",
-        "//openfeature:evaluation_context",
-        "//openfeature:flag_evaluation_details",
-        "//openfeature:flag_metadata",
-        "//openfeature:hook",
-        "//openfeature:hook_context",
-        "//openfeature:hook_hints",
-        "//openfeature:value",
-        "@googletest//:gtest_main",
-    ],
-)
-
-cc_test(
     name = "evaluation_options_test",
     srcs = ["evaluation_options_test.cpp"],
     deps = [

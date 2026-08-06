@@ -201,6 +201,7 @@ TEST_F(OpenFeatureAPITest, GetNamedClient) {
   EXPECT_EQ(named_client->GetMetadata().name, "some-domain");
 }
 
-} // namespace openfeature
 // TODO: Add tests for "GetEvaluationContext" and "SetEvaluationContext" once.
 // EvaluationContext logic is implemented.
+
+}  // namespace openfeature

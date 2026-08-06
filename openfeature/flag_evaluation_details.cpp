@@ -33,6 +33,36 @@ std::string_view FlagEvaluationDetails<T>::GetFlagKey() const {
   return flag_key_;
 }
 
+template <typename T>
+Reason FlagEvaluationDetails<T>::GetReason() const {
+  return ResolutionDetails<T>::GetReason();
+}
+
+template <typename T>
+std::optional<std::string> FlagEvaluationDetails<T>::GetVariant() const {
+  return ResolutionDetails<T>::GetVariant();
+}
+
+template <typename T>
+std::optional<ErrorCode> FlagEvaluationDetails<T>::GetErrorCode() const {
+  return ResolutionDetails<T>::GetErrorCode();
+}
+
+template <typename T>
+std::optional<std::string> FlagEvaluationDetails<T>::GetErrorMessage() const {
+  return ResolutionDetails<T>::GetErrorMessage();
+}
+
+template <typename T>
+const FlagMetadata& FlagEvaluationDetails<T>::GetFlagMetadata() const {
+  return ResolutionDetails<T>::GetFlagMetadata();
+}
+
+template <typename T>
+Value FlagEvaluationDetails<T>::GetValueAsValue() const {
+  return Value(ResolutionDetails<T>::GetValue());
+}
+
 template class FlagEvaluationDetails<bool>;
 template class FlagEvaluationDetails<std::string>;
 template class FlagEvaluationDetails<int64_t>;

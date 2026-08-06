@@ -132,7 +132,7 @@ cc_test(
     name = "hook_test",
     srcs = ["hook_test.cpp"],
     deps = [
-        "//openfeature:base_hook",
+        "//openfeature:general_hook",
         "//openfeature:evaluation_context",
         "//openfeature:flag_evaluation_details",
         "//openfeature:flag_metadata",
@@ -148,7 +148,7 @@ cc_test(
     name = "evaluation_options_test",
     srcs = ["evaluation_options_test.cpp"],
     deps = [
-        "//openfeature:base_hook",
+        "//openfeature:general_hook",
         "//openfeature:evaluation_options",
         "//openfeature:hook",
         "//openfeature:hook_hints",

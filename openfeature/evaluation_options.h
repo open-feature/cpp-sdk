@@ -3,11 +3,11 @@
 #include <memory>
 #include <vector>
 
-#include "openfeature/base_hook.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/hook_hints.h"
 namespace openfeature {
 struct EvaluationOptions {
-  std::vector<std::shared_ptr<BaseHook>> hooks;
+  std::vector<std::shared_ptr<GeneralHook>> hooks;
   HookHints hook_hints;
 };
 }  // namespace openfeature

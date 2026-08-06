@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "openfeature/base_hook.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/hook.h"
 #include "openfeature/hook_hints.h"
 

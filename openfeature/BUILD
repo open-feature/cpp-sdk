@@ -5,6 +5,44 @@ package(
 )
 
 cc_library(
+    name = "general_flag_evaluation_details",
+    hdrs = ["general_flag_evaluation_details.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":error_code",
+        ":flag_metadata",
+        ":reason",
+        ":value",
+    ],
+)
+
+cc_library(
+    name = "general_hook_context",
+    hdrs = ["general_hook_context.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":evaluation_context",
+        ":flag_type_value",
+        ":hook_data",
+        ":metadata",
+        ":value",
+    ],
+)
+
+cc_library(
+    name = "general_hook",
+    hdrs = ["general_hook.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":evaluation_context",
+        ":general_flag_evaluation_details",
+        ":general_hook_context",
+        ":hook_hints",
+        ":value",
+    ],
+)
+
+cc_library(
     name = "client",
     hdrs = ["client.h"],
     include_prefix = "openfeature",
@@ -75,6 +113,21 @@ cc_library(
 )
 
 cc_library(
+    name = "flag_evaluation_details",
+    srcs = ["flag_evaluation_details.cpp"],
+    hdrs = ["flag_evaluation_details.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":general_flag_evaluation_details",
+        ":error_code",
+        ":flag_metadata",
+        ":reason",
+        ":resolution_details",
+        ":value"
+    ],
+)
+
+cc_library(
     name = "flag_metadata",
     hdrs = ["flag_metadata.h"],
     include_prefix = "openfeature",
@@ -102,6 +155,7 @@ cc_library(
     hdrs = ["hook_context.h"],
     include_prefix = "openfeature",
     deps = [
+        "general_hook_context",
         ":evaluation_context",
         ":flag_metadata",
         ":flag_type_value",
@@ -122,6 +176,23 @@ cc_library(
     name = "hook_hints",
     hdrs = ["hook_hints.h"],
     include_prefix = "openfeature",
+)
+
+cc_library(
+    name = "hook",
+    srcs = ["hook.cpp"],
+    hdrs = ["hook.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":general_flag_evaluation_details",
+        ":general_hook_context",
+        ":general_hook",
+        ":evaluation_context",
+        ":flag_evaluation_details",
+        ":hook_context",
+        ":hook_hints",
+        ":value",
+    ],
 )
 
 cc_library(

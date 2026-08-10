@@ -15,7 +15,7 @@ namespace openfeature {
 // OpenFeature client implementation.
 class Client : public Features {
  public:
-  virtual ~Client() = default;
+  ~Client() override = default;
   virtual Metadata GetMetadata() = 0;
 
   // Return an optional client-level evaluation context.

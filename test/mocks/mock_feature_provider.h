@@ -4,6 +4,8 @@
 #include <gmock/gmock.h>
 
 #include <memory>
+#include <string_view>
+#include <vector>
 
 #include "openfeature/general_hook.h"
 #include "openfeature/provider.h"

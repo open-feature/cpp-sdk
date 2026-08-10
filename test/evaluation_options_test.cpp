@@ -5,6 +5,7 @@
 #include <any>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "openfeature/general_hook.h"

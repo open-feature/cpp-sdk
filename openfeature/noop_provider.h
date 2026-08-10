@@ -6,8 +6,8 @@
 #include <string_view>
 
 #include "absl/status/statusor.h"
-#include "openfeature/base_hook.h"
 #include "openfeature/evaluation_context.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
 #include "openfeature/resolution_details.h"
@@ -25,7 +25,7 @@ class NoopProvider : public FeatureProvider {
   Metadata GetMetadata() const override;
 
   // GetHooks returns an empty vector of hooks.
-  std::vector<std::shared_ptr<BaseHook>> GetHooks() const override;
+  std::vector<std::shared_ptr<GeneralHook>> GetHooks() const override;
 
   // BooleanEvaluation returns a boolean flag.
   absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> GetBooleanEvaluation(

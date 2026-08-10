@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "openfeature/base_hook.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/hook.h"
 #include "openfeature/hook_hints.h"
 
@@ -39,7 +39,7 @@ TEST(EvaluationOptionsTest, StoresAndPreservesMultipleHooksInOrder) {
   EXPECT_EQ(options.hooks[2], hook3);
 }
 
-TEST(EvaluationOptionsTest, CanDowncastBaseHookPointersToConcreteTypes) {
+TEST(EvaluationOptionsTest, CanDowncastGeneralHookPointersToConcreteTypes) {
   EvaluationOptions options;
 
   auto bool_hook = std::make_shared<CustomTestHook>();

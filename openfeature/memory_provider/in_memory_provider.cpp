@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "absl/status/statusor.h"
-#include "openfeature/base_hook.h"
 #include "openfeature/error_code.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/memory_provider/flag.h"
 #include "openfeature/reason.h"
 
@@ -22,7 +22,7 @@ Metadata InMemoryProvider::GetMetadata() const {
   return Metadata{std::string(kName)};
 }
 
-std::vector<std::shared_ptr<BaseHook>> InMemoryProvider::GetHooks() const {
+std::vector<std::shared_ptr<GeneralHook>> InMemoryProvider::GetHooks() const {
   return {};
 }
 

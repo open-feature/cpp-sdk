@@ -93,7 +93,7 @@ cc_library(
     hdrs = ["evaluation_options.h"],
     include_prefix = "openfeature",
     deps = [
-        ":base_hook",
+        ":general_hook",
         ":hook_hints",
     ],
 )
@@ -234,7 +234,7 @@ cc_library(
     hdrs = ["noop_provider.h"],
     include_prefix = "openfeature",
     deps = [
-        ":base_hook",
+        ":general_hook",
         ":evaluation_context",
         ":metadata",
         ":provider",
@@ -283,7 +283,7 @@ cc_library(
     deps = [
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
-        ":base_hook",
+        ":general_hook",
         ":evaluation_context",
         ":metadata",
         ":resolution_details",

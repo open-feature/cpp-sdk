@@ -4,7 +4,7 @@ namespace openfeature {
 
 Metadata NoopProvider::GetMetadata() const { return Metadata{name_}; }
 
-std::vector<std::shared_ptr<BaseHook>> NoopProvider::GetHooks() const {
+std::vector<std::shared_ptr<GeneralHook>> NoopProvider::GetHooks() const {
   return {};
 }
 

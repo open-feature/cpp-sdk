@@ -7,6 +7,7 @@
 
 #include "openfeature/error_code.h"
 #include "openfeature/flag_metadata.h"
+#include "openfeature/general_flag_evaluation_details.h"
 #include "openfeature/reason.h"
 #include "openfeature/resolution_details.h"
 #include "openfeature/value.h"
@@ -14,7 +15,8 @@
 namespace openfeature {
 
 template <typename T>
-class FlagEvaluationDetails : public ResolutionDetails<T> {
+class FlagEvaluationDetails : public ResolutionDetails<T>,
+                              public GeneralFlagEvaluationDetails {
  public:
   FlagEvaluationDetails(
       std::string flag_key, T value, Reason reason,
@@ -29,8 +31,16 @@ class FlagEvaluationDetails : public ResolutionDetails<T> {
   FlagEvaluationDetails& operator=(const FlagEvaluationDetails&) = default;
   FlagEvaluationDetails(FlagEvaluationDetails&&) noexcept = default;
   FlagEvaluationDetails& operator=(FlagEvaluationDetails&&) noexcept = default;
-  ~FlagEvaluationDetails() = default;
-  std::string_view GetFlagKey() const;
+  ~FlagEvaluationDetails() override = default;
+
+  std::string_view GetFlagKey() const override;
+  Reason GetReason() const override;
+  std::optional<std::string> GetVariant() const override;
+  std::optional<ErrorCode> GetErrorCode() const override;
+  std::optional<std::string> GetErrorMessage() const override;
+  const FlagMetadata& GetFlagMetadata() const override;
+
+  Value GetValueAsValue() const override;
 
  private:
   std::string flag_key_;

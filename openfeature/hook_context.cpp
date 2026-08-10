@@ -37,6 +37,11 @@ FlagValueType HookContext<T>::GetType() const {
 }
 
 template <typename T>
+Value HookContext<T>::GetDefaultValueAsValue() const {
+  return Value(default_value_);
+}
+
+template <typename T>
 const T& HookContext<T>::GetDefaultValue() const {
   return default_value_;
 }

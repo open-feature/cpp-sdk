@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "openfeature/base_hook.h"
 #include "openfeature/evaluation_context.h"
-#include "openfeature/flag_evaluation_details.h"
 #include "openfeature/flag_metadata.h"
+#include "openfeature/general_flag_evaluation_details.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/hook_context.h"
 #include "openfeature/hook_hints.h"
 #include "openfeature/value.h"
@@ -25,7 +25,7 @@ class TrackingHook : public Hook<T> {
  public:
   TrackingHook() = default;
 
-  std::optional<EvaluationContext> Before(HookContext<T>& ctx,
+  std::optional<EvaluationContext> Before(const HookContext<T>& ctx,
                                           const HookHints& hints) override {
     before_called = true;
     last_flag_key = ctx.GetFlagKey();
@@ -84,6 +84,30 @@ class TrackingHook : public Hook<T> {
   std::optional<EvaluationContext> return_context;
 };
 
+class GeneralTrackingHook : public GeneralHook {
+ public:
+  std::optional<EvaluationContext> Before(const GeneralHookContext& ctx,
+                                          const HookHints& hints) override {
+    before_called = true;
+    last_flag_key = ctx.GetFlagKey();
+    last_default_value = ctx.GetDefaultValueAsValue();
+    return std::nullopt;
+  }
+
+  void After(const GeneralHookContext& ctx,
+             const GeneralFlagEvaluationDetails& details,
+             const HookHints& hints) override {
+    after_called = true;
+    last_evaluated_value = details.GetValueAsValue();
+  }
+
+  bool before_called = false;
+  bool after_called = false;
+  std::string last_flag_key;
+  Value last_default_value;
+  Value last_evaluated_value;
+};
+
 class HookTest : public ::testing::Test {
  protected:
   HookTest()
@@ -98,6 +122,25 @@ class HookTest : public ::testing::Test {
 };
 
 }  // namespace
+
+TEST_F(HookTest, GeneralHookReceivesAnyFlagType) {
+  GeneralTrackingHook general_hook;
+  BoolHookContext bool_ctx("bool-flag", FlagValueType::kBoolean, true,
+                           initial_ctx_, client_metadata_, provider_metadata_,
+                           hook_data_);
+  BoolFlagEvaluationDetails details("bool-flag", true, Reason::kStatic,
+                                    std::nullopt, FlagMetadata());
+  HookHints hints;
+
+  general_hook.Before(bool_ctx, hints);
+  general_hook.After(bool_ctx, details, hints);
+
+  EXPECT_TRUE(general_hook.before_called);
+  EXPECT_TRUE(general_hook.after_called);
+  EXPECT_EQ(general_hook.last_flag_key, "bool-flag");
+  EXPECT_EQ(general_hook.last_default_value.AsBool().value(), true);
+  EXPECT_EQ(general_hook.last_evaluated_value.AsBool().value(), true);
+}
 
 TEST_F(HookTest, DefaultBeforeReturnsNulloptForAllSpecializations) {
   constexpr bool kBoolValue = true;
@@ -236,8 +279,8 @@ TEST_F(HookTest, OverriddenFinallyReceivesContextDetailsAndHints) {
   EXPECT_EQ(hook.last_hint_value, "finally-data");
 }
 
-TEST_F(HookTest, PolymorphicDestructionViaBaseHookPointer) {
-  std::vector<std::unique_ptr<BaseHook>> hooks;
+TEST_F(HookTest, PolymorphicDestructionViaGeneralHookPointer) {
+  std::vector<std::unique_ptr<GeneralHook>> hooks;
   hooks.push_back(std::make_unique<BoolHook>());
   hooks.push_back(std::make_unique<StringHook>());
   hooks.push_back(std::make_unique<IntHook>());
@@ -245,6 +288,43 @@ TEST_F(HookTest, PolymorphicDestructionViaBaseHookPointer) {
   hooks.push_back(std::make_unique<ObjectHook>());
 
   EXPECT_EQ(hooks.size(), 5);
+}
+
+TEST_F(HookTest, PolymorphicDispatchViaGeneralHookReference) {
+  TrackingHook<bool> hook;
+  GeneralHook& general_hook = hook;
+
+  BoolHookContext ctx("bool-flag", FlagValueType::kBoolean, true, initial_ctx_,
+                      client_metadata_, provider_metadata_, hook_data_);
+  BoolFlagEvaluationDetails details("bool-flag", true, Reason::kStatic,
+                                    std::nullopt, FlagMetadata());
+  HookHints hints;
+
+  general_hook.Before(ctx, hints);
+  general_hook.After(ctx, details, hints);
+
+  EXPECT_TRUE(hook.before_called);
+  EXPECT_TRUE(hook.after_called);
+  EXPECT_EQ(hook.last_flag_key, "bool-flag");
+}
+
+TEST_F(HookTest, TypedHookIgnoresMismatchedFlagTypes) {
+  TrackingHook<bool> bool_hook;
+  GeneralHook& general_hook = bool_hook;
+
+  StringHookContext string_ctx("string-flag", FlagValueType::kString, "default",
+                               initial_ctx_, client_metadata_,
+                               provider_metadata_, hook_data_);
+  StringFlagEvaluationDetails details("string-flag", "val", Reason::kStatic,
+                                      std::nullopt, FlagMetadata());
+  HookHints hints;
+
+  std::optional<EvaluationContext> res = general_hook.Before(string_ctx, hints);
+  general_hook.After(string_ctx, details, hints);
+
+  EXPECT_FALSE(res.has_value());
+  EXPECT_FALSE(bool_hook.before_called);
+  EXPECT_FALSE(bool_hook.after_called);
 }
 
 }  // namespace openfeature

@@ -113,7 +113,15 @@ template <typename ResolutionDetailsType, typename ValueType,
 std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
     ValueType default_value, const std::optional<EvaluationContext>& ctx,
     ProviderCallable provider_call) {
-  ProviderStatus status = GetProviderStatus();
+  std::shared_ptr<FeatureProviderStatusManager> manager =
+      provider_repository_.GetFeatureProviderStatusManager(domain_);
+  if (!manager) {
+    return std::make_unique<ResolutionDetailsType>(
+        default_value, Reason::kError, std::nullopt, FlagMetadata(),
+        ErrorCode::kGeneral, "Provider status manager not found for domain");
+  }
+
+  ProviderStatus status = manager->GetStatus();
   if (status == ProviderStatus::kNotReady) {
     return std::make_unique<ResolutionDetailsType>(
         default_value, Reason::kError, std::nullopt, FlagMetadata(),
@@ -125,8 +133,7 @@ std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
         ErrorCode::kProviderFatal, "Provider is in fatal error state");
   }
 
-  std::shared_ptr<FeatureProvider> provider =
-      provider_repository_.GetProvider(domain_);
+  std::shared_ptr<FeatureProvider> provider = manager->GetProvider();
   if (!provider) {
     return std::make_unique<ResolutionDetailsType>(
         default_value, Reason::kError, std::nullopt, FlagMetadata(),

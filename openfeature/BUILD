@@ -49,6 +49,7 @@ cc_library(
     deps = [
         ":evaluation_context",
         ":features",
+        ":general_hook",
         ":metadata",
         ":provider_status",
     ],
@@ -64,6 +65,7 @@ cc_library(
         ":evaluation_context",
         ":features",
         ":flag_metadata",
+        ":general_hook",
         ":global_context_manager",
         ":metadata",
         ":provider",

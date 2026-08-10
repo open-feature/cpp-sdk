@@ -25,7 +25,9 @@ class FeatureProvider {
  public:
   virtual ~FeatureProvider() = default;
   virtual Metadata GetMetadata() const = 0;
-  virtual std::vector<std::shared_ptr<GeneralHook>> GetHooks() const = 0;
+  virtual std::vector<std::shared_ptr<GeneralHook>> GetHooks() const {
+    return {};
+  };
   virtual absl::StatusOr<std::unique_ptr<BoolResolutionDetails>>
   GetBooleanEvaluation(std::string_view flag, bool default_value,
                        const EvaluationContext& ctx) = 0;

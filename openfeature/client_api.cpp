@@ -16,12 +16,12 @@ ClientAPI::ClientAPI(ProviderRepository& repository, std::string_view domain)
 Metadata ClientAPI::GetMetadata() { return Metadata{domain_}; }
 
 EvaluationContext ClientAPI::GetEvaluationContext() {
-  std::lock_guard<std::mutex> lock(context_mutex_);
+  std::scoped_lock<std::mutex> lock(context_mutex_);
   return evaluation_context_;
 }
 
 void ClientAPI::SetEvaluationContext(const EvaluationContext& ctx) {
-  std::lock_guard<std::mutex> lock(context_mutex_);
+  std::scoped_lock<std::mutex> lock(context_mutex_);
   evaluation_context_ = ctx;
 }
 
@@ -234,30 +234,28 @@ EvaluationContext ClientAPI::MergeContexts(
   if (invocation_ctx.has_value()) {
     return EvaluationContext::Merge(
         {&global_ctx, &client_ctx, &(*invocation_ctx)});
-  } else {
     return EvaluationContext::Merge({&global_ctx, &client_ctx});
   }
-}
 
-void ClientAPI::AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) {
-  std::unique_lock lock(hooks_mutex_);
-  hooks_.reserve(hooks_.size() + hooks.size());
-  for (auto& hook : hooks) {
-    if (hook != nullptr) {
-      hooks_.push_back(std::move(hook));
+  void ClientAPI::AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) {
+    std::unique_lock lock(hooks_mutex_);
+    hooks_.reserve(hooks_.size() + hooks.size());
+    for (auto& hook : hooks) {
+      if (hook != nullptr) {
+        hooks_.push_back(std::move(hook));
+      }
     }
   }
-}
 
-void ClientAPI::AddHook(std::shared_ptr<GeneralHook> hook) {
-  if (hook == nullptr) return;
-  std::unique_lock lock(hooks_mutex_);
-  hooks_.push_back(std::move(hook));
-}
+  void ClientAPI::AddHook(std::shared_ptr<GeneralHook> hook) {
+    if (hook == nullptr) return;
+    std::unique_lock lock(hooks_mutex_);
+    hooks_.push_back(std::move(hook));
+  }
 
-std::vector<std::shared_ptr<GeneralHook>> ClientAPI::GetHooks() const {
-  std::shared_lock lock(hooks_mutex_);
-  return hooks_;
-}
+  std::vector<std::shared_ptr<GeneralHook>> ClientAPI::GetHooks() const {
+    std::shared_lock lock(hooks_mutex_);
+    return hooks_;
+  }
 
 }  // namespace openfeature

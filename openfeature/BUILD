@@ -89,6 +89,16 @@ cc_library(
 )
 
 cc_library(
+    name = "evaluation_options",
+    hdrs = ["evaluation_options.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":general_hook",
+        ":hook_hints",
+    ],
+)
+
+cc_library(
     name = "feature_provider_status_manager",
     srcs = ["feature_provider_status_manager.cpp"],
     hdrs = ["feature_provider_status_manager.h"],

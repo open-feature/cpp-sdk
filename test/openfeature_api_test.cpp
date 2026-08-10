@@ -9,9 +9,10 @@
 #include "mocks/mock_feature_provider.h"
 #include "openfeature/noop_provider.h"
 
-using namespace openfeature;
 using ::testing::_;
 using ::testing::Return;
+
+namespace openfeature {
 
 class OpenFeatureAPITest : public ::testing::Test {
  protected:
@@ -19,11 +20,11 @@ class OpenFeatureAPITest : public ::testing::Test {
   // after each test, to reset it to its default state.
   void SetUp() override {}
   void TearDown() override {
-    api.Shutdown();
-    api.SetEvaluationContext(EvaluationContext ::Builder().build());
+    api_.Shutdown();
+    api_.SetEvaluationContext(EvaluationContext::Builder().build());
   }
 
-  OpenFeatureAPI& api = OpenFeatureAPI::GetInstance();
+  OpenFeatureAPI& api_ = OpenFeatureAPI::GetInstance();
 };
 
 // Test that GetInstance always returns the same singleton instance.
@@ -35,7 +36,7 @@ TEST_F(OpenFeatureAPITest, GetInstanceReturnsSameInstance) {
 
 // Test that the API is initialized with a NoopProvider by default.
 TEST_F(OpenFeatureAPITest, InitialStateHasNoopProvider) {
-  std::shared_ptr<FeatureProvider> provider = api.GetProvider();
+  std::shared_ptr<FeatureProvider> provider = api_.GetProvider();
   ASSERT_NE(provider, nullptr);
   EXPECT_NE(dynamic_cast<NoopProvider*>(provider.get()), nullptr);
 }
@@ -46,9 +47,9 @@ TEST_F(OpenFeatureAPITest, SetAndGetDefaultProviderAndWait) {
       std::make_shared<MockFeatureProvider>();
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  api.SetProviderAndWait(mock_provider);
+  api_.SetProviderAndWait(mock_provider);
 
-  EXPECT_EQ(api.GetProvider(), mock_provider);
+  EXPECT_EQ(api_.GetProvider(), mock_provider);
 }
 
 // Test setting a named provider and waiting for its initialization.
@@ -58,24 +59,24 @@ TEST_F(OpenFeatureAPITest, SetAndGetNamedProviderAndWait) {
   std::string domain = "test-domain";
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  api.SetProviderAndWait(domain, mock_provider);
+  api_.SetProviderAndWait(domain, mock_provider);
 
-  EXPECT_EQ(api.GetProvider(domain), mock_provider);
-  EXPECT_NE(dynamic_cast<NoopProvider*>(api.GetProvider().get()), nullptr);
+  EXPECT_EQ(api_.GetProvider(domain), mock_provider);
+  EXPECT_NE(dynamic_cast<NoopProvider*>(api_.GetProvider().get()), nullptr);
 }
 
 // Test that getting a provider for a non-existent domain falls back to the
 // default.
 TEST_F(OpenFeatureAPITest, GetProviderFallsBackToDefault) {
-  std::shared_ptr<FeatureProvider> default_provider = api.GetProvider();
+  std::shared_ptr<FeatureProvider> default_provider = api_.GetProvider();
   std::shared_ptr<FeatureProvider> unknown_domain_provider =
-      api.GetProvider("unknown-domain");
+      api_.GetProvider("unknown-domain");
   EXPECT_EQ(default_provider, unknown_domain_provider);
 }
 
 // Test getting metadata from the default provider.
 TEST_F(OpenFeatureAPITest, GetProviderMetadataForDefault) {
-  Metadata metadata = api.GetProviderMetadata();
+  Metadata metadata = api_.GetProviderMetadata();
   EXPECT_EQ(metadata.name, "Noop Provider");
 }
 
@@ -91,8 +92,8 @@ TEST_F(OpenFeatureAPITest, GetProviderMetadataForNamed) {
       .WillOnce(Return(expected_metadata));
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  api.SetProviderAndWait(domain, mock_provider);
-  Metadata actual_metadata = api.GetProviderMetadata(domain);
+  api_.SetProviderAndWait(domain, mock_provider);
+  Metadata actual_metadata = api_.GetProviderMetadata(domain);
 
   EXPECT_EQ(actual_metadata.name, expected_metadata.name);
 }
@@ -109,15 +110,15 @@ TEST_F(OpenFeatureAPITest, ShutdownCallsProviderShutdown) {
       .WillOnce(Return(absl::OkStatus()));
   EXPECT_CALL(*mock_named_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
 
-  api.SetProviderAndWait(mock_default_provider);
-  api.SetProviderAndWait(domain, mock_named_provider);
+  api_.SetProviderAndWait(mock_default_provider);
+  api_.SetProviderAndWait(domain, mock_named_provider);
 
   EXPECT_CALL(*mock_default_provider, Shutdown())
       .WillOnce(Return(absl::OkStatus()));
   EXPECT_CALL(*mock_named_provider, Shutdown())
       .WillOnce(Return(absl::OkStatus()));
 
-  api.Shutdown();
+  api_.Shutdown();
 
   testing::Mock::VerifyAndClearExpectations(mock_default_provider.get());
   testing::Mock::VerifyAndClearExpectations(mock_named_provider.get());
@@ -141,7 +142,7 @@ TEST_F(OpenFeatureAPITest, SetProviderAsyncDoesNotBlock) {
   });
 
   EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
-  api.SetProvider(mock_provider);
+  api_.SetProvider(mock_provider);
 
   // Confirm the background task has started.
   auto status = init_started_future.wait_for(std::chrono::seconds(1));
@@ -173,7 +174,7 @@ TEST_F(OpenFeatureAPITest, SetNamedProviderAsyncDoesNotBlock) {
     ;
   });
   EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
-  api.SetProvider(domain, mock_provider);
+  api_.SetProvider(domain, mock_provider);
 
   // Confirm the background task has started.
   auto status = init_started_future.wait_for(std::chrono::seconds(1));
@@ -187,14 +188,14 @@ TEST_F(OpenFeatureAPITest, SetNamedProviderAsyncDoesNotBlock) {
 
 // Test that GetClient returns a valid default ClientAPI instance.
 TEST_F(OpenFeatureAPITest, GetDefaultClient) {
-  std::shared_ptr<Client> client = api.GetClient();
+  std::shared_ptr<Client> client = api_.GetClient();
   EXPECT_NE(client, nullptr) << "GetClient() should return a valid ptr";
   EXPECT_EQ(client->GetMetadata().name, "");
 }
 
 // Test that GetClient returns a valid named ClientAPI instance.
 TEST_F(OpenFeatureAPITest, GetNamedClient) {
-  std::shared_ptr<Client> named_client = api.GetClient("some-domain");
+  std::shared_ptr<Client> named_client = api_.GetClient("some-domain");
   EXPECT_NE(named_client, nullptr)
       << "GetClient(domain) should return a valid ptr";
   EXPECT_EQ(named_client->GetMetadata().name, "some-domain");
@@ -202,3 +203,5 @@ TEST_F(OpenFeatureAPITest, GetNamedClient) {
 
 // TODO: Add tests for "GetEvaluationContext" and "SetEvaluationContext" once.
 // EvaluationContext logic is implemented.
+
+}  // namespace openfeature

@@ -333,6 +333,5 @@ TEST_F(OpenFeatureAPITest, ShutdownClearsAllGlobalHooks) {
 
   EXPECT_TRUE(api_.GetHooks().empty())
       << "Shutdown must clear all registered global hooks.";
-
 }
 }  // namespace openfeature

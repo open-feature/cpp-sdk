@@ -7,9 +7,9 @@
 #include <string_view>
 #include <vector>
 
-#include "openfeature/general_hook.h"
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
 

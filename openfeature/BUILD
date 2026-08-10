@@ -234,6 +234,7 @@ cc_library(
     hdrs = ["noop_provider.h"],
     include_prefix = "openfeature",
     deps = [
+        ":general_hook",
         ":evaluation_context",
         ":metadata",
         ":provider",
@@ -282,6 +283,7 @@ cc_library(
     deps = [
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
+        ":general_hook",
         ":evaluation_context",
         ":metadata",
         ":resolution_details",

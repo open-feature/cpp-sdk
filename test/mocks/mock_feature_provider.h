@@ -3,6 +3,11 @@
 
 #include <gmock/gmock.h>
 
+#include <memory>
+#include <string_view>
+#include <vector>
+
+#include "openfeature/general_hook.h"
 #include "openfeature/provider.h"
 
 namespace openfeature {
@@ -11,6 +16,8 @@ namespace openfeature {
 class MockFeatureProvider : public FeatureProvider {
  public:
   MOCK_METHOD(Metadata, GetMetadata, (), (const, override));
+  MOCK_METHOD(std::vector<std::shared_ptr<GeneralHook>>, GetHooks, (),
+              (const, override));
   MOCK_METHOD(absl::StatusOr<std::unique_ptr<BoolResolutionDetails>>,
               GetBooleanEvaluation,
               (std::string_view flag, bool default_value,

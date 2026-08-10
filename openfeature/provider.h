@@ -3,10 +3,12 @@
 
 #include <memory>
 #include <string_view>
+#include <vector>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "openfeature/evaluation_context.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/metadata.h"
 #include "openfeature/resolution_details.h"
 #include "openfeature/value.h"
@@ -24,6 +26,9 @@ class FeatureProvider {
  public:
   virtual ~FeatureProvider() = default;
   virtual Metadata GetMetadata() const = 0;
+  virtual std::vector<std::shared_ptr<GeneralHook>> GetHooks() const {
+    return {};
+  };
   virtual absl::StatusOr<std::unique_ptr<BoolResolutionDetails>>
   GetBooleanEvaluation(std::string_view flag, bool default_value,
                        const EvaluationContext& ctx) = 0;

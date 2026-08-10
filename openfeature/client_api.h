@@ -47,6 +47,11 @@ class ClientAPI : public Client {
   bool GetBooleanValue(std::string_view flag_key, bool default_value) override;
   bool GetBooleanValue(std::string_view flag_key, bool default_value,
                        const EvaluationContext& ctx) override;
+  bool GetBooleanValue(std::string_view flag_key, bool default_value,
+                       const EvaluationOptions& options) override;
+  bool GetBooleanValue(std::string_view flag_key, bool default_value,
+                       const EvaluationContext& ctx,
+                       const EvaluationOptions& options) override;
 
   // Evaluate a string flag.
   std::string GetStringValue(std::string_view flag_key,
@@ -54,21 +59,45 @@ class ClientAPI : public Client {
   std::string GetStringValue(std::string_view flag_key,
                              std::string_view default_value,
                              const EvaluationContext& ctx) override;
+  std::string GetStringValue(std::string_view flag_key,
+                             std::string_view default_value,
+                             const EvaluationOptions& options) override;
+  std::string GetStringValue(std::string_view flag_key,
+                             std::string_view default_value,
+                             const EvaluationContext& ctx,
+                             const EvaluationOptions& options) override;
 
   // Evaluate an integer flag.
   int64_t GetIntegerValue(std::string_view flag_key,
                           int64_t default_value) override;
   int64_t GetIntegerValue(std::string_view flag_key, int64_t default_value,
                           const EvaluationContext& ctx) override;
+  int64_t GetIntegerValue(std::string_view flag_key, int64_t default_value,
+                          const EvaluationOptions& options) override;
+  int64_t GetIntegerValue(std::string_view flag_key, int64_t default_value,
+                          const EvaluationContext& ctx,
+                          const EvaluationOptions& options) override;
+
   // Evaluate a double flag.
   double GetDoubleValue(std::string_view flag_key,
                         double default_value) override;
   double GetDoubleValue(std::string_view flag_key, double default_value,
                         const EvaluationContext& ctx) override;
+  double GetDoubleValue(std::string_view flag_key, double default_value,
+                        const EvaluationOptions& options) override;
+  double GetDoubleValue(std::string_view flag_key, double default_value,
+                        const EvaluationContext& ctx,
+                        const EvaluationOptions& options) override;
+
   // Evaluate an object flag.
   Value GetObjectValue(std::string_view flag_key, Value default_value) override;
   Value GetObjectValue(std::string_view flag_key, Value default_value,
                        const EvaluationContext& ctx) override;
+  Value GetObjectValue(std::string_view flag_key, Value default_value,
+                       const EvaluationOptions& options) override;
+  Value GetObjectValue(std::string_view flag_key, Value default_value,
+                       const EvaluationContext& ctx,
+                       const EvaluationOptions& options) override;
 
   // Adds one or more hooks to the client-level hook repository.
   void AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) override;
@@ -80,34 +109,39 @@ class ClientAPI : public Client {
   std::vector<std::shared_ptr<GeneralHook>> GetHooks() const override;
 
   // TODO: Add methods for detailed flag evaluation.
-  // TODO: Overload method "GetBooleanValue" to accept "Evaluation Options".
 
  private:
   template <typename ResolutionDetailsType, typename ValueType,
             typename ProviderCallable>
   std::unique_ptr<ResolutionDetailsType> EvaluateFlag(
       ValueType default_value, const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options,
       ProviderCallable provider_call);
 
   std::unique_ptr<BoolResolutionDetails> EvaluateBooleanFlag(
       std::string_view flag_key, bool default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   std::unique_ptr<StringResolutionDetails> EvaluateStringFlag(
       std::string_view flag_key, std::string_view default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   std::unique_ptr<IntResolutionDetails> EvaluateIntegerFlag(
       std::string_view flag_key, int64_t default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   std::unique_ptr<DoubleResolutionDetails> EvaluateDoubleFlag(
       std::string_view flag_key, double default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   std::unique_ptr<ObjectResolutionDetails> EvaluateObjectFlag(
       std::string_view flag_key, Value default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   EvaluationContext MergeContexts(
       const std::optional<EvaluationContext>& invocation_ctx);
@@ -124,6 +158,7 @@ template <typename ResolutionDetailsType, typename ValueType,
           typename ProviderCallable>
 std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
     ValueType default_value, const std::optional<EvaluationContext>& ctx,
+    const std::optional<EvaluationOptions>& options,
     ProviderCallable provider_call) {
   std::shared_ptr<FeatureProviderStatusManager> manager =
       provider_repository_.GetFeatureProviderStatusManager(domain_);

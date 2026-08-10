@@ -85,7 +85,7 @@ ProviderStatus OpenFeatureAPI::GetProviderStatus(
   return provider_repository_.GetProviderStatus(domain);
 }
 
-void OpenFeatureAPI::AddHooks(std::vector<std::shared_ptr<BaseHook>> hooks) {
+void OpenFeatureAPI::AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) {
   std::unique_lock lock(hooks_mutex_);
   hooks_.reserve(hooks_.size() + hooks.size());
   for (auto& hook : hooks) {
@@ -95,13 +95,13 @@ void OpenFeatureAPI::AddHooks(std::vector<std::shared_ptr<BaseHook>> hooks) {
   }
 }
 
-void OpenFeatureAPI::AddHook(std::shared_ptr<BaseHook> hook) {
+void OpenFeatureAPI::AddHook(std::shared_ptr<GeneralHook> hook) {
   if (hook == nullptr) return;
   std::unique_lock lock(hooks_mutex_);
   hooks_.push_back(std::move(hook));
 }
 
-std::vector<std::shared_ptr<BaseHook>> OpenFeatureAPI::GetHooks() const {
+std::vector<std::shared_ptr<GeneralHook>> OpenFeatureAPI::GetHooks() const {
   std::shared_lock lock(hooks_mutex_);
   return hooks_;
 }

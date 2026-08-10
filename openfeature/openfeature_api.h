@@ -6,7 +6,7 @@
 #include <string_view>
 #pragma endregion
 
-#include "openfeature/base_hook.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/global_context_manager.h"
@@ -72,13 +72,13 @@ class OpenFeatureAPI : public OpenFeature {
   ProviderStatus GetProviderStatus(std::string_view domain) const override;
 
   // Adds one or more global hooks. Previously added hooks are not removed.
-  void AddHooks(std::vector<std::shared_ptr<BaseHook>> hooks) override;
+  void AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) override;
 
   // Adds a single hook to the global hook repository.
-  void AddHook(std::shared_ptr<BaseHook> hook) override;
+  void AddHook(std::shared_ptr<GeneralHook> hook) override;
 
   // Retrieves all configured global hooks.
-  std::vector<std::shared_ptr<BaseHook>> GetHooks() const override;
+  std::vector<std::shared_ptr<GeneralHook>> GetHooks() const override;
 
   // Shuts down all providers and resets the API to its initial state.
   void Shutdown() override;
@@ -86,7 +86,7 @@ class OpenFeatureAPI : public OpenFeature {
  private:
   ProviderRepository provider_repository_;
   mutable std::shared_mutex hooks_mutex_;
-  std::vector<std::shared_ptr<BaseHook>> hooks_;
+  std::vector<std::shared_ptr<GeneralHook>> hooks_;
 
   OpenFeatureAPI();
 };

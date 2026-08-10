@@ -257,7 +257,7 @@ TEST_F(OpenFeatureAPITest, InitialStateHasEmptyHooks) {
 
 // Test adding a single hook via AddHook.
 TEST_F(OpenFeatureAPITest, AddHookAppendsSingleHook) {
-  std::shared_ptr<BaseHook> hook1 = std::make_shared<DummyHook1>();
+  std::shared_ptr<GeneralHook> hook1 = std::make_shared<DummyHook1>();
   api_.AddHook(hook1);
 
   auto hooks = api_.GetHooks();
@@ -267,8 +267,8 @@ TEST_F(OpenFeatureAPITest, AddHookAppendsSingleHook) {
 
 // Test adding multiple hooks via AddHooks and preserving registration order.
 TEST_F(OpenFeatureAPITest, AddHooksAppendsMultipleHooksAndPreservesOrder) {
-  std::shared_ptr<BaseHook> hook1 = std::make_shared<DummyHook1>();
-  std::shared_ptr<BaseHook> hook2 = std::make_shared<DummyHook2>();
+  std::shared_ptr<GeneralHook> hook1 = std::make_shared<DummyHook1>();
+  std::shared_ptr<GeneralHook> hook2 = std::make_shared<DummyHook2>();
 
   api_.AddHooks({hook1, hook2});
 
@@ -278,7 +278,7 @@ TEST_F(OpenFeatureAPITest, AddHooksAppendsMultipleHooksAndPreservesOrder) {
   EXPECT_EQ(hooks[1], hook2);
 
   // Adding another hook appends without clearing existing ones (Req 1.1.4)
-  std::shared_ptr<BaseHook> hook3 = std::make_shared<DummyHook1>();
+  std::shared_ptr<GeneralHook> hook3 = std::make_shared<DummyHook1>();
   api_.AddHook(hook3);
 
   hooks = api_.GetHooks();
@@ -313,7 +313,7 @@ TEST_F(OpenFeatureAPITest, AddHookAndAddHooksFiltersNullptrs) {
   api_.AddHook(nullptr);
   EXPECT_TRUE(api_.GetHooks().empty());
 
-  std::shared_ptr<BaseHook> valid_hook = std::make_shared<DummyHook1>();
+  std::shared_ptr<GeneralHook> valid_hook = std::make_shared<DummyHook1>();
   api_.AddHooks({nullptr, valid_hook, nullptr});
 
   auto hooks = api_.GetHooks();
@@ -323,8 +323,8 @@ TEST_F(OpenFeatureAPITest, AddHookAndAddHooksFiltersNullptrs) {
 
 // Test that Shutdown clears all registered global hooks (Req 1.6.2).
 TEST_F(OpenFeatureAPITest, ShutdownClearsAllGlobalHooks) {
-  std::shared_ptr<BaseHook> hook1 = std::make_shared<DummyHook1>();
-  std::shared_ptr<BaseHook> hook2 = std::make_shared<DummyHook2>();
+  std::shared_ptr<GeneralHook> hook1 = std::make_shared<DummyHook1>();
+  std::shared_ptr<GeneralHook> hook2 = std::make_shared<DummyHook2>();
   api_.AddHooks({hook1, hook2});
 
   ASSERT_EQ(api_.GetHooks().size(), 2);
@@ -333,6 +333,6 @@ TEST_F(OpenFeatureAPITest, ShutdownClearsAllGlobalHooks) {
 
   EXPECT_TRUE(api_.GetHooks().empty())
       << "Shutdown must clear all registered global hooks.";
-}
 
+}
 }  // namespace openfeature

@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <map>
 #include <memory>
 #include <string>
 
@@ -46,6 +47,29 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForBool) {
   EXPECT_EQ(hook_ctx.GetClientMetadata().name, "test-client");
   EXPECT_EQ(hook_ctx.GetProviderMetadata().name, "test-provider");
   EXPECT_EQ(hook_ctx.GetHookData(), hook_data_);
+
+  Value default_val = hook_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsBool());
+  EXPECT_EQ(default_val.AsBool().value(), kDefaultValue);
+
+  // Upcast to general interface reference (as a General Hook receives):
+  GeneralHookContext& general_ctx = hook_ctx;
+
+  EXPECT_EQ(general_ctx.GetFlagKey(), "bool-flag");
+  EXPECT_EQ(general_ctx.GetType(), kType);
+  // EXPECT_EQ(general_ctx.GetDefaultValue(), kDefaultValue);
+
+  ASSERT_TRUE(general_ctx.GetEvaluationContext().GetTargetingKey().has_value());
+  EXPECT_EQ(general_ctx.GetEvaluationContext().GetTargetingKey().value(),
+            "initial-user");
+
+  EXPECT_EQ(general_ctx.GetClientMetadata().name, "test-client");
+  EXPECT_EQ(general_ctx.GetProviderMetadata().name, "test-provider");
+  EXPECT_EQ(general_ctx.GetHookData(), hook_data_);
+
+  default_val = general_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsBool());
+  EXPECT_EQ(default_val.AsBool().value(), kDefaultValue);
 }
 
 TEST_F(HookContextTest, ConstructorAndAccessorsForString) {
@@ -66,6 +90,28 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForString) {
   EXPECT_EQ(hook_ctx.GetClientMetadata().name, "test-client");
   EXPECT_EQ(hook_ctx.GetProviderMetadata().name, "test-provider");
   EXPECT_EQ(hook_ctx.GetHookData(), hook_data_);
+
+  Value default_val = hook_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsString());
+  EXPECT_EQ(default_val.AsString().value(), default_value);
+
+  // Upcast to general interface reference (as a General Hook receives):
+  GeneralHookContext& general_ctx = hook_ctx;
+
+  EXPECT_EQ(general_ctx.GetFlagKey(), "string-flag");
+  EXPECT_EQ(general_ctx.GetType(), kType);
+
+  ASSERT_TRUE(general_ctx.GetEvaluationContext().GetTargetingKey().has_value());
+  EXPECT_EQ(general_ctx.GetEvaluationContext().GetTargetingKey().value(),
+            "initial-user");
+
+  EXPECT_EQ(general_ctx.GetClientMetadata().name, "test-client");
+  EXPECT_EQ(general_ctx.GetProviderMetadata().name, "test-provider");
+  EXPECT_EQ(general_ctx.GetHookData(), hook_data_);
+
+  default_val = general_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsString());
+  EXPECT_EQ(default_val.AsString().value(), default_value);
 }
 
 TEST_F(HookContextTest, ConstructorAndAccessorsForInteger) {
@@ -86,6 +132,28 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForInteger) {
   EXPECT_EQ(hook_ctx.GetClientMetadata().name, "test-client");
   EXPECT_EQ(hook_ctx.GetProviderMetadata().name, "test-provider");
   EXPECT_EQ(hook_ctx.GetHookData(), hook_data_);
+
+  Value default_val = hook_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsNumber());
+  EXPECT_EQ(default_val.AsInt().value(), kDefaultValue);
+
+  // Upcast to general interface reference (as a General Hook receives):
+  GeneralHookContext& general_ctx = hook_ctx;
+
+  EXPECT_EQ(general_ctx.GetFlagKey(), "int-flag");
+  EXPECT_EQ(general_ctx.GetType(), kType);
+
+  ASSERT_TRUE(general_ctx.GetEvaluationContext().GetTargetingKey().has_value());
+  EXPECT_EQ(general_ctx.GetEvaluationContext().GetTargetingKey().value(),
+            "initial-user");
+
+  EXPECT_EQ(general_ctx.GetClientMetadata().name, "test-client");
+  EXPECT_EQ(general_ctx.GetProviderMetadata().name, "test-provider");
+  EXPECT_EQ(general_ctx.GetHookData(), hook_data_);
+
+  default_val = general_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsNumber());
+  EXPECT_EQ(default_val.AsInt().value(), kDefaultValue);
 }
 
 TEST_F(HookContextTest, ConstructorAndAccessorsForDouble) {
@@ -106,19 +174,54 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForDouble) {
   EXPECT_EQ(hook_ctx.GetClientMetadata().name, "test-client");
   EXPECT_EQ(hook_ctx.GetProviderMetadata().name, "test-provider");
   EXPECT_EQ(hook_ctx.GetHookData(), hook_data_);
+
+  Value default_val = hook_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsNumber());
+  EXPECT_DOUBLE_EQ(default_val.AsDouble().value(), kDefaultValue);
+
+  // Upcast to general interface reference (as a General Hook receives):
+  GeneralHookContext& general_ctx = hook_ctx;
+
+  EXPECT_EQ(general_ctx.GetFlagKey(), "double-flag");
+  EXPECT_EQ(general_ctx.GetType(), kType);
+
+  ASSERT_TRUE(general_ctx.GetEvaluationContext().GetTargetingKey().has_value());
+  EXPECT_EQ(general_ctx.GetEvaluationContext().GetTargetingKey().value(),
+            "initial-user");
+
+  EXPECT_EQ(general_ctx.GetClientMetadata().name, "test-client");
+  EXPECT_EQ(general_ctx.GetProviderMetadata().name, "test-provider");
+  EXPECT_EQ(general_ctx.GetHookData(), hook_data_);
+
+  default_val = general_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsNumber());
+  EXPECT_DOUBLE_EQ(default_val.AsDouble().value(), kDefaultValue);
 }
 
 TEST_F(HookContextTest, ConstructorAndAccessorsForObject) {
   constexpr FlagValueType kType = FlagValueType::kObject;
-  Value default_value(std::string("json-or-structure"));
+  constexpr bool kFeatureEnabled = true;
+  constexpr int64_t kMaxItems = 100LL;
+  const std::string default_theme = "dark";
+
+  std::map<std::string, Value> object_map{
+      {"feature_enabled", Value(kFeatureEnabled)},
+      {"max_items", Value(kMaxItems)},
+      {"theme", Value(std::string(default_theme))}};
+  Value default_value(object_map);
 
   ObjectHookContext hook_ctx("object-flag", kType, default_value, initial_ctx_,
                              client_metadata_, provider_metadata_, hook_data_);
 
   EXPECT_EQ(hook_ctx.GetFlagKey(), "object-flag");
   EXPECT_EQ(hook_ctx.GetType(), kType);
-  ASSERT_TRUE(hook_ctx.GetDefaultValue().IsString());
-  EXPECT_EQ(hook_ctx.GetDefaultValue().AsString().value(), "json-or-structure");
+  ASSERT_TRUE(hook_ctx.GetDefaultValue().IsStructure());
+  const auto* struct_map = hook_ctx.GetDefaultValue().AsStructure();
+  ASSERT_NE(struct_map, nullptr);
+  EXPECT_EQ(struct_map->at("feature_enabled").AsBool().value(),
+            kFeatureEnabled);
+  EXPECT_EQ(struct_map->at("max_items").AsInt().value(), kMaxItems);
+  EXPECT_EQ(struct_map->at("theme").AsString().value(), default_theme);
 
   ASSERT_TRUE(hook_ctx.GetEvaluationContext().GetTargetingKey().has_value());
   EXPECT_EQ(hook_ctx.GetEvaluationContext().GetTargetingKey().value(),
@@ -127,6 +230,38 @@ TEST_F(HookContextTest, ConstructorAndAccessorsForObject) {
   EXPECT_EQ(hook_ctx.GetClientMetadata().name, "test-client");
   EXPECT_EQ(hook_ctx.GetProviderMetadata().name, "test-provider");
   EXPECT_EQ(hook_ctx.GetHookData(), hook_data_);
+
+  Value default_val = hook_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsStructure());
+  ASSERT_NE(default_val.AsStructure(), nullptr);
+  EXPECT_EQ(default_val.AsStructure()->at("feature_enabled").AsBool().value(),
+            kFeatureEnabled);
+  EXPECT_EQ(default_val.AsStructure()->at("max_items").AsInt().value(),
+            kMaxItems);
+  EXPECT_EQ(default_val.AsStructure()->at("theme").AsString().value(),
+            default_theme);
+
+  // Upcast to general interface reference (as a General Hook receives):
+  GeneralHookContext& general_ctx = hook_ctx;
+
+  EXPECT_EQ(general_ctx.GetFlagKey(), "object-flag");
+  EXPECT_EQ(general_ctx.GetType(), kType);
+
+  ASSERT_TRUE(general_ctx.GetEvaluationContext().GetTargetingKey().has_value());
+  EXPECT_EQ(general_ctx.GetEvaluationContext().GetTargetingKey().value(),
+            "initial-user");
+
+  EXPECT_EQ(general_ctx.GetClientMetadata().name, "test-client");
+  EXPECT_EQ(general_ctx.GetProviderMetadata().name, "test-provider");
+  EXPECT_EQ(general_ctx.GetHookData(), hook_data_);
+
+  default_val = general_ctx.GetDefaultValueAsValue();
+  ASSERT_TRUE(default_val.IsStructure());
+  ASSERT_NE(default_val.AsStructure(), nullptr);
+  EXPECT_EQ(default_val.AsStructure()->at("feature_enabled").AsBool().value(),
+            true);
+  EXPECT_EQ(default_val.AsStructure()->at("max_items").AsInt().value(), 100LL);
+  EXPECT_EQ(default_val.AsStructure()->at("theme").AsString().value(), "dark");
 }
 
 TEST_F(HookContextTest, SetEvaluationContextUpdatesContext) {

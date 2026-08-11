@@ -11,6 +11,7 @@
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/features.h"
+#include "openfeature/flag_evaluation_details.h"
 #include "openfeature/general_hook.h"
 #include "openfeature/global_context_manager.h"
 #include "openfeature/metadata.h"
@@ -53,6 +54,19 @@ class ClientAPI : public Client {
                        const EvaluationContext& ctx,
                        const EvaluationOptions& options) override;
 
+  // Detailed boolean flag evaluation.
+  BoolFlagEvaluationDetails GetBooleanDetails(std::string_view flag_key,
+                                              bool default_value) override;
+  BoolFlagEvaluationDetails GetBooleanDetails(
+      std::string_view flag_key, bool default_value,
+      const EvaluationContext& ctx) override;
+  BoolFlagEvaluationDetails GetBooleanDetails(
+      std::string_view flag_key, bool default_value,
+      const EvaluationOptions& options) override;
+  BoolFlagEvaluationDetails GetBooleanDetails(
+      std::string_view flag_key, bool default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
+
   // Evaluate a string flag.
   std::string GetStringValue(std::string_view flag_key,
                              std::string_view default_value) override;
@@ -67,6 +81,19 @@ class ClientAPI : public Client {
                              const EvaluationContext& ctx,
                              const EvaluationOptions& options) override;
 
+  // Detailed string flag evaluation.
+  StringFlagEvaluationDetails GetStringDetails(
+      std::string_view flag_key, std::string_view default_value) override;
+  StringFlagEvaluationDetails GetStringDetails(
+      std::string_view flag_key, std::string_view default_value,
+      const EvaluationContext& ctx) override;
+  StringFlagEvaluationDetails GetStringDetails(
+      std::string_view flag_key, std::string_view default_value,
+      const EvaluationOptions& options) override;
+  StringFlagEvaluationDetails GetStringDetails(
+      std::string_view flag_key, std::string_view default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
+
   // Evaluate an integer flag.
   int64_t GetIntegerValue(std::string_view flag_key,
                           int64_t default_value) override;
@@ -77,6 +104,19 @@ class ClientAPI : public Client {
   int64_t GetIntegerValue(std::string_view flag_key, int64_t default_value,
                           const EvaluationContext& ctx,
                           const EvaluationOptions& options) override;
+
+  // Detailed integer flag evaluation.
+  IntFlagEvaluationDetails GetIntegerDetails(std::string_view flag_key,
+                                             int64_t default_value) override;
+  IntFlagEvaluationDetails GetIntegerDetails(
+      std::string_view flag_key, int64_t default_value,
+      const EvaluationContext& ctx) override;
+  IntFlagEvaluationDetails GetIntegerDetails(
+      std::string_view flag_key, int64_t default_value,
+      const EvaluationOptions& options) override;
+  IntFlagEvaluationDetails GetIntegerDetails(
+      std::string_view flag_key, int64_t default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
 
   // Evaluate a double flag.
   double GetDoubleValue(std::string_view flag_key,
@@ -89,6 +129,19 @@ class ClientAPI : public Client {
                         const EvaluationContext& ctx,
                         const EvaluationOptions& options) override;
 
+  // Detailed double flag evaluation.
+  DoubleFlagEvaluationDetails GetDoubleDetails(std::string_view flag_key,
+                                               double default_value) override;
+  DoubleFlagEvaluationDetails GetDoubleDetails(
+      std::string_view flag_key, double default_value,
+      const EvaluationContext& ctx) override;
+  DoubleFlagEvaluationDetails GetDoubleDetails(
+      std::string_view flag_key, double default_value,
+      const EvaluationOptions& options) override;
+  DoubleFlagEvaluationDetails GetDoubleDetails(
+      std::string_view flag_key, double default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
+
   // Evaluate an object flag.
   Value GetObjectValue(std::string_view flag_key, Value default_value) override;
   Value GetObjectValue(std::string_view flag_key, Value default_value,
@@ -99,6 +152,19 @@ class ClientAPI : public Client {
                        const EvaluationContext& ctx,
                        const EvaluationOptions& options) override;
 
+  // Detailed object flag evaluation.
+  ObjectFlagEvaluationDetails GetObjectDetails(std::string_view flag_key,
+                                               Value default_value) override;
+  ObjectFlagEvaluationDetails GetObjectDetails(
+      std::string_view flag_key, Value default_value,
+      const EvaluationContext& ctx) override;
+  ObjectFlagEvaluationDetails GetObjectDetails(
+      std::string_view flag_key, Value default_value,
+      const EvaluationOptions& options) override;
+  ObjectFlagEvaluationDetails GetObjectDetails(
+      std::string_view flag_key, Value default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
+
   // Adds one or more hooks to the client-level hook repository.
   void AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) override;
 
@@ -107,8 +173,6 @@ class ClientAPI : public Client {
 
   // Retrieves all configured client-level hooks.
   std::vector<std::shared_ptr<GeneralHook>> GetHooks() const override;
-
-  // TODO: Add methods for detailed flag evaluation.
 
  private:
   template <typename ResolutionDetailsType, typename ValueType,

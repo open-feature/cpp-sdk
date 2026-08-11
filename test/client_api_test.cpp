@@ -18,18 +18,23 @@
 #include "openfeature/hook.h"
 #include "openfeature/provider_status.h"
 
+using ::openfeature::BoolFlagEvaluationDetails;
 using ::openfeature::BoolResolutionDetails;
 using ::openfeature::ClientAPI;
+using ::openfeature::DoubleFlagEvaluationDetails;
 using ::openfeature::ErrorCode;
 using ::openfeature::EvaluationContext;
 using ::openfeature::EvaluationOptions;
 using ::openfeature::FlagMetadata;
 using ::openfeature::GlobalContextManager;
+using ::openfeature::IntFlagEvaluationDetails;
 using ::openfeature::Metadata;
 using ::openfeature::MockFeatureProvider;
+using ::openfeature::ObjectFlagEvaluationDetails;
 using ::openfeature::ProviderRepository;
 using ::openfeature::ProviderStatus;
 using ::openfeature::Reason;
+using ::openfeature::StringFlagEvaluationDetails;
 using ::openfeature::Value;
 using ::testing::_;
 using ::testing::DoAll;
@@ -223,6 +228,140 @@ TEST_F(ClientAPITest, GetObjectValueWithOptionsReturnsDefault) {
   EXPECT_EQ(client.GetObjectValue(flag_key, Value(1), ctx, options), Value(1));
 }
 
+// Test GetBooleanDetails returns proper details with NoopProvider.
+TEST_F(ClientAPITest, GetBooleanDetailsReturnsDetailsWithNoopProvider) {
+  ClientAPI client(repo_, "test-domain");
+  std::string flag_key = "my-boolean-flag";
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationOptions options;
+
+  auto details1 = client.GetBooleanDetails(flag_key, true);
+  EXPECT_EQ(details1.GetFlagKey(), flag_key);
+  EXPECT_TRUE(details1.GetValue());
+  EXPECT_EQ(details1.GetReason(), Reason::kDefault);
+  EXPECT_EQ(details1.GetErrorCode(), std::nullopt);
+  EXPECT_EQ(details1.GetErrorMessage(), "");
+  EXPECT_EQ(details1.GetVariant(), "default-variant");
+
+  auto details2 = client.GetBooleanDetails(flag_key, false, ctx);
+  EXPECT_EQ(details2.GetFlagKey(), flag_key);
+  EXPECT_FALSE(details2.GetValue());
+  EXPECT_EQ(details2.GetReason(), Reason::kDefault);
+
+  auto details3 = client.GetBooleanDetails(flag_key, true, options);
+  EXPECT_EQ(details3.GetFlagKey(), flag_key);
+  EXPECT_TRUE(details3.GetValue());
+
+  auto details4 = client.GetBooleanDetails(flag_key, false, ctx, options);
+  EXPECT_EQ(details4.GetFlagKey(), flag_key);
+  EXPECT_FALSE(details4.GetValue());
+}
+
+// Test GetStringDetails returns proper details with NoopProvider.
+TEST_F(ClientAPITest, GetStringDetailsReturnsDetailsWithNoopProvider) {
+  ClientAPI client(repo_, "test-domain");
+  std::string flag_key = "my-string-flag";
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationOptions options;
+
+  auto details1 = client.GetStringDetails(flag_key, "default_val");
+  EXPECT_EQ(details1.GetFlagKey(), flag_key);
+  EXPECT_EQ(details1.GetValue(), "default_val");
+  EXPECT_EQ(details1.GetReason(), Reason::kDefault);
+  EXPECT_EQ(details1.GetErrorCode(), std::nullopt);
+
+  auto details2 = client.GetStringDetails(flag_key, "default_val", ctx);
+  EXPECT_EQ(details2.GetFlagKey(), flag_key);
+  EXPECT_EQ(details2.GetValue(), "default_val");
+
+  auto details3 = client.GetStringDetails(flag_key, "default_val", options);
+  EXPECT_EQ(details3.GetFlagKey(), flag_key);
+  EXPECT_EQ(details3.GetValue(), "default_val");
+
+  auto details4 =
+      client.GetStringDetails(flag_key, "default_val", ctx, options);
+  EXPECT_EQ(details4.GetFlagKey(), flag_key);
+  EXPECT_EQ(details4.GetValue(), "default_val");
+}
+
+// Test GetIntegerDetails returns proper details with NoopProvider.
+TEST_F(ClientAPITest, GetIntegerDetailsReturnsDetailsWithNoopProvider) {
+  ClientAPI client(repo_, "test-domain");
+  std::string flag_key = "my-integer-flag";
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationOptions options;
+
+  auto details1 = client.GetIntegerDetails(flag_key, 42);
+  EXPECT_EQ(details1.GetFlagKey(), flag_key);
+  EXPECT_EQ(details1.GetValue(), 42);
+  EXPECT_EQ(details1.GetReason(), Reason::kDefault);
+  EXPECT_EQ(details1.GetErrorCode(), std::nullopt);
+
+  auto details2 = client.GetIntegerDetails(flag_key, 42, ctx);
+  EXPECT_EQ(details2.GetFlagKey(), flag_key);
+  EXPECT_EQ(details2.GetValue(), 42);
+
+  auto details3 = client.GetIntegerDetails(flag_key, 42, options);
+  EXPECT_EQ(details3.GetFlagKey(), flag_key);
+  EXPECT_EQ(details3.GetValue(), 42);
+
+  auto details4 = client.GetIntegerDetails(flag_key, 42, ctx, options);
+  EXPECT_EQ(details4.GetFlagKey(), flag_key);
+  EXPECT_EQ(details4.GetValue(), 42);
+}
+
+// Test GetDoubleDetails returns proper details with NoopProvider.
+TEST_F(ClientAPITest, GetDoubleDetailsReturnsDetailsWithNoopProvider) {
+  ClientAPI client(repo_, "test-domain");
+  std::string flag_key = "my-double-flag";
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationOptions options;
+
+  auto details1 = client.GetDoubleDetails(flag_key, 3.14);
+  EXPECT_EQ(details1.GetFlagKey(), flag_key);
+  EXPECT_DOUBLE_EQ(details1.GetValue(), 3.14);
+  EXPECT_EQ(details1.GetReason(), Reason::kDefault);
+  EXPECT_EQ(details1.GetErrorCode(), std::nullopt);
+
+  auto details2 = client.GetDoubleDetails(flag_key, 3.14, ctx);
+  EXPECT_EQ(details2.GetFlagKey(), flag_key);
+  EXPECT_DOUBLE_EQ(details2.GetValue(), 3.14);
+
+  auto details3 = client.GetDoubleDetails(flag_key, 3.14, options);
+  EXPECT_EQ(details3.GetFlagKey(), flag_key);
+  EXPECT_DOUBLE_EQ(details3.GetValue(), 3.14);
+
+  auto details4 = client.GetDoubleDetails(flag_key, 3.14, ctx, options);
+  EXPECT_EQ(details4.GetFlagKey(), flag_key);
+  EXPECT_DOUBLE_EQ(details4.GetValue(), 3.14);
+}
+
+// Test GetObjectDetails returns proper details with NoopProvider.
+TEST_F(ClientAPITest, GetObjectDetailsReturnsDetailsWithNoopProvider) {
+  ClientAPI client(repo_, "test-domain");
+  std::string flag_key = "my-object-flag";
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationOptions options;
+
+  auto details1 = client.GetObjectDetails(flag_key, Value(100));
+  EXPECT_EQ(details1.GetFlagKey(), flag_key);
+  EXPECT_EQ(details1.GetValue(), Value(100));
+  EXPECT_EQ(details1.GetReason(), Reason::kDefault);
+  EXPECT_EQ(details1.GetErrorCode(), std::nullopt);
+
+  auto details2 = client.GetObjectDetails(flag_key, Value(100), ctx);
+  EXPECT_EQ(details2.GetFlagKey(), flag_key);
+  EXPECT_EQ(details2.GetValue(), Value(100));
+
+  auto details3 = client.GetObjectDetails(flag_key, Value(100), options);
+  EXPECT_EQ(details3.GetFlagKey(), flag_key);
+  EXPECT_EQ(details3.GetValue(), Value(100));
+
+  auto details4 = client.GetObjectDetails(flag_key, Value(100), ctx, options);
+  EXPECT_EQ(details4.GetFlagKey(), flag_key);
+  EXPECT_EQ(details4.GetValue(), Value(100));
+}
+
 // Test context merging logic indirectly.
 TEST_F(ClientAPITest, ContextMergingPrecedence) {
   GlobalContextManager::GetInstance().SetGlobalEvaluationContext(
@@ -331,6 +470,49 @@ TEST_F(ClientAPITest, EvaluateFlagHandlesProviderErrorStatus) {
 
   EXPECT_FALSE(client.GetBooleanValue("flag", false));
   EXPECT_TRUE(client.GetBooleanValue("flag", true));
+}
+
+TEST_F(ClientAPITest, GetDetailsPropagatesProviderVariantAndMetadata) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  FlagMetadata metadata;
+  metadata.data["meta_key"] = std::string("meta_val");
+
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation("flag", false, _))
+      .WillOnce(Return(std::make_unique<BoolResolutionDetails>(
+          true, Reason::kTargetingMatch, "variant_a", metadata)));
+
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+  ClientAPI client(repo_, "test-domain");
+
+  auto details = client.GetBooleanDetails("flag", false);
+  EXPECT_EQ(details.GetFlagKey(), "flag");
+  EXPECT_TRUE(details.GetValue());
+  EXPECT_EQ(details.GetReason(), Reason::kTargetingMatch);
+  EXPECT_EQ(details.GetVariant(), "variant_a");
+  ASSERT_EQ(details.GetFlagMetadata().data.count("meta_key"), 1);
+  EXPECT_EQ(
+      std::get<std::string>(details.GetFlagMetadata().data.at("meta_key")),
+      "meta_val");
+  EXPECT_EQ(details.GetErrorCode(), std::nullopt);
+}
+
+TEST_F(ClientAPITest, GetDetailsHandlesProviderErrors) {
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation("flag", false, _))
+      .WillOnce(Return(absl::InternalError("Provider failed")));
+
+  repo_.SetProvider("test-domain", mock_provider,
+                    EvaluationContext::Builder().build(), true);
+  ClientAPI client(repo_, "test-domain");
+
+  auto details = client.GetBooleanDetails("flag", false);
+  EXPECT_EQ(details.GetFlagKey(), "flag");
+  EXPECT_FALSE(details.GetValue());
+  EXPECT_EQ(details.GetReason(), Reason::kError);
+  EXPECT_EQ(details.GetErrorCode(), ErrorCode::kGeneral);
+  EXPECT_EQ(details.GetErrorMessage(), "Provider failed");
 }
 
 TEST_F(ClientAPITest, EvaluateFlagHandlesProviderNullResolutionDetails) {

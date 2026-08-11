@@ -217,6 +217,7 @@ cc_library(
     hdrs = ["openfeature_api.h"],
     include_prefix = "openfeature",
     deps = [
+        ":general_hook",
         ":client",
         ":client_api",
         ":evaluation_context",
@@ -249,6 +250,7 @@ cc_library(
     hdrs = ["openfeature.h"],
     include_prefix = "openfeature",
     deps = [
+        ":general_hook",
         ":client",
         ":evaluation_context",
         ":metadata",

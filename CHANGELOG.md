@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.3](https://github.com/open-feature/cpp-sdk/compare/v0.1.2...v0.1.3) (2026-08-10)
+
+
+### Features
+
+* Add EvaluationOptions structure ([#120](https://github.com/open-feature/cpp-sdk/issues/120)) ([05c3eed](https://github.com/open-feature/cpp-sdk/commit/05c3eed5a5e1dde45a6c2e013aa2c7dbcdaacdb2))
+* Add Hooks class ([#118](https://github.com/open-feature/cpp-sdk/issues/118)) ([57f6c87](https://github.com/open-feature/cpp-sdk/commit/57f6c87907afc1a8818a6c33d14a5449e0bdd38d))
+* Update provider ([#121](https://github.com/open-feature/cpp-sdk/issues/121)) ([4c1bb41](https://github.com/open-feature/cpp-sdk/commit/4c1bb4187b2caa2eac9b752cb50e31831fff061b))
+
+
+### Bug Fixes
+
+* race condition between status check and provider lookup ([#108](https://github.com/open-feature/cpp-sdk/issues/108)) ([59b2342](https://github.com/open-feature/cpp-sdk/commit/59b234239bfb5af3c92e3101b24da71e0a38969f))
+
 ## [0.1.2](https://github.com/open-feature/cpp-sdk/compare/v0.1.1...v0.1.2) (2026-07-14)
 
 

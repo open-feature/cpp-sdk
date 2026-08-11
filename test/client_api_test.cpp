@@ -55,6 +55,9 @@ class ClientAPITest : public ::testing::Test {
 
 constexpr int kUnknownExceptionError = 43;
 constexpr int kSleepTimeMs = 10;
+constexpr int64_t kDefaultIntValue = 42;
+constexpr double kDefaultDoubleValue = 3.14;
+constexpr int kDefaultObjectIntValue = 100;
 
 // Test that the constructor correctly sets the domain in the metadata.
 TEST_F(ClientAPITest, ConstructorSetsDomainMetadata) {
@@ -104,7 +107,8 @@ TEST_F(ClientAPITest, GetStringValueReturnsDefaultWithNoopProvider) {
 TEST_F(ClientAPITest, GetIntegerValueReturnsDefaultWithNoopProvider) {
   ClientAPI client(repo_, "test-domain");
   std::string flag_key = "my-integer-flag";
-  EXPECT_EQ(client.GetIntegerValue(flag_key, 42), 42);
+  EXPECT_EQ(client.GetIntegerValue(flag_key, kDefaultIntValue),
+            kDefaultIntValue);
 }
 
 // Test that GetDoubleValue returns the default value when using the default
@@ -112,7 +116,8 @@ TEST_F(ClientAPITest, GetIntegerValueReturnsDefaultWithNoopProvider) {
 TEST_F(ClientAPITest, GetDoubleValueReturnsDefaultWithNoopProvider) {
   ClientAPI client(repo_, "test-domain");
   std::string flag_key = "my-double-flag";
-  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, 3.14), 3.14);
+  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, kDefaultDoubleValue),
+                   kDefaultDoubleValue);
 }
 
 // Test that GetObjectValue returns the default value when using the default
@@ -146,7 +151,8 @@ TEST_F(ClientAPITest, GetIntegerValueWithContextReturnsDefault) {
   ClientAPI client(repo_, "test-domain");
   EvaluationContext ctx = EvaluationContext::Builder().build();
   std::string flag_key = "my-integer-flag";
-  EXPECT_EQ(client.GetIntegerValue(flag_key, 42, ctx), 42);
+  EXPECT_EQ(client.GetIntegerValue(flag_key, kDefaultIntValue, ctx),
+            kDefaultIntValue);
 }
 
 // Test that GetDoubleValue with an EvaluationContext passed in.
@@ -154,7 +160,8 @@ TEST_F(ClientAPITest, GetDoubleValueWithContextReturnsDefault) {
   ClientAPI client(repo_, "test-domain");
   EvaluationContext ctx = EvaluationContext::Builder().build();
   std::string flag_key = "my-double-flag";
-  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, 3.14, ctx), 3.14);
+  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, kDefaultDoubleValue, ctx),
+                   kDefaultDoubleValue);
 }
 
 // Test that GetObjectValue with an EvaluationContext passed in.
@@ -198,10 +205,12 @@ TEST_F(ClientAPITest, GetIntegerValueWithOptionsReturnsDefault) {
   EvaluationOptions options;
   std::string flag_key = "my-integer-flag";
 
-  EXPECT_EQ(client.GetIntegerValue(flag_key, 42, options), 42);
+  EXPECT_EQ(client.GetIntegerValue(flag_key, kDefaultIntValue, options),
+            kDefaultIntValue);
 
   EvaluationContext ctx = EvaluationContext::Builder().build();
-  EXPECT_EQ(client.GetIntegerValue(flag_key, 42, ctx, options), 42);
+  EXPECT_EQ(client.GetIntegerValue(flag_key, kDefaultIntValue, ctx, options),
+            kDefaultIntValue);
 }
 
 // Test GetDoubleValue with EvaluationOptions.
@@ -210,10 +219,14 @@ TEST_F(ClientAPITest, GetDoubleValueWithOptionsReturnsDefault) {
   EvaluationOptions options;
   std::string flag_key = "my-double-flag";
 
-  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, 3.14, options), 3.14);
+  EXPECT_DOUBLE_EQ(
+      client.GetDoubleValue(flag_key, kDefaultDoubleValue, options),
+      kDefaultDoubleValue);
 
   EvaluationContext ctx = EvaluationContext::Builder().build();
-  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, 3.14, ctx, options), 3.14);
+  EXPECT_DOUBLE_EQ(
+      client.GetDoubleValue(flag_key, kDefaultDoubleValue, ctx, options),
+      kDefaultDoubleValue);
 }
 
 // Test GetObjectValue with EvaluationOptions.
@@ -291,23 +304,24 @@ TEST_F(ClientAPITest, GetIntegerDetailsReturnsDetailsWithNoopProvider) {
   EvaluationContext ctx = EvaluationContext::Builder().build();
   EvaluationOptions options;
 
-  auto details1 = client.GetIntegerDetails(flag_key, 42);
+  auto details1 = client.GetIntegerDetails(flag_key, kDefaultIntValue);
   EXPECT_EQ(details1.GetFlagKey(), flag_key);
-  EXPECT_EQ(details1.GetValue(), 42);
+  EXPECT_EQ(details1.GetValue(), kDefaultIntValue);
   EXPECT_EQ(details1.GetReason(), Reason::kDefault);
   EXPECT_EQ(details1.GetErrorCode(), std::nullopt);
 
-  auto details2 = client.GetIntegerDetails(flag_key, 42, ctx);
+  auto details2 = client.GetIntegerDetails(flag_key, kDefaultIntValue, ctx);
   EXPECT_EQ(details2.GetFlagKey(), flag_key);
-  EXPECT_EQ(details2.GetValue(), 42);
+  EXPECT_EQ(details2.GetValue(), kDefaultIntValue);
 
-  auto details3 = client.GetIntegerDetails(flag_key, 42, options);
+  auto details3 = client.GetIntegerDetails(flag_key, kDefaultIntValue, options);
   EXPECT_EQ(details3.GetFlagKey(), flag_key);
-  EXPECT_EQ(details3.GetValue(), 42);
+  EXPECT_EQ(details3.GetValue(), kDefaultIntValue);
 
-  auto details4 = client.GetIntegerDetails(flag_key, 42, ctx, options);
+  auto details4 =
+      client.GetIntegerDetails(flag_key, kDefaultIntValue, ctx, options);
   EXPECT_EQ(details4.GetFlagKey(), flag_key);
-  EXPECT_EQ(details4.GetValue(), 42);
+  EXPECT_EQ(details4.GetValue(), kDefaultIntValue);
 }
 
 // Test GetDoubleDetails returns proper details with NoopProvider.
@@ -317,23 +331,25 @@ TEST_F(ClientAPITest, GetDoubleDetailsReturnsDetailsWithNoopProvider) {
   EvaluationContext ctx = EvaluationContext::Builder().build();
   EvaluationOptions options;
 
-  auto details1 = client.GetDoubleDetails(flag_key, 3.14);
+  auto details1 = client.GetDoubleDetails(flag_key, kDefaultDoubleValue);
   EXPECT_EQ(details1.GetFlagKey(), flag_key);
-  EXPECT_DOUBLE_EQ(details1.GetValue(), 3.14);
+  EXPECT_DOUBLE_EQ(details1.GetValue(), kDefaultDoubleValue);
   EXPECT_EQ(details1.GetReason(), Reason::kDefault);
   EXPECT_EQ(details1.GetErrorCode(), std::nullopt);
 
-  auto details2 = client.GetDoubleDetails(flag_key, 3.14, ctx);
+  auto details2 = client.GetDoubleDetails(flag_key, kDefaultDoubleValue, ctx);
   EXPECT_EQ(details2.GetFlagKey(), flag_key);
-  EXPECT_DOUBLE_EQ(details2.GetValue(), 3.14);
+  EXPECT_DOUBLE_EQ(details2.GetValue(), kDefaultDoubleValue);
 
-  auto details3 = client.GetDoubleDetails(flag_key, 3.14, options);
+  auto details3 =
+      client.GetDoubleDetails(flag_key, kDefaultDoubleValue, options);
   EXPECT_EQ(details3.GetFlagKey(), flag_key);
-  EXPECT_DOUBLE_EQ(details3.GetValue(), 3.14);
+  EXPECT_DOUBLE_EQ(details3.GetValue(), kDefaultDoubleValue);
 
-  auto details4 = client.GetDoubleDetails(flag_key, 3.14, ctx, options);
+  auto details4 =
+      client.GetDoubleDetails(flag_key, kDefaultDoubleValue, ctx, options);
   EXPECT_EQ(details4.GetFlagKey(), flag_key);
-  EXPECT_DOUBLE_EQ(details4.GetValue(), 3.14);
+  EXPECT_DOUBLE_EQ(details4.GetValue(), kDefaultDoubleValue);
 }
 
 // Test GetObjectDetails returns proper details with NoopProvider.
@@ -343,23 +359,27 @@ TEST_F(ClientAPITest, GetObjectDetailsReturnsDetailsWithNoopProvider) {
   EvaluationContext ctx = EvaluationContext::Builder().build();
   EvaluationOptions options;
 
-  auto details1 = client.GetObjectDetails(flag_key, Value(100));
+  auto details1 =
+      client.GetObjectDetails(flag_key, Value(kDefaultObjectIntValue));
   EXPECT_EQ(details1.GetFlagKey(), flag_key);
-  EXPECT_EQ(details1.GetValue(), Value(100));
+  EXPECT_EQ(details1.GetValue(), Value(kDefaultObjectIntValue));
   EXPECT_EQ(details1.GetReason(), Reason::kDefault);
   EXPECT_EQ(details1.GetErrorCode(), std::nullopt);
 
-  auto details2 = client.GetObjectDetails(flag_key, Value(100), ctx);
+  auto details2 =
+      client.GetObjectDetails(flag_key, Value(kDefaultObjectIntValue), ctx);
   EXPECT_EQ(details2.GetFlagKey(), flag_key);
-  EXPECT_EQ(details2.GetValue(), Value(100));
+  EXPECT_EQ(details2.GetValue(), Value(kDefaultObjectIntValue));
 
-  auto details3 = client.GetObjectDetails(flag_key, Value(100), options);
+  auto details3 =
+      client.GetObjectDetails(flag_key, Value(kDefaultObjectIntValue), options);
   EXPECT_EQ(details3.GetFlagKey(), flag_key);
-  EXPECT_EQ(details3.GetValue(), Value(100));
+  EXPECT_EQ(details3.GetValue(), Value(kDefaultObjectIntValue));
 
-  auto details4 = client.GetObjectDetails(flag_key, Value(100), ctx, options);
+  auto details4 = client.GetObjectDetails(
+      flag_key, Value(kDefaultObjectIntValue), ctx, options);
   EXPECT_EQ(details4.GetFlagKey(), flag_key);
-  EXPECT_EQ(details4.GetValue(), Value(100));
+  EXPECT_EQ(details4.GetValue(), Value(kDefaultObjectIntValue));
 }
 
 // Test context merging logic indirectly.

@@ -108,6 +108,15 @@ class ClientAPI : public Client {
   // Retrieves all configured client-level hooks.
   std::vector<std::shared_ptr<GeneralHook>> GetHooks() const override;
 
+  // Adds one or more hooks to the client-level hook repository.
+  void AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) override;
+
+  // Adds a single hook to the client-level hook repository.
+  void AddHook(std::shared_ptr<GeneralHook> hook) override;
+
+  // Retrieves all configured client-level hooks.
+  std::vector<std::shared_ptr<GeneralHook>> GetHooks() const override;
+
   // TODO: Add methods for detailed flag evaluation.
 
  private:

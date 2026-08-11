@@ -49,6 +49,7 @@ cc_library(
     deps = [
         ":evaluation_context",
         ":features",
+        ":general_hook",
         ":metadata",
         ":provider_status",
     ],
@@ -63,7 +64,9 @@ cc_library(
         ":client",
         ":evaluation_context",
         ":features",
+        ":flag_evaluation_details",
         ":flag_metadata",
+        ":general_hook",
         ":global_context_manager",
         ":metadata",
         ":provider",
@@ -118,7 +121,9 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         ":evaluation_context",
-        ":value"
+        ":evaluation_options",
+        ":flag_evaluation_details",
+        ":value",
     ],
 )
 

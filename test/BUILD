@@ -20,6 +20,8 @@ cc_test(
     deps = [
         ":mock_feature_provider",
         "//openfeature:client_api",
+        "//openfeature:flag_evaluation_details",
+        "//openfeature:hook",
         "@googletest//:gtest_main",
     ],
 )

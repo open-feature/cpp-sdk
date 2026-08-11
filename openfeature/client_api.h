@@ -6,10 +6,13 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/features.h"
+#include "openfeature/flag_evaluation_details.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/global_context_manager.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
@@ -45,6 +48,24 @@ class ClientAPI : public Client {
   bool GetBooleanValue(std::string_view flag_key, bool default_value) override;
   bool GetBooleanValue(std::string_view flag_key, bool default_value,
                        const EvaluationContext& ctx) override;
+  bool GetBooleanValue(std::string_view flag_key, bool default_value,
+                       const EvaluationOptions& options) override;
+  bool GetBooleanValue(std::string_view flag_key, bool default_value,
+                       const EvaluationContext& ctx,
+                       const EvaluationOptions& options) override;
+
+  // Detailed boolean flag evaluation.
+  BoolFlagEvaluationDetails GetBooleanDetails(std::string_view flag_key,
+                                              bool default_value) override;
+  BoolFlagEvaluationDetails GetBooleanDetails(
+      std::string_view flag_key, bool default_value,
+      const EvaluationContext& ctx) override;
+  BoolFlagEvaluationDetails GetBooleanDetails(
+      std::string_view flag_key, bool default_value,
+      const EvaluationOptions& options) override;
+  BoolFlagEvaluationDetails GetBooleanDetails(
+      std::string_view flag_key, bool default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
 
   // Evaluate a string flag.
   std::string GetStringValue(std::string_view flag_key,
@@ -52,52 +73,139 @@ class ClientAPI : public Client {
   std::string GetStringValue(std::string_view flag_key,
                              std::string_view default_value,
                              const EvaluationContext& ctx) override;
+  std::string GetStringValue(std::string_view flag_key,
+                             std::string_view default_value,
+                             const EvaluationOptions& options) override;
+  std::string GetStringValue(std::string_view flag_key,
+                             std::string_view default_value,
+                             const EvaluationContext& ctx,
+                             const EvaluationOptions& options) override;
+
+  // Detailed string flag evaluation.
+  StringFlagEvaluationDetails GetStringDetails(
+      std::string_view flag_key, std::string_view default_value) override;
+  StringFlagEvaluationDetails GetStringDetails(
+      std::string_view flag_key, std::string_view default_value,
+      const EvaluationContext& ctx) override;
+  StringFlagEvaluationDetails GetStringDetails(
+      std::string_view flag_key, std::string_view default_value,
+      const EvaluationOptions& options) override;
+  StringFlagEvaluationDetails GetStringDetails(
+      std::string_view flag_key, std::string_view default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
 
   // Evaluate an integer flag.
   int64_t GetIntegerValue(std::string_view flag_key,
                           int64_t default_value) override;
   int64_t GetIntegerValue(std::string_view flag_key, int64_t default_value,
                           const EvaluationContext& ctx) override;
+  int64_t GetIntegerValue(std::string_view flag_key, int64_t default_value,
+                          const EvaluationOptions& options) override;
+  int64_t GetIntegerValue(std::string_view flag_key, int64_t default_value,
+                          const EvaluationContext& ctx,
+                          const EvaluationOptions& options) override;
+
+  // Detailed integer flag evaluation.
+  IntFlagEvaluationDetails GetIntegerDetails(std::string_view flag_key,
+                                             int64_t default_value) override;
+  IntFlagEvaluationDetails GetIntegerDetails(
+      std::string_view flag_key, int64_t default_value,
+      const EvaluationContext& ctx) override;
+  IntFlagEvaluationDetails GetIntegerDetails(
+      std::string_view flag_key, int64_t default_value,
+      const EvaluationOptions& options) override;
+  IntFlagEvaluationDetails GetIntegerDetails(
+      std::string_view flag_key, int64_t default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
+
   // Evaluate a double flag.
   double GetDoubleValue(std::string_view flag_key,
                         double default_value) override;
   double GetDoubleValue(std::string_view flag_key, double default_value,
                         const EvaluationContext& ctx) override;
+  double GetDoubleValue(std::string_view flag_key, double default_value,
+                        const EvaluationOptions& options) override;
+  double GetDoubleValue(std::string_view flag_key, double default_value,
+                        const EvaluationContext& ctx,
+                        const EvaluationOptions& options) override;
+
+  // Detailed double flag evaluation.
+  DoubleFlagEvaluationDetails GetDoubleDetails(std::string_view flag_key,
+                                               double default_value) override;
+  DoubleFlagEvaluationDetails GetDoubleDetails(
+      std::string_view flag_key, double default_value,
+      const EvaluationContext& ctx) override;
+  DoubleFlagEvaluationDetails GetDoubleDetails(
+      std::string_view flag_key, double default_value,
+      const EvaluationOptions& options) override;
+  DoubleFlagEvaluationDetails GetDoubleDetails(
+      std::string_view flag_key, double default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
+
   // Evaluate an object flag.
   Value GetObjectValue(std::string_view flag_key, Value default_value) override;
   Value GetObjectValue(std::string_view flag_key, Value default_value,
                        const EvaluationContext& ctx) override;
+  Value GetObjectValue(std::string_view flag_key, Value default_value,
+                       const EvaluationOptions& options) override;
+  Value GetObjectValue(std::string_view flag_key, Value default_value,
+                       const EvaluationContext& ctx,
+                       const EvaluationOptions& options) override;
 
-  // TODO: Add methods to get and set Hooks.
-  // TODO: Add methods for detailed flag evaluation.
-  // TODO: Overload method "GetBooleanValue" to accept "Evaluation Options".
+  // Detailed object flag evaluation.
+  ObjectFlagEvaluationDetails GetObjectDetails(std::string_view flag_key,
+                                               Value default_value) override;
+  ObjectFlagEvaluationDetails GetObjectDetails(
+      std::string_view flag_key, Value default_value,
+      const EvaluationContext& ctx) override;
+  ObjectFlagEvaluationDetails GetObjectDetails(
+      std::string_view flag_key, Value default_value,
+      const EvaluationOptions& options) override;
+  ObjectFlagEvaluationDetails GetObjectDetails(
+      std::string_view flag_key, Value default_value,
+      const EvaluationContext& ctx, const EvaluationOptions& options) override;
+
+  // Adds one or more hooks to the client-level hook repository.
+  void AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) override;
+
+  // Adds a single hook to the client-level hook repository.
+  void AddHook(std::shared_ptr<GeneralHook> hook) override;
+
+  // Retrieves all configured client-level hooks.
+  std::vector<std::shared_ptr<GeneralHook>> GetHooks() const override;
 
  private:
   template <typename ResolutionDetailsType, typename ValueType,
             typename ProviderCallable>
   std::unique_ptr<ResolutionDetailsType> EvaluateFlag(
       ValueType default_value, const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options,
       ProviderCallable provider_call);
 
   std::unique_ptr<BoolResolutionDetails> EvaluateBooleanFlag(
       std::string_view flag_key, bool default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   std::unique_ptr<StringResolutionDetails> EvaluateStringFlag(
       std::string_view flag_key, std::string_view default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   std::unique_ptr<IntResolutionDetails> EvaluateIntegerFlag(
       std::string_view flag_key, int64_t default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   std::unique_ptr<DoubleResolutionDetails> EvaluateDoubleFlag(
       std::string_view flag_key, double default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   std::unique_ptr<ObjectResolutionDetails> EvaluateObjectFlag(
       std::string_view flag_key, Value default_value,
-      const std::optional<EvaluationContext>& ctx);
+      const std::optional<EvaluationContext>& ctx,
+      const std::optional<EvaluationOptions>& options = std::nullopt);
 
   EvaluationContext MergeContexts(
       const std::optional<EvaluationContext>& invocation_ctx);
@@ -106,12 +214,15 @@ class ClientAPI : public Client {
   std::string domain_;
   EvaluationContext evaluation_context_;
   mutable std::mutex context_mutex_;
+  mutable std::shared_mutex hooks_mutex_;
+  std::vector<std::shared_ptr<GeneralHook>> hooks_;
 };
 
 template <typename ResolutionDetailsType, typename ValueType,
           typename ProviderCallable>
 std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
     ValueType default_value, const std::optional<EvaluationContext>& ctx,
+    const std::optional<EvaluationOptions>& options,
     ProviderCallable provider_call) {
   std::shared_ptr<FeatureProviderStatusManager> manager =
       provider_repository_.GetFeatureProviderStatusManager(domain_);

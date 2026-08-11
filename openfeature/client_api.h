@@ -6,10 +6,12 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/features.h"
+#include "openfeature/general_hook.h"
 #include "openfeature/global_context_manager.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
@@ -68,7 +70,15 @@ class ClientAPI : public Client {
   Value GetObjectValue(std::string_view flag_key, Value default_value,
                        const EvaluationContext& ctx) override;
 
-  // TODO: Add methods to get and set Hooks.
+  // Adds one or more hooks to the client-level hook repository.
+  void AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) override;
+
+  // Adds a single hook to the client-level hook repository.
+  void AddHook(std::shared_ptr<GeneralHook> hook) override;
+
+  // Retrieves all configured client-level hooks.
+  std::vector<std::shared_ptr<GeneralHook>> GetHooks() const override;
+
   // TODO: Add methods for detailed flag evaluation.
   // TODO: Overload method "GetBooleanValue" to accept "Evaluation Options".
 
@@ -106,6 +116,8 @@ class ClientAPI : public Client {
   std::string domain_;
   EvaluationContext evaluation_context_;
   mutable std::mutex context_mutex_;
+  mutable std::shared_mutex hooks_mutex_;
+  std::vector<std::shared_ptr<GeneralHook>> hooks_;
 };
 
 template <typename ResolutionDetailsType, typename ValueType,

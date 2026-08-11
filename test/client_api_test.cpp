@@ -14,6 +14,7 @@
 #include "mocks/mock_feature_provider.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/global_context_manager.h"
+#include "openfeature/hook.h"
 #include "openfeature/provider_status.h"
 
 using ::openfeature::BoolResolutionDetails;
@@ -439,4 +440,69 @@ TEST_F(ClientAPITest, ParallelProviderSwapRaceCondition) {
   running = false;
   evaluation_thread.join();
   proceed_init->set_value();
+}
+
+namespace {
+class DummyHook1 : public openfeature::BoolHook {};
+class DummyHook2 : public openfeature::StringHook {};
+}  // namespace
+
+// Test that client is initialized with empty hooks by default.
+TEST_F(ClientAPITest, InitialStateHasEmptyHooks) {
+  ClientAPI client(repo_, "test-domain");
+  EXPECT_TRUE(client.GetHooks().empty());
+}
+
+// Test adding a single hook via AddHook.
+TEST_F(ClientAPITest, AddHookAppendsSingleHook) {
+  ClientAPI client(repo_, "test-domain");
+  std::shared_ptr<openfeature::GeneralHook> hook1 =
+      std::make_shared<DummyHook1>();
+  client.AddHook(hook1);
+
+  auto hooks = client.GetHooks();
+  ASSERT_EQ(hooks.size(), 1);
+  EXPECT_EQ(hooks[0], hook1);
+}
+
+// Test adding multiple hooks via AddHooks and preserving registration order.
+TEST_F(ClientAPITest, AddHooksAppendsMultipleHooksAndPreservesOrder) {
+  ClientAPI client(repo_, "test-domain");
+  std::shared_ptr<openfeature::GeneralHook> hook1 =
+      std::make_shared<DummyHook1>();
+  std::shared_ptr<openfeature::GeneralHook> hook2 =
+      std::make_shared<DummyHook2>();
+
+  client.AddHooks({hook1, hook2});
+
+  auto hooks = client.GetHooks();
+  ASSERT_EQ(hooks.size(), 2);
+  EXPECT_EQ(hooks[0], hook1);
+  EXPECT_EQ(hooks[1], hook2);
+
+  // Adding another hook appends without clearing existing ones
+  std::shared_ptr<openfeature::GeneralHook> hook3 =
+      std::make_shared<DummyHook1>();
+  client.AddHook(hook3);
+
+  hooks = client.GetHooks();
+  ASSERT_EQ(hooks.size(), 3);
+  EXPECT_EQ(hooks[0], hook1);
+  EXPECT_EQ(hooks[1], hook2);
+  EXPECT_EQ(hooks[2], hook3);
+}
+
+// Test that AddHook and AddHooks filter out nullptr entries.
+TEST_F(ClientAPITest, AddHookAndAddHooksFiltersNullptrs) {
+  ClientAPI client(repo_, "test-domain");
+  client.AddHook(nullptr);
+  EXPECT_TRUE(client.GetHooks().empty());
+
+  std::shared_ptr<openfeature::GeneralHook> valid_hook =
+      std::make_shared<DummyHook1>();
+  client.AddHooks({nullptr, valid_hook, nullptr});
+
+  auto hooks = client.GetHooks();
+  ASSERT_EQ(hooks.size(), 1);
+  EXPECT_EQ(hooks[0], valid_hook);
 }

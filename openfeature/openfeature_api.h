@@ -4,6 +4,7 @@
 #include <memory>
 #include <shared_mutex>
 #include <string_view>
+#pragma endregion
 
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"

@@ -30,62 +30,141 @@ ProviderStatus ClientAPI::GetProviderStatus() {
 }
 
 bool ClientAPI::GetBooleanValue(std::string_view flag_key, bool default_value) {
-  return EvaluateBooleanFlag(flag_key, default_value, std::nullopt)->GetValue();
+  return EvaluateBooleanFlag(flag_key, default_value, std::nullopt,
+                             std::nullopt)
+      ->GetValue();
 }
 
 bool ClientAPI::GetBooleanValue(std::string_view flag_key, bool default_value,
                                 const EvaluationContext& ctx) {
-  return EvaluateBooleanFlag(flag_key, default_value, ctx)->GetValue();
+  return EvaluateBooleanFlag(flag_key, default_value, ctx, std::nullopt)
+      ->GetValue();
+}
+
+bool ClientAPI::GetBooleanValue(std::string_view flag_key, bool default_value,
+                                const EvaluationOptions& options) {
+  return EvaluateBooleanFlag(flag_key, default_value, std::nullopt, options)
+      ->GetValue();
+}
+
+bool ClientAPI::GetBooleanValue(std::string_view flag_key, bool default_value,
+                                const EvaluationContext& ctx,
+                                const EvaluationOptions& options) {
+  return EvaluateBooleanFlag(flag_key, default_value, ctx, options)->GetValue();
 }
 
 std::string ClientAPI::GetStringValue(std::string_view flag_key,
                                       std::string_view default_value) {
-  return EvaluateStringFlag(flag_key, default_value, std::nullopt)->GetValue();
+  return EvaluateStringFlag(flag_key, default_value, std::nullopt, std::nullopt)
+      ->GetValue();
 }
 
 std::string ClientAPI::GetStringValue(std::string_view flag_key,
                                       std::string_view default_value,
                                       const EvaluationContext& ctx) {
-  return EvaluateStringFlag(flag_key, default_value, ctx)->GetValue();
+  return EvaluateStringFlag(flag_key, default_value, ctx, std::nullopt)
+      ->GetValue();
+}
+
+std::string ClientAPI::GetStringValue(std::string_view flag_key,
+                                      std::string_view default_value,
+                                      const EvaluationOptions& options) {
+  return EvaluateStringFlag(flag_key, default_value, std::nullopt, options)
+      ->GetValue();
+}
+
+std::string ClientAPI::GetStringValue(std::string_view flag_key,
+                                      std::string_view default_value,
+                                      const EvaluationContext& ctx,
+                                      const EvaluationOptions& options) {
+  return EvaluateStringFlag(flag_key, default_value, ctx, options)->GetValue();
 }
 
 int64_t ClientAPI::GetIntegerValue(std::string_view flag_key,
                                    int64_t default_value) {
-  return EvaluateIntegerFlag(flag_key, default_value, std::nullopt)->GetValue();
+  return EvaluateIntegerFlag(flag_key, default_value, std::nullopt,
+                             std::nullopt)
+      ->GetValue();
 }
 
 int64_t ClientAPI::GetIntegerValue(std::string_view flag_key,
                                    int64_t default_value,
                                    const EvaluationContext& ctx) {
-  return EvaluateIntegerFlag(flag_key, default_value, ctx)->GetValue();
+  return EvaluateIntegerFlag(flag_key, default_value, ctx, std::nullopt)
+      ->GetValue();
+}
+
+int64_t ClientAPI::GetIntegerValue(std::string_view flag_key,
+                                   int64_t default_value,
+                                   const EvaluationOptions& options) {
+  return EvaluateIntegerFlag(flag_key, default_value, std::nullopt, options)
+      ->GetValue();
+}
+
+int64_t ClientAPI::GetIntegerValue(std::string_view flag_key,
+                                   int64_t default_value,
+                                   const EvaluationContext& ctx,
+                                   const EvaluationOptions& options) {
+  return EvaluateIntegerFlag(flag_key, default_value, ctx, options)->GetValue();
 }
 
 double ClientAPI::GetDoubleValue(std::string_view flag_key,
                                  double default_value) {
-  return EvaluateDoubleFlag(flag_key, default_value, std::nullopt)->GetValue();
+  return EvaluateDoubleFlag(flag_key, default_value, std::nullopt, std::nullopt)
+      ->GetValue();
 }
 
 double ClientAPI::GetDoubleValue(std::string_view flag_key,
                                  double default_value,
                                  const EvaluationContext& ctx) {
-  return EvaluateDoubleFlag(flag_key, default_value, ctx)->GetValue();
+  return EvaluateDoubleFlag(flag_key, default_value, ctx, std::nullopt)
+      ->GetValue();
+}
+
+double ClientAPI::GetDoubleValue(std::string_view flag_key,
+                                 double default_value,
+                                 const EvaluationOptions& options) {
+  return EvaluateDoubleFlag(flag_key, default_value, std::nullopt, options)
+      ->GetValue();
+}
+
+double ClientAPI::GetDoubleValue(std::string_view flag_key,
+                                 double default_value,
+                                 const EvaluationContext& ctx,
+                                 const EvaluationOptions& options) {
+  return EvaluateDoubleFlag(flag_key, default_value, ctx, options)->GetValue();
 }
 
 Value ClientAPI::GetObjectValue(std::string_view flag_key,
                                 Value default_value) {
-  return EvaluateObjectFlag(flag_key, default_value, std::nullopt)->GetValue();
+  return EvaluateObjectFlag(flag_key, default_value, std::nullopt, std::nullopt)
+      ->GetValue();
 }
 
 Value ClientAPI::GetObjectValue(std::string_view flag_key, Value default_value,
                                 const EvaluationContext& ctx) {
-  return EvaluateObjectFlag(flag_key, default_value, ctx)->GetValue();
+  return EvaluateObjectFlag(flag_key, default_value, ctx, std::nullopt)
+      ->GetValue();
+}
+
+Value ClientAPI::GetObjectValue(std::string_view flag_key, Value default_value,
+                                const EvaluationOptions& options) {
+  return EvaluateObjectFlag(flag_key, default_value, std::nullopt, options)
+      ->GetValue();
+}
+
+Value ClientAPI::GetObjectValue(std::string_view flag_key, Value default_value,
+                                const EvaluationContext& ctx,
+                                const EvaluationOptions& options) {
+  return EvaluateObjectFlag(flag_key, default_value, ctx, options)->GetValue();
 }
 
 std::unique_ptr<BoolResolutionDetails> ClientAPI::EvaluateBooleanFlag(
     std::string_view flag_key, bool default_value,
-    const std::optional<EvaluationContext>& ctx) {
+    const std::optional<EvaluationContext>& ctx,
+    const std::optional<EvaluationOptions>& options) {
   return this->EvaluateFlag<BoolResolutionDetails>(
-      default_value, ctx,
+      default_value, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetBooleanEvaluation(flag_key, default_value,
@@ -95,10 +174,11 @@ std::unique_ptr<BoolResolutionDetails> ClientAPI::EvaluateBooleanFlag(
 
 std::unique_ptr<StringResolutionDetails> ClientAPI::EvaluateStringFlag(
     std::string_view flag_key, std::string_view default_value,
-    const std::optional<EvaluationContext>& ctx) {
+    const std::optional<EvaluationContext>& ctx,
+    const std::optional<EvaluationOptions>& options) {
   std::string default_str(default_value);
   return this->EvaluateFlag<StringResolutionDetails>(
-      default_str, ctx,
+      default_str, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetStringEvaluation(flag_key, default_value,
@@ -108,9 +188,10 @@ std::unique_ptr<StringResolutionDetails> ClientAPI::EvaluateStringFlag(
 
 std::unique_ptr<IntResolutionDetails> ClientAPI::EvaluateIntegerFlag(
     std::string_view flag_key, int64_t default_value,
-    const std::optional<EvaluationContext>& ctx) {
+    const std::optional<EvaluationContext>& ctx,
+    const std::optional<EvaluationOptions>& options) {
   return this->EvaluateFlag<IntResolutionDetails>(
-      default_value, ctx,
+      default_value, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetIntegerEvaluation(flag_key, default_value,
@@ -120,9 +201,10 @@ std::unique_ptr<IntResolutionDetails> ClientAPI::EvaluateIntegerFlag(
 
 std::unique_ptr<DoubleResolutionDetails> ClientAPI::EvaluateDoubleFlag(
     std::string_view flag_key, double default_value,
-    const std::optional<EvaluationContext>& ctx) {
+    const std::optional<EvaluationContext>& ctx,
+    const std::optional<EvaluationOptions>& options) {
   return this->EvaluateFlag<DoubleResolutionDetails>(
-      default_value, ctx,
+      default_value, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetDoubleEvaluation(flag_key, default_value,
@@ -132,9 +214,10 @@ std::unique_ptr<DoubleResolutionDetails> ClientAPI::EvaluateDoubleFlag(
 
 std::unique_ptr<ObjectResolutionDetails> ClientAPI::EvaluateObjectFlag(
     std::string_view flag_key, Value default_value,
-    const std::optional<EvaluationContext>& ctx) {
+    const std::optional<EvaluationContext>& ctx,
+    const std::optional<EvaluationOptions>& options) {
   return this->EvaluateFlag<ObjectResolutionDetails>(
-      default_value, ctx,
+      default_value, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetObjectEvaluation(flag_key, default_value,

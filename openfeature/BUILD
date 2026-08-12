@@ -120,7 +120,8 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         ":evaluation_context",
-        ":value"
+        ":evaluation_options",
+        ":value",
     ],
 )
 

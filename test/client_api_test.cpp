@@ -13,6 +13,7 @@
 #include "absl/status/status.h"
 #include "mocks/mock_feature_provider.h"
 #include "openfeature/evaluation_context.h"
+#include "openfeature/evaluation_options.h"
 #include "openfeature/global_context_manager.h"
 #include "openfeature/hook.h"
 #include "openfeature/provider_status.h"
@@ -21,6 +22,7 @@ using ::openfeature::BoolResolutionDetails;
 using ::openfeature::ClientAPI;
 using ::openfeature::ErrorCode;
 using ::openfeature::EvaluationContext;
+using ::openfeature::EvaluationOptions;
 using ::openfeature::FlagMetadata;
 using ::openfeature::GlobalContextManager;
 using ::openfeature::Metadata;
@@ -156,6 +158,69 @@ TEST_F(ClientAPITest, GetObjectValueWithContextReturnsDefault) {
   EvaluationContext ctx = EvaluationContext::Builder().build();
   std::string flag_key = "my-object-flag";
   EXPECT_EQ(client.GetObjectValue(flag_key, Value(1), ctx), Value(1));
+}
+
+// Test GetBooleanValue with EvaluationOptions.
+TEST_F(ClientAPITest, GetBooleanValueWithOptionsReturnsDefault) {
+  ClientAPI client(repo_, "test-domain");
+  EvaluationOptions options;
+  std::string flag_key = "my-boolean-flag";
+
+  EXPECT_TRUE(client.GetBooleanValue(flag_key, true, options));
+  EXPECT_FALSE(client.GetBooleanValue(flag_key, false, options));
+
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EXPECT_TRUE(client.GetBooleanValue(flag_key, true, ctx, options));
+  EXPECT_FALSE(client.GetBooleanValue(flag_key, false, ctx, options));
+}
+
+// Test GetStringValue with EvaluationOptions.
+TEST_F(ClientAPITest, GetStringValueWithOptionsReturnsDefault) {
+  ClientAPI client(repo_, "test-domain");
+  EvaluationOptions options;
+  std::string flag_key = "my-string-flag";
+
+  EXPECT_EQ(client.GetStringValue(flag_key, "default", options), "default");
+
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EXPECT_EQ(client.GetStringValue(flag_key, "default", ctx, options),
+            "default");
+}
+
+// Test GetIntegerValue with EvaluationOptions.
+TEST_F(ClientAPITest, GetIntegerValueWithOptionsReturnsDefault) {
+  ClientAPI client(repo_, "test-domain");
+  EvaluationOptions options;
+  std::string flag_key = "my-integer-flag";
+
+  EXPECT_EQ(client.GetIntegerValue(flag_key, 42, options), 42);
+
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EXPECT_EQ(client.GetIntegerValue(flag_key, 42, ctx, options), 42);
+}
+
+// Test GetDoubleValue with EvaluationOptions.
+TEST_F(ClientAPITest, GetDoubleValueWithOptionsReturnsDefault) {
+  ClientAPI client(repo_, "test-domain");
+  EvaluationOptions options;
+  std::string flag_key = "my-double-flag";
+
+  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, 3.14, options), 3.14);
+
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, 3.14, ctx, options), 3.14);
+}
+
+// Test GetObjectValue with EvaluationOptions.
+TEST_F(ClientAPITest, GetObjectValueWithOptionsReturnsDefault) {
+  ClientAPI client(repo_, "test-domain");
+  EvaluationOptions options;
+  std::string flag_key = "my-object-flag";
+
+  EXPECT_EQ(client.GetObjectValue(flag_key, Value(1), options), Value(1));
+
+  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EXPECT_EQ(client.GetObjectValue(flag_key, Value(1), ctx, options), Value(1));
 }
 
 // Test context merging logic indirectly.

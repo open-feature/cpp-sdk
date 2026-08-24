@@ -64,6 +64,7 @@ cc_library(
         ":client",
         ":evaluation_context",
         ":features",
+        ":flag_evaluation_details",
         ":flag_metadata",
         ":general_hook",
         ":global_context_manager",
@@ -121,6 +122,7 @@ cc_library(
     deps = [
         ":evaluation_context",
         ":evaluation_options",
+        ":flag_evaluation_details",
         ":value",
     ],
 )

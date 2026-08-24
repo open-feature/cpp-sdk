@@ -53,6 +53,35 @@ bool ClientAPI::GetBooleanValue(std::string_view flag_key, bool default_value,
   return EvaluateBooleanFlag(flag_key, default_value, ctx, options)->GetValue();
 }
 
+BoolFlagEvaluationDetails ClientAPI::GetBooleanDetails(
+    std::string_view flag_key, bool default_value) {
+  auto res =
+      EvaluateBooleanFlag(flag_key, default_value, std::nullopt, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+BoolFlagEvaluationDetails ClientAPI::GetBooleanDetails(
+    std::string_view flag_key, bool default_value,
+    const EvaluationContext& ctx) {
+  auto res = EvaluateBooleanFlag(flag_key, default_value, ctx, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+BoolFlagEvaluationDetails ClientAPI::GetBooleanDetails(
+    std::string_view flag_key, bool default_value,
+    const EvaluationOptions& options) {
+  auto res =
+      EvaluateBooleanFlag(flag_key, default_value, std::nullopt, options);
+  return {std::string(flag_key), *res};
+}
+
+BoolFlagEvaluationDetails ClientAPI::GetBooleanDetails(
+    std::string_view flag_key, bool default_value, const EvaluationContext& ctx,
+    const EvaluationOptions& options) {
+  auto res = EvaluateBooleanFlag(flag_key, default_value, ctx, options);
+  return {std::string(flag_key), *res};
+}
+
 std::string ClientAPI::GetStringValue(std::string_view flag_key,
                                       std::string_view default_value) {
   return EvaluateStringFlag(flag_key, default_value, std::nullopt, std::nullopt)
@@ -78,6 +107,34 @@ std::string ClientAPI::GetStringValue(std::string_view flag_key,
                                       const EvaluationContext& ctx,
                                       const EvaluationOptions& options) {
   return EvaluateStringFlag(flag_key, default_value, ctx, options)->GetValue();
+}
+
+StringFlagEvaluationDetails ClientAPI::GetStringDetails(
+    std::string_view flag_key, std::string_view default_value) {
+  auto res =
+      EvaluateStringFlag(flag_key, default_value, std::nullopt, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+StringFlagEvaluationDetails ClientAPI::GetStringDetails(
+    std::string_view flag_key, std::string_view default_value,
+    const EvaluationContext& ctx) {
+  auto res = EvaluateStringFlag(flag_key, default_value, ctx, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+StringFlagEvaluationDetails ClientAPI::GetStringDetails(
+    std::string_view flag_key, std::string_view default_value,
+    const EvaluationOptions& options) {
+  auto res = EvaluateStringFlag(flag_key, default_value, std::nullopt, options);
+  return {std::string(flag_key), *res};
+}
+
+StringFlagEvaluationDetails ClientAPI::GetStringDetails(
+    std::string_view flag_key, std::string_view default_value,
+    const EvaluationContext& ctx, const EvaluationOptions& options) {
+  auto res = EvaluateStringFlag(flag_key, default_value, ctx, options);
+  return {std::string(flag_key), *res};
 }
 
 int64_t ClientAPI::GetIntegerValue(std::string_view flag_key,
@@ -108,6 +165,35 @@ int64_t ClientAPI::GetIntegerValue(std::string_view flag_key,
   return EvaluateIntegerFlag(flag_key, default_value, ctx, options)->GetValue();
 }
 
+IntFlagEvaluationDetails ClientAPI::GetIntegerDetails(std::string_view flag_key,
+                                                      int64_t default_value) {
+  auto res =
+      EvaluateIntegerFlag(flag_key, default_value, std::nullopt, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+IntFlagEvaluationDetails ClientAPI::GetIntegerDetails(
+    std::string_view flag_key, int64_t default_value,
+    const EvaluationContext& ctx) {
+  auto res = EvaluateIntegerFlag(flag_key, default_value, ctx, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+IntFlagEvaluationDetails ClientAPI::GetIntegerDetails(
+    std::string_view flag_key, int64_t default_value,
+    const EvaluationOptions& options) {
+  auto res =
+      EvaluateIntegerFlag(flag_key, default_value, std::nullopt, options);
+  return {std::string(flag_key), *res};
+}
+
+IntFlagEvaluationDetails ClientAPI::GetIntegerDetails(
+    std::string_view flag_key, int64_t default_value,
+    const EvaluationContext& ctx, const EvaluationOptions& options) {
+  auto res = EvaluateIntegerFlag(flag_key, default_value, ctx, options);
+  return {std::string(flag_key), *res};
+}
+
 double ClientAPI::GetDoubleValue(std::string_view flag_key,
                                  double default_value) {
   return EvaluateDoubleFlag(flag_key, default_value, std::nullopt, std::nullopt)
@@ -135,6 +221,34 @@ double ClientAPI::GetDoubleValue(std::string_view flag_key,
   return EvaluateDoubleFlag(flag_key, default_value, ctx, options)->GetValue();
 }
 
+DoubleFlagEvaluationDetails ClientAPI::GetDoubleDetails(
+    std::string_view flag_key, double default_value) {
+  auto res =
+      EvaluateDoubleFlag(flag_key, default_value, std::nullopt, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+DoubleFlagEvaluationDetails ClientAPI::GetDoubleDetails(
+    std::string_view flag_key, double default_value,
+    const EvaluationContext& ctx) {
+  auto res = EvaluateDoubleFlag(flag_key, default_value, ctx, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+DoubleFlagEvaluationDetails ClientAPI::GetDoubleDetails(
+    std::string_view flag_key, double default_value,
+    const EvaluationOptions& options) {
+  auto res = EvaluateDoubleFlag(flag_key, default_value, std::nullopt, options);
+  return {std::string(flag_key), *res};
+}
+
+DoubleFlagEvaluationDetails ClientAPI::GetDoubleDetails(
+    std::string_view flag_key, double default_value,
+    const EvaluationContext& ctx, const EvaluationOptions& options) {
+  auto res = EvaluateDoubleFlag(flag_key, default_value, ctx, options);
+  return {std::string(flag_key), *res};
+}
+
 Value ClientAPI::GetObjectValue(std::string_view flag_key,
                                 Value default_value) {
   return EvaluateObjectFlag(flag_key, default_value, std::nullopt, std::nullopt)
@@ -157,6 +271,34 @@ Value ClientAPI::GetObjectValue(std::string_view flag_key, Value default_value,
                                 const EvaluationContext& ctx,
                                 const EvaluationOptions& options) {
   return EvaluateObjectFlag(flag_key, default_value, ctx, options)->GetValue();
+}
+
+ObjectFlagEvaluationDetails ClientAPI::GetObjectDetails(
+    std::string_view flag_key, Value default_value) {
+  auto res =
+      EvaluateObjectFlag(flag_key, default_value, std::nullopt, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+ObjectFlagEvaluationDetails ClientAPI::GetObjectDetails(
+    std::string_view flag_key, Value default_value,
+    const EvaluationContext& ctx) {
+  auto res = EvaluateObjectFlag(flag_key, default_value, ctx, std::nullopt);
+  return {std::string(flag_key), *res};
+}
+
+ObjectFlagEvaluationDetails ClientAPI::GetObjectDetails(
+    std::string_view flag_key, Value default_value,
+    const EvaluationOptions& options) {
+  auto res = EvaluateObjectFlag(flag_key, default_value, std::nullopt, options);
+  return {std::string(flag_key), *res};
+}
+
+ObjectFlagEvaluationDetails ClientAPI::GetObjectDetails(
+    std::string_view flag_key, Value default_value,
+    const EvaluationContext& ctx, const EvaluationOptions& options) {
+  auto res = EvaluateObjectFlag(flag_key, default_value, ctx, options);
+  return {std::string(flag_key), *res};
 }
 
 std::unique_ptr<BoolResolutionDetails> ClientAPI::EvaluateBooleanFlag(

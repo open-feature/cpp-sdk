@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.4](https://github.com/open-feature/cpp-sdk/compare/v0.1.3...v0.1.4) (2026-08-24)
+
+
+### Features
+
+* Detailed flag evaluation ([#130](https://github.com/open-feature/cpp-sdk/issues/130)) ([7865abe](https://github.com/open-feature/cpp-sdk/commit/7865abe7c2ec8fc88e34e187e67efaa50351e639))
+* Hook support for client class ([#127](https://github.com/open-feature/cpp-sdk/issues/127)) ([72d4c91](https://github.com/open-feature/cpp-sdk/commit/72d4c915addd4ad339da9cd9b17b656d3965ade0))
+* Overload client functions ([#129](https://github.com/open-feature/cpp-sdk/issues/129)) ([3a1c4d4](https://github.com/open-feature/cpp-sdk/commit/3a1c4d4203a4684726511c200390077925ebf267))
+* Update global api ([#123](https://github.com/open-feature/cpp-sdk/issues/123)) ([a5cc90e](https://github.com/open-feature/cpp-sdk/commit/a5cc90e953aa78d94c98c12112bf0d70848aa8e0))
+
 ## [0.1.3](https://github.com/open-feature/cpp-sdk/compare/v0.1.2...v0.1.3) (2026-08-10)
 
 

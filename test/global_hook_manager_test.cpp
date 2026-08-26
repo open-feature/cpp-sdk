@@ -19,13 +19,9 @@ class DummyTestHook3 : public IntHook {};
 
 class GlobalHookManagerTest : public ::testing::Test {
  protected:
-  void SetUp() override {
-    GlobalHookManager::GetInstance().ClearHooks();
-  }
+  void SetUp() override { GlobalHookManager::GetInstance().ClearHooks(); }
 
-  void TearDown() override {
-    GlobalHookManager::GetInstance().ClearHooks();
-  }
+  void TearDown() override { GlobalHookManager::GetInstance().ClearHooks(); }
 };
 
 TEST_F(GlobalHookManagerTest, ReturnsSameSingletonInstance) {
@@ -97,6 +93,10 @@ TEST_F(GlobalHookManagerTest, ClearHooksRemovesAllHooks) {
   EXPECT_TRUE(manager.GetHooks().empty());
 }
 
+constexpr int kWriterSleepIntervalMs = 1;
+constexpr int kReaderThreadCount = 8;
+constexpr int kStressTestDurationMs = 100;
+
 TEST_F(GlobalHookManagerTest, ThreadSafetyStressTest) {
   auto& manager = GlobalHookManager::GetInstance();
   std::atomic<bool> stop{false};
@@ -105,28 +105,30 @@ TEST_F(GlobalHookManagerTest, ThreadSafetyStressTest) {
   std::thread writer([&]() {
     while (!stop) {
       manager.AddHook(std::make_shared<DummyTestHook1>());
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(kWriterSleepIntervalMs));
     }
   });
 
   // Reader threads reading hooks
   std::vector<std::thread> readers;
-  for (int i = 0; i < 8; ++i) {
+  readers.reserve(kReaderThreadCount);
+  for (int i = 0; i < kReaderThreadCount; ++i) {
     readers.emplace_back([&]() {
       while (!stop) {
         auto hooks = manager.GetHooks();
-        volatile size_t s = hooks.size();
-        (void)s;
+        volatile size_t hook_count = hooks.size();
+        (void)hook_count;
       }
     });
   }
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(std::chrono::milliseconds(kStressTestDurationMs));
 
   stop = true;
   writer.join();
-  for (auto& t : readers) {
-    t.join();
+  for (auto& reader_thread : readers) {
+    reader_thread.join();
   }
 
   EXPECT_FALSE(manager.GetHooks().empty());

@@ -104,6 +104,17 @@ cc_test(
 )
 
 cc_test(
+    name = "global_hook_manager_test",
+    srcs = ["global_hook_manager_test.cpp"],
+    deps = [
+        "//openfeature:general_hook",
+        "//openfeature:global_hook_manager",
+        "//openfeature:hook",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "value_test",
     srcs = ["value_test.cpp"],
     deps = [

@@ -28,6 +28,15 @@ class HookData {
     return nullptr;
   }
 
+  template <typename T>
+  const T* GetAs(std::string_view key) const {
+    auto it_key = data_.find(std::string(key));
+    if (it_key != data_.end()) {
+      return std::any_cast<T>(&it_key->second);
+    }
+    return nullptr;
+  }
+
  private:
   std::unordered_map<std::string, std::any> data_;
 };

@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "openfeature/flag_metadata.h"
+#include "openfeature/flag_type_value.h"
 #include "openfeature/global_context_manager.h"
 #include "openfeature/reason.h"
 
@@ -306,7 +307,7 @@ std::unique_ptr<BoolResolutionDetails> ClientAPI::EvaluateBooleanFlag(
     const std::optional<EvaluationContext>& ctx,
     const std::optional<EvaluationOptions>& options) {
   return this->EvaluateFlag<BoolResolutionDetails>(
-      default_value, ctx, options,
+      flag_key, FlagValueType::kBoolean, default_value, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetBooleanEvaluation(flag_key, default_value,
@@ -320,7 +321,7 @@ std::unique_ptr<StringResolutionDetails> ClientAPI::EvaluateStringFlag(
     const std::optional<EvaluationOptions>& options) {
   std::string default_str(default_value);
   return this->EvaluateFlag<StringResolutionDetails>(
-      default_str, ctx, options,
+      flag_key, FlagValueType::kString, default_str, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetStringEvaluation(flag_key, default_value,
@@ -333,7 +334,7 @@ std::unique_ptr<IntResolutionDetails> ClientAPI::EvaluateIntegerFlag(
     const std::optional<EvaluationContext>& ctx,
     const std::optional<EvaluationOptions>& options) {
   return this->EvaluateFlag<IntResolutionDetails>(
-      default_value, ctx, options,
+      flag_key, FlagValueType::kInteger, default_value, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetIntegerEvaluation(flag_key, default_value,
@@ -346,7 +347,7 @@ std::unique_ptr<DoubleResolutionDetails> ClientAPI::EvaluateDoubleFlag(
     const std::optional<EvaluationContext>& ctx,
     const std::optional<EvaluationOptions>& options) {
   return this->EvaluateFlag<DoubleResolutionDetails>(
-      default_value, ctx, options,
+      flag_key, FlagValueType::kDouble, default_value, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetDoubleEvaluation(flag_key, default_value,
@@ -359,7 +360,7 @@ std::unique_ptr<ObjectResolutionDetails> ClientAPI::EvaluateObjectFlag(
     const std::optional<EvaluationContext>& ctx,
     const std::optional<EvaluationOptions>& options) {
   return this->EvaluateFlag<ObjectResolutionDetails>(
-      default_value, ctx, options,
+      flag_key, FlagValueType::kObject, default_value, ctx, options,
       [&](const std::shared_ptr<FeatureProvider>& provider,
           const EvaluationContext& merged_ctx) {
         return provider->GetObjectEvaluation(flag_key, default_value,

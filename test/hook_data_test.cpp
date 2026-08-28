@@ -156,4 +156,22 @@ TEST_F(HookDataTest, SetAndGetSharedPtr) {
   EXPECT_EQ(retrieved->use_count(), kExpectedUseCount);
 }
 
+TEST_F(HookDataTest, ConstGetAsReturnsPointerToValue) {
+  hook_data_.Set(kIntKey, kIntValue);
+  hook_data_.Set(kStringKey, std::string(kStringValue));
+
+  const HookData& const_hook_data = hook_data_;
+
+  const int* const_int_ptr = const_hook_data.GetAs<int>(kIntKey);
+  ASSERT_NE(const_int_ptr, nullptr);
+  EXPECT_EQ(*const_int_ptr, kIntValue);
+
+  const auto* const_str_ptr = const_hook_data.GetAs<std::string>(kStringKey);
+  ASSERT_NE(const_str_ptr, nullptr);
+  EXPECT_EQ(*const_str_ptr, kStringValue);
+
+  EXPECT_EQ(const_hook_data.GetAs<int>(kNonExistentKey), nullptr);
+  EXPECT_EQ(const_hook_data.GetAs<double>(kIntKey), nullptr);
+}
+
 }  // namespace openfeature

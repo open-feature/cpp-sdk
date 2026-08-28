@@ -15,7 +15,9 @@
 #include "openfeature/evaluation_context.h"
 #include "openfeature/evaluation_options.h"
 #include "openfeature/global_context_manager.h"
+#include "openfeature/global_hook_manager.h"
 #include "openfeature/hook.h"
+#include "openfeature/hook_support.h"
 #include "openfeature/provider_status.h"
 
 using ::openfeature::BoolFlagEvaluationDetails;
@@ -27,6 +29,8 @@ using ::openfeature::EvaluationContext;
 using ::openfeature::EvaluationOptions;
 using ::openfeature::FlagMetadata;
 using ::openfeature::GlobalContextManager;
+using ::openfeature::GlobalHookManager;
+using ::openfeature::HookSupport;
 using ::openfeature::IntFlagEvaluationDetails;
 using ::openfeature::Metadata;
 using ::openfeature::MockFeatureProvider;
@@ -46,10 +50,14 @@ using ::testing::StrictMock;
 class ClientAPITest : public ::testing::Test {
  protected:
   void SetUp() override {
-    // Reset the Global Context to a clean state before each test.
+    // Reset Global Context and Global Hooks to clean states before each test.
     GlobalContextManager::GetInstance().SetGlobalEvaluationContext(
         EvaluationContext::Builder().build());
+    GlobalHookManager::GetInstance().ClearHooks();
   }
+
+  void TearDown() override { GlobalHookManager::GetInstance().ClearHooks(); }
+
   ProviderRepository repo_;
 };
 
@@ -392,8 +400,8 @@ TEST_F(ClientAPITest, ContextMergingPrecedence) {
           .WithAttribute("shared_attr_gci", "global_shared_gci")
           .build());
 
-  std::shared_ptr<StrictMock<MockFeatureProvider>> mock_provider =
-      std::make_shared<StrictMock<MockFeatureProvider>>();
+  std::shared_ptr<NiceMock<MockFeatureProvider>> mock_provider =
+      std::make_shared<NiceMock<MockFeatureProvider>>();
 
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
   EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
@@ -772,4 +780,682 @@ TEST_F(ClientAPITest, AddHookAndAddHooksFiltersNullptrs) {
   auto hooks = client.GetHooks();
   ASSERT_EQ(hooks.size(), 1);
   EXPECT_EQ(hooks[0], valid_hook);
+}
+
+namespace {
+
+// Helper hook that logs lifecycle method calls
+class OrderTrackingHook : public openfeature::BoolHook {
+ public:
+  explicit OrderTrackingHook(std::string name,
+                             std::vector<std::string>& execution_log)
+      : name_(std::move(name)), execution_log_(execution_log) {}
+
+  std::optional<EvaluationContext> Before(
+      const openfeature::HookContext<bool>& /*ctx*/,
+      const openfeature::HookHints& /*hints*/) override {
+    execution_log_.push_back("before:" + name_);
+    return std::nullopt;
+  }
+
+  void After(const openfeature::HookContext<bool>& /*ctx*/,
+             const openfeature::FlagEvaluationDetails<bool>& /*details*/,
+             const openfeature::HookHints& /*hints*/) override {
+    execution_log_.push_back("after:" + name_);
+  }
+
+  void Error(const openfeature::HookContext<bool>& /*ctx*/,
+             const std::exception& /*exception*/,
+             const openfeature::HookHints& /*hints*/) override {
+    execution_log_.push_back("error:" + name_);
+  }
+
+  void Finally(const openfeature::HookContext<bool>& /*ctx*/,
+               const openfeature::FlagEvaluationDetails<bool>& /*details*/,
+               const openfeature::HookHints& /*hints*/) override {
+    execution_log_.push_back("finally:" + name_);
+  }
+
+ private:
+  std::string name_;
+  std::vector<std::string>& execution_log_;
+};
+
+// Helper hook that mutates context in Before
+class ContextMutatingHook : public openfeature::BoolHook {
+ public:
+  explicit ContextMutatingHook(std::string key, std::string value)
+      : key_(std::move(key)), value_(std::move(value)) {}
+
+  std::optional<EvaluationContext> Before(
+      const openfeature::HookContext<bool>& /*ctx*/,
+      const openfeature::HookHints& /*hints*/) override {
+    return EvaluationContext::Builder().WithAttribute(key_, value_).build();
+  }
+
+ private:
+  std::string key_;
+  std::string value_;
+};
+
+// Helper hook to test HookData isolation and persistence
+class HookDataTestHook : public openfeature::BoolHook {
+ public:
+  explicit HookDataTestHook(std::string hook_id)
+      : hook_id_(std::move(hook_id)) {}
+
+  std::optional<EvaluationContext> Before(
+      const openfeature::HookContext<bool>& ctx,
+      const openfeature::HookHints& /*hints*/) override {
+    ctx.GetHookData()->Set("id", hook_id_);
+    return std::nullopt;
+  }
+
+  void After(const openfeature::HookContext<bool>& ctx,
+             const openfeature::FlagEvaluationDetails<bool>& /*details*/,
+             const openfeature::HookHints& /*hints*/) override {
+    const auto* stored_id = ctx.GetHookData()->GetAs<std::string>("id");
+    if (stored_id != nullptr) {
+      after_id_ = *stored_id;
+    }
+  }
+
+  void Finally(const openfeature::HookContext<bool>& ctx,
+               const openfeature::FlagEvaluationDetails<bool>& /*details*/,
+               const openfeature::HookHints& /*hints*/) override {
+    const auto* stored_id = ctx.GetHookData()->GetAs<std::string>("id");
+    if (stored_id != nullptr) {
+      finally_id_ = *stored_id;
+    }
+  }
+
+  std::string after_id_;
+  std::string finally_id_;
+
+ private:
+  std::string hook_id_;
+};
+
+// Helper hook to test HookHints
+class HintsTrackingHook : public openfeature::BoolHook {
+ public:
+  std::optional<EvaluationContext> Before(
+      const openfeature::HookContext<bool>& /*ctx*/,
+      const openfeature::HookHints& hints) override {
+    auto iterator = hints.find("hint_key");
+    if (iterator != hints.end()) {
+      const auto* value = std::any_cast<std::string>(&iterator->second);
+      if (value != nullptr) {
+        before_hint_ = *value;
+      }
+    }
+    return std::nullopt;
+  }
+
+  void After(const openfeature::HookContext<bool>& /*ctx*/,
+             const openfeature::FlagEvaluationDetails<bool>& /*details*/,
+             const openfeature::HookHints& hints) override {
+    auto iterator = hints.find("hint_key");
+    if (iterator != hints.end()) {
+      const auto* value = std::any_cast<std::string>(&iterator->second);
+      if (value != nullptr) {
+        after_hint_ = *value;
+      }
+    }
+  }
+
+  void Finally(const openfeature::HookContext<bool>& /*ctx*/,
+               const openfeature::FlagEvaluationDetails<bool>& /*details*/,
+               const openfeature::HookHints& hints) override {
+    auto iterator = hints.find("hint_key");
+    if (iterator != hints.end()) {
+      const auto* value = std::any_cast<std::string>(&iterator->second);
+      if (value != nullptr) {
+        finally_hint_ = *value;
+      }
+    }
+  }
+
+  std::string before_hint_;
+  std::string after_hint_;
+  std::string finally_hint_;
+};
+
+enum class ThrowStage { kBefore, kAfter, kError, kFinally };
+
+class ThrowingHook : public openfeature::BoolHook {
+ public:
+  explicit ThrowingHook(ThrowStage stage, std::string message,
+                        std::vector<std::string>& execution_log)
+      : stage_(stage),
+        message_(std::move(message)),
+        execution_log_(execution_log) {}
+
+  std::optional<EvaluationContext> Before(
+      const openfeature::HookContext<bool>& /*ctx*/,
+      const openfeature::HookHints& /*hints*/) override {
+    execution_log_.push_back("before");
+    if (stage_ == ThrowStage::kBefore) {
+      throw std::runtime_error(message_);
+    }
+    return std::nullopt;
+  }
+
+  void After(const openfeature::HookContext<bool>& /*ctx*/,
+             const openfeature::FlagEvaluationDetails<bool>& /*details*/,
+             const openfeature::HookHints& /*hints*/) override {
+    execution_log_.push_back("after");
+    if (stage_ == ThrowStage::kAfter) {
+      throw std::runtime_error(message_);
+    }
+  }
+
+  void Error(const openfeature::HookContext<bool>& /*ctx*/,
+             const std::exception& /*exception*/,
+             const openfeature::HookHints& /*hints*/) override {
+    execution_log_.push_back("error");
+    if (stage_ == ThrowStage::kError) {
+      throw std::runtime_error(message_);
+    }
+  }
+
+  void Finally(const openfeature::HookContext<bool>& /*ctx*/,
+               const openfeature::FlagEvaluationDetails<bool>& /*details*/,
+               const openfeature::HookHints& /*hints*/) override {
+    execution_log_.push_back("finally");
+    if (stage_ == ThrowStage::kFinally) {
+      throw std::runtime_error(message_);
+    }
+  }
+
+ private:
+  ThrowStage stage_;
+  std::string message_;
+  std::vector<std::string>& execution_log_;
+};
+
+}  // namespace
+
+// Test full 4-tier hook execution order on success:
+// Before: API -> Client -> Invocation -> Provider
+// After: Provider -> Invocation -> Client -> API
+// Finally: Provider -> Invocation -> Client -> API
+TEST_F(ClientAPITest, HooksExecuteInCorrectOrderOnSuccess) {
+  std::string domain = "order-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
+  ON_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
+      .WillByDefault(testing::Invoke(
+          [](std::string_view, bool, const EvaluationContext&)
+              -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
+            return std::make_unique<BoolResolutionDetails>(
+                true, Reason::kTargetingMatch, std::nullopt, FlagMetadata());
+          }));
+
+  std::vector<std::string> execution_log;
+  auto api_hook = std::make_shared<OrderTrackingHook>("api", execution_log);
+  auto client_hook =
+      std::make_shared<OrderTrackingHook>("client", execution_log);
+  auto invocation_hook =
+      std::make_shared<OrderTrackingHook>("invocation", execution_log);
+  auto provider_hook =
+      std::make_shared<OrderTrackingHook>("provider", execution_log);
+
+  ON_CALL(*mock_provider, GetHooks())
+      .WillByDefault(
+          Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{
+              provider_hook}));
+
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  GlobalHookManager::GetInstance().AddHook(api_hook);
+
+  ClientAPI client(repo_, domain);
+  client.AddHook(client_hook);
+
+  EvaluationOptions options;
+  options.hooks = {invocation_hook};
+
+  bool result = client.GetBooleanValue("test_flag", false, options);
+  EXPECT_TRUE(result);
+
+  std::vector<std::string> expected_log = {
+      "before:api",         "before:client",  "before:invocation",
+      "before:provider",    "after:provider", "after:invocation",
+      "after:client",       "after:api",      "finally:provider",
+      "finally:invocation", "finally:client", "finally:api",
+  };
+  EXPECT_EQ(execution_log, expected_log);
+}
+
+// Test that evaluation context returned by before hooks accumulates and reaches
+// provider
+TEST_F(ClientAPITest,
+       BeforeHookContextMutationPropagatesToSubsequentHooksAndProvider) {
+  std::string domain = "mutation-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
+
+  EvaluationContext captured_context = EvaluationContext::Builder().build();
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
+      .WillOnce(DoAll(
+          SaveArg<2>(&captured_context),
+          Return(std::make_unique<BoolResolutionDetails>(
+              true, Reason::kTargetingMatch, std::nullopt, FlagMetadata()))));
+
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  ClientAPI client(repo_, domain);
+  client.AddHook(std::make_shared<ContextMutatingHook>("hook_attr1", "val1"));
+  client.AddHook(std::make_shared<ContextMutatingHook>("hook_attr2", "val2"));
+
+  bool result = client.GetBooleanValue("test_flag", false);
+  EXPECT_TRUE(result);
+
+  ASSERT_NE(captured_context.GetValue("hook_attr1"), nullptr);
+  EXPECT_EQ(
+      std::any_cast<std::string>(*captured_context.GetValue("hook_attr1")),
+      "val1");
+
+  ASSERT_NE(captured_context.GetValue("hook_attr2"), nullptr);
+  EXPECT_EQ(
+      std::any_cast<std::string>(*captured_context.GetValue("hook_attr2")),
+      "val2");
+}
+
+// Test that HookData is isolated per hook instance and persists across stages
+TEST_F(ClientAPITest, HookDataIsIsolatedPerHookAndPersistsAcrossStages) {
+  std::string domain = "hook-data-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
+  ON_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
+      .WillByDefault(testing::Invoke(
+          [](std::string_view, bool, const EvaluationContext&)
+              -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
+            return std::make_unique<BoolResolutionDetails>(
+                true, Reason::kTargetingMatch, std::nullopt, FlagMetadata());
+          }));
+
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  auto hook_first = std::make_shared<HookDataTestHook>("hook-1");
+  auto hook_second = std::make_shared<HookDataTestHook>("hook-2");
+
+  ClientAPI client(repo_, domain);
+  client.AddHooks({hook_first, hook_second});
+
+  bool result = client.GetBooleanValue("test_flag", false);
+  EXPECT_TRUE(result);
+
+  EXPECT_EQ(hook_first->after_id_, "hook-1");
+  EXPECT_EQ(hook_first->finally_id_, "hook-1");
+
+  EXPECT_EQ(hook_second->after_id_, "hook-2");
+  EXPECT_EQ(hook_second->finally_id_, "hook-2");
+}
+
+// Test that HookHints are passed to Before, After, and Finally
+TEST_F(ClientAPITest, HookHintsArePropagatedToAllStages) {
+  std::string domain = "hints-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
+  ON_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
+      .WillByDefault(testing::Invoke(
+          [](std::string_view, bool, const EvaluationContext&)
+              -> absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> {
+            return std::make_unique<BoolResolutionDetails>(
+                true, Reason::kTargetingMatch, std::nullopt, FlagMetadata());
+          }));
+
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  auto tracking_hook = std::make_shared<HintsTrackingHook>();
+  ClientAPI client(repo_, domain);
+  client.AddHook(tracking_hook);
+
+  openfeature::HookHints hints;
+  hints["hint_key"] = std::string("test_hint_value");
+
+  EvaluationOptions options;
+  options.hook_hints = hints;
+
+  bool result = client.GetBooleanValue("test_flag", false, options);
+  EXPECT_TRUE(result);
+
+  EXPECT_EQ(tracking_hook->before_hint_, "test_hint_value");
+  EXPECT_EQ(tracking_hook->after_hint_, "test_hint_value");
+  EXPECT_EQ(tracking_hook->finally_hint_, "test_hint_value");
+}
+
+// Test that an error in Before skips resolution and executes Error and Finally
+TEST_F(ClientAPITest,
+       ErrorInBeforeSkipsResolutionAndRunsErrorAndFinallyInReverse) {
+  std::string domain = "before-error-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  std::vector<std::string> execution_log;
+  auto throwing_hook = std::make_shared<ThrowingHook>(
+      ThrowStage::kBefore, "Before hook failed", execution_log);
+
+  ClientAPI client(repo_, domain);
+  client.AddHook(throwing_hook);
+
+  auto details = client.GetBooleanDetails("test_flag", false);
+  EXPECT_FALSE(details.GetValue());
+  EXPECT_EQ(details.GetReason(), Reason::kError);
+  EXPECT_EQ(details.GetErrorCode(), ErrorCode::kGeneral);
+
+  std::vector<std::string> expected_log = {"before", "error", "finally"};
+  EXPECT_EQ(execution_log, expected_log);
+}
+
+// Test that an error in After mutates details to error state and executes Error
+// and Finally
+TEST_F(ClientAPITest,
+       ErrorInAfterMutatesResultAndRunsErrorAndFinallyInReverse) {
+  std::string domain = "after-error-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
+      .WillOnce(Return(std::make_unique<BoolResolutionDetails>(
+          true, Reason::kTargetingMatch, std::nullopt, FlagMetadata())));
+
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  std::vector<std::string> execution_log;
+  auto throwing_hook = std::make_shared<ThrowingHook>(
+      ThrowStage::kAfter, "After hook failed", execution_log);
+
+  ClientAPI client(repo_, domain);
+  client.AddHook(throwing_hook);
+
+  auto details = client.GetBooleanDetails("test_flag", false);
+  EXPECT_FALSE(details.GetValue());
+  EXPECT_EQ(details.GetReason(), Reason::kError);
+  EXPECT_EQ(details.GetErrorCode(), ErrorCode::kGeneral);
+
+  std::vector<std::string> expected_log = {"before", "after", "error",
+                                           "finally"};
+  EXPECT_EQ(execution_log, expected_log);
+}
+
+// Test that exceptions thrown inside Error or Finally hooks do not prevent
+// other hooks from running
+TEST_F(ClientAPITest, ExceptionInErrorOrFinallyDoesNotAbortExecution) {
+  std::string domain = "fault-tolerance-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
+
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  std::vector<std::string> execution_log;
+  auto failing_hook = std::make_shared<ThrowingHook>(
+      ThrowStage::kError, "Error hook failed", execution_log);
+  auto tracking_hook =
+      std::make_shared<OrderTrackingHook>("tracker", execution_log);
+
+  // failing_hook throws in Before to trigger Error stage
+  auto throwing_before_hook = std::make_shared<ThrowingHook>(
+      ThrowStage::kBefore, "Before failed", execution_log);
+
+  ClientAPI client(repo_, domain);
+  client.AddHooks({tracking_hook, failing_hook, throwing_before_hook});
+
+  // Client evaluation MUST NOT throw
+  EXPECT_NO_THROW({
+    auto details = client.GetBooleanDetails("test_flag", false);
+    EXPECT_FALSE(details.GetValue());
+    EXPECT_EQ(details.GetReason(), Reason::kError);
+  });
+}
+
+namespace {
+class StringTrackingHook : public openfeature::StringHook {
+ public:
+  explicit StringTrackingHook(bool& called) : called_(called) {}
+  std::optional<EvaluationContext> Before(
+      const openfeature::HookContext<std::string>& /*ctx*/,
+      const openfeature::HookHints& /*hints*/) override {
+    called_ = true;
+    return std::nullopt;
+  }
+
+ private:
+  bool& called_;
+};
+
+class BoolTrackingHook : public openfeature::BoolHook {
+ public:
+  explicit BoolTrackingHook(bool& called) : called_(called) {}
+  std::optional<EvaluationContext> Before(
+      const openfeature::HookContext<bool>& /*ctx*/,
+      const openfeature::HookHints& /*hints*/) override {
+    called_ = true;
+    return std::nullopt;
+  }
+
+ private:
+  bool& called_;
+};
+}  // namespace
+
+// Test that type-specific hooks only execute for their matching flag type
+TEST_F(ClientAPITest, TypeSpecificHooksExecuteOnlyForMatchingFlagTypes) {
+  std::string domain = "type-filtering-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
+
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  bool string_hook_called = false;
+  bool bool_hook_called = false;
+  auto string_hook = std::make_shared<StringTrackingHook>(string_hook_called);
+  auto bool_hook = std::make_shared<BoolTrackingHook>(bool_hook_called);
+
+  ClientAPI client(repo_, domain);
+  client.AddHooks({string_hook, bool_hook});
+
+  client.GetBooleanValue("flag_key", false);
+  EXPECT_TRUE(bool_hook_called);
+  EXPECT_FALSE(string_hook_called);
+
+  // Now evaluate string flag
+  bool_hook_called = false;
+  string_hook_called = false;
+  client.GetStringValue("string_flag", "default_val");
+  EXPECT_TRUE(string_hook_called);
+  EXPECT_FALSE(bool_hook_called);
+}
+
+// Test that CollectHooks aggregates hooks across all 4 tiers in FIFO order
+TEST_F(ClientAPITest, CollectHooksAggregatesAllTiersInPrecedenceOrder) {
+  std::string domain = "collect-hooks-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+
+  std::vector<std::string> execution_log;
+  auto api_hook = std::make_shared<OrderTrackingHook>("api", execution_log);
+  auto client_hook =
+      std::make_shared<OrderTrackingHook>("client", execution_log);
+  auto invocation_hook =
+      std::make_shared<OrderTrackingHook>("invocation", execution_log);
+  auto provider_hook =
+      std::make_shared<OrderTrackingHook>("provider", execution_log);
+
+  ON_CALL(*mock_provider, GetHooks())
+      .WillByDefault(
+          Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{
+              provider_hook}));
+
+  GlobalHookManager::GetInstance().AddHook(api_hook);
+
+  ClientAPI client(repo_, domain);
+  client.AddHook(client_hook);
+
+  EvaluationOptions options;
+  options.hooks = {invocation_hook};
+
+  auto collected_hooks =
+      HookSupport::CollectHooks(client.GetHooks(), options, mock_provider);
+  ASSERT_EQ(collected_hooks.size(), 4);
+  EXPECT_EQ(collected_hooks[0], api_hook);
+  EXPECT_EQ(collected_hooks[1], client_hook);
+  EXPECT_EQ(collected_hooks[2], invocation_hook);
+  EXPECT_EQ(collected_hooks[3], provider_hook);
+}
+
+// Test that CollectHooks filters out nullptr hooks at all tiers
+TEST_F(ClientAPITest, CollectHooksFiltersNullptrsAcrossAllTiers) {
+  std::string domain = "collect-hooks-nulls-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+
+  std::vector<std::string> execution_log;
+  auto api_hook = std::make_shared<OrderTrackingHook>("api", execution_log);
+  auto client_hook =
+      std::make_shared<OrderTrackingHook>("client", execution_log);
+  auto invocation_hook =
+      std::make_shared<OrderTrackingHook>("invocation", execution_log);
+  auto provider_hook =
+      std::make_shared<OrderTrackingHook>("provider", execution_log);
+
+  GlobalHookManager::GetInstance().AddHooks({nullptr, api_hook, nullptr});
+
+  ClientAPI client(repo_, domain);
+  client.AddHooks({nullptr, client_hook, nullptr});
+
+  EvaluationOptions options;
+  options.hooks = {nullptr, invocation_hook, nullptr};
+
+  ON_CALL(*mock_provider, GetHooks())
+      .WillByDefault(
+          Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{
+              nullptr, provider_hook, nullptr}));
+
+  auto collected_hooks =
+      HookSupport::CollectHooks(client.GetHooks(), options, mock_provider);
+  ASSERT_EQ(collected_hooks.size(), 4);
+  EXPECT_EQ(collected_hooks[0], api_hook);
+  EXPECT_EQ(collected_hooks[1], client_hook);
+  EXPECT_EQ(collected_hooks[2], invocation_hook);
+  EXPECT_EQ(collected_hooks[3], provider_hook);
+}
+
+// Test that CollectHooks handles nullopt options and null provider gracefully
+TEST_F(ClientAPITest, CollectHooksHandlesNulloptOptionsAndNullProvider) {
+  std::string domain = "collect-hooks-nullopt-domain";
+
+  std::vector<std::string> execution_log;
+  auto api_hook = std::make_shared<OrderTrackingHook>("api", execution_log);
+  auto client_hook =
+      std::make_shared<OrderTrackingHook>("client", execution_log);
+
+  GlobalHookManager::GetInstance().AddHook(api_hook);
+
+  ClientAPI client(repo_, domain);
+  client.AddHook(client_hook);
+
+  auto collected_hooks =
+      HookSupport::CollectHooks(client.GetHooks(), std::nullopt, nullptr);
+  ASSERT_EQ(collected_hooks.size(), 2);
+  EXPECT_EQ(collected_hooks[0], api_hook);
+  EXPECT_EQ(collected_hooks[1], client_hook);
+}
+
+// Test that CreateHookDataMap creates distinct instances per hook and maps
+// duplicates to the same instance
+TEST_F(ClientAPITest,
+       CreateHookDataMapAllocatesUniqueInstancesAndSharesForDuplicates) {
+  std::vector<std::string> execution_log;
+  auto first_hook = std::make_shared<OrderTrackingHook>("first", execution_log);
+  auto second_hook =
+      std::make_shared<OrderTrackingHook>("second", execution_log);
+
+  auto hook_map = HookSupport::CreateHookDataMap(
+      {first_hook, second_hook, first_hook, nullptr});
+  ASSERT_EQ(hook_map.size(), 2);
+  ASSERT_NE(hook_map.find(first_hook.get()), hook_map.end());
+  ASSERT_NE(hook_map.find(second_hook.get()), hook_map.end());
+
+  auto first_data = hook_map[first_hook.get()];
+  auto second_data = hook_map[second_hook.get()];
+  ASSERT_NE(first_data, nullptr);
+  ASSERT_NE(second_data, nullptr);
+  EXPECT_NE(first_data, second_data);
+
+  first_data->Set("key", std::string("persisted_value"));
+  const auto* stored_value =
+      hook_map[first_hook.get()]->GetAs<std::string>("key");
+  ASSERT_NE(stored_value, nullptr);
+  EXPECT_EQ(*stored_value, "persisted_value");
+}
+
+// Test that when provider is in kNotReady status, Error and Finally hooks
+// execute with kProviderNotReady
+TEST_F(ClientAPITest, ProviderNotReadyTriggersErrorAndFinallyHooks) {
+  std::string domain = "not-ready-hooks-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  auto status_manager = repo_.GetFeatureProviderStatusManager(domain);
+  ASSERT_NE(status_manager, nullptr);
+  status_manager->SetStatus(ProviderStatus::kNotReady);
+
+  std::vector<std::string> execution_log;
+  auto tracking_hook =
+      std::make_shared<OrderTrackingHook>("tracker", execution_log);
+
+  ClientAPI client(repo_, domain);
+  client.AddHook(tracking_hook);
+
+  auto details = client.GetBooleanDetails("test_flag", false);
+  EXPECT_FALSE(details.GetValue());
+  EXPECT_EQ(details.GetReason(), Reason::kError);
+  EXPECT_EQ(details.GetErrorCode(), ErrorCode::kProviderNotReady);
+
+  std::vector<std::string> expected_log = {"before:tracker", "error:tracker",
+                                           "finally:tracker"};
+  EXPECT_EQ(execution_log, expected_log);
+}
+
+// Test that when provider is in kFatal status, Error and Finally hooks execute
+// with kProviderFatal
+TEST_F(ClientAPITest, ProviderFatalTriggersErrorAndFinallyHooks) {
+  std::string domain = "fatal-hooks-domain";
+  auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
+  EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+                    true);
+
+  auto status_manager = repo_.GetFeatureProviderStatusManager(domain);
+  ASSERT_NE(status_manager, nullptr);
+  status_manager->SetStatus(ProviderStatus::kFatal);
+
+  std::vector<std::string> execution_log;
+  auto tracking_hook =
+      std::make_shared<OrderTrackingHook>("tracker", execution_log);
+
+  ClientAPI client(repo_, domain);
+  client.AddHook(tracking_hook);
+
+  auto details = client.GetBooleanDetails("test_flag", false);
+  EXPECT_FALSE(details.GetValue());
+  EXPECT_EQ(details.GetReason(), Reason::kError);
+  EXPECT_EQ(details.GetErrorCode(), ErrorCode::kProviderFatal);
+
+  std::vector<std::string> expected_log = {"before:tracker", "error:tracker",
+                                           "finally:tracker"};
+  EXPECT_EQ(execution_log, expected_log);
 }

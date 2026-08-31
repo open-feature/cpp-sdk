@@ -56,6 +56,28 @@ cc_library(
 )
 
 cc_library(
+    name = "hook_support",
+    srcs = ["hook_support.cpp"],
+    hdrs = ["hook_support.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":error_code",
+        ":evaluation_context",
+        ":evaluation_options",
+        ":flag_evaluation_details",
+        ":flag_type_value",
+        ":general_hook",
+        ":global_hook_manager",
+        ":hook_context",
+        ":hook_data",
+        ":hook_hints",
+        ":metadata",
+        ":provider",
+        ":reason",
+    ],
+)
+
+cc_library(
     name = "client_api",
     srcs = ["client_api.cpp"],
     hdrs = ["client_api.h"],
@@ -63,11 +85,18 @@ cc_library(
     deps = [
         ":client",
         ":evaluation_context",
+        ":evaluation_options",
         ":features",
         ":flag_evaluation_details",
         ":flag_metadata",
+        ":flag_type_value",
         ":general_hook",
         ":global_context_manager",
+        ":global_hook_manager",
+        ":hook_context",
+        ":hook_data",
+        ":hook_hints",
+        ":hook_support",
         ":metadata",
         ":provider",
         ":provider_repository",
@@ -165,6 +194,16 @@ cc_library(
 )
 
 cc_library(
+    name = "global_hook_manager",
+    srcs = ["global_hook_manager.cpp"],
+    hdrs = ["global_hook_manager.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":general_hook",
+    ],
+)
+
+cc_library(
     name = "hook_context",
     srcs = ["hook_context.cpp"],
     hdrs = ["hook_context.h"],
@@ -227,6 +266,7 @@ cc_library(
         ":client_api",
         ":evaluation_context",
         ":global_context_manager",
+        ":global_hook_manager",
         ":metadata",
         ":openfeature",
         ":provider",

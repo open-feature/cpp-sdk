@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <future>
 #include <memory>
 #include <string>
@@ -794,26 +795,26 @@ class OrderTrackingHook : public openfeature::BoolHook {
   std::optional<EvaluationContext> Before(
       const openfeature::HookContext<bool>& /*ctx*/,
       const openfeature::HookHints& /*hints*/) override {
-    execution_log_.push_back("before:" + name_);
+    execution_log_.emplace_back("before:" + name_);
     return std::nullopt;
   }
 
   void After(const openfeature::HookContext<bool>& /*ctx*/,
              const openfeature::FlagEvaluationDetails<bool>& /*details*/,
              const openfeature::HookHints& /*hints*/) override {
-    execution_log_.push_back("after:" + name_);
+    execution_log_.emplace_back("after:" + name_);
   }
 
   void Error(const openfeature::HookContext<bool>& /*ctx*/,
              const std::exception& /*exception*/,
              const openfeature::HookHints& /*hints*/) override {
-    execution_log_.push_back("error:" + name_);
+    execution_log_.emplace_back("error:" + name_);
   }
 
   void Finally(const openfeature::HookContext<bool>& /*ctx*/,
                const openfeature::FlagEvaluationDetails<bool>& /*details*/,
                const openfeature::HookHints& /*hints*/) override {
-    execution_log_.push_back("finally:" + name_);
+    execution_log_.emplace_back("finally:" + name_);
   }
 
  private:
@@ -869,10 +870,12 @@ class HookDataTestHook : public openfeature::BoolHook {
     }
   }
 
-  std::string after_id_;
-  std::string finally_id_;
+  const std::string& GetAfterId() const { return after_id_; }
+  const std::string& GetFinallyId() const { return finally_id_; }
 
  private:
+  std::string after_id_;
+  std::string finally_id_;
   std::string hook_id_;
 };
 
@@ -916,12 +919,17 @@ class HintsTrackingHook : public openfeature::BoolHook {
     }
   }
 
+  const std::string& GetBeforeHint() const { return before_hint_; }
+  const std::string& GetAfterHint() const { return after_hint_; }
+  const std::string& GetFinallyHint() const { return finally_hint_; }
+
+ private:
   std::string before_hint_;
   std::string after_hint_;
   std::string finally_hint_;
 };
 
-enum class ThrowStage { kBefore, kAfter, kError, kFinally };
+enum class ThrowStage : uint8_t { kBefore, kAfter, kError, kFinally };
 
 class ThrowingHook : public openfeature::BoolHook {
  public:
@@ -934,7 +942,7 @@ class ThrowingHook : public openfeature::BoolHook {
   std::optional<EvaluationContext> Before(
       const openfeature::HookContext<bool>& /*ctx*/,
       const openfeature::HookHints& /*hints*/) override {
-    execution_log_.push_back("before");
+    execution_log_.emplace_back("before");
     if (stage_ == ThrowStage::kBefore) {
       throw std::runtime_error(message_);
     }
@@ -944,7 +952,7 @@ class ThrowingHook : public openfeature::BoolHook {
   void After(const openfeature::HookContext<bool>& /*ctx*/,
              const openfeature::FlagEvaluationDetails<bool>& /*details*/,
              const openfeature::HookHints& /*hints*/) override {
-    execution_log_.push_back("after");
+    execution_log_.emplace_back("after");
     if (stage_ == ThrowStage::kAfter) {
       throw std::runtime_error(message_);
     }
@@ -953,7 +961,7 @@ class ThrowingHook : public openfeature::BoolHook {
   void Error(const openfeature::HookContext<bool>& /*ctx*/,
              const std::exception& /*exception*/,
              const openfeature::HookHints& /*hints*/) override {
-    execution_log_.push_back("error");
+    execution_log_.emplace_back("error");
     if (stage_ == ThrowStage::kError) {
       throw std::runtime_error(message_);
     }
@@ -962,7 +970,7 @@ class ThrowingHook : public openfeature::BoolHook {
   void Finally(const openfeature::HookContext<bool>& /*ctx*/,
                const openfeature::FlagEvaluationDetails<bool>& /*details*/,
                const openfeature::HookHints& /*hints*/) override {
-    execution_log_.push_back("finally");
+    execution_log_.emplace_back("finally");
     if (stage_ == ThrowStage::kFinally) {
       throw std::runtime_error(message_);
     }
@@ -1090,11 +1098,11 @@ TEST_F(ClientAPITest, HookDataIsIsolatedPerHookAndPersistsAcrossStages) {
   bool result = client.GetBooleanValue("test_flag", false);
   EXPECT_TRUE(result);
 
-  EXPECT_EQ(hook_first->after_id_, "hook-1");
-  EXPECT_EQ(hook_first->finally_id_, "hook-1");
+  EXPECT_EQ(hook_first->GetAfterId(), "hook-1");
+  EXPECT_EQ(hook_first->GetFinallyId(), "hook-1");
 
-  EXPECT_EQ(hook_second->after_id_, "hook-2");
-  EXPECT_EQ(hook_second->finally_id_, "hook-2");
+  EXPECT_EQ(hook_second->GetAfterId(), "hook-2");
+  EXPECT_EQ(hook_second->GetFinallyId(), "hook-2");
 }
 
 // Test that HookHints are passed to Before, After, and Finally
@@ -1126,9 +1134,9 @@ TEST_F(ClientAPITest, HookHintsArePropagatedToAllStages) {
   bool result = client.GetBooleanValue("test_flag", false, options);
   EXPECT_TRUE(result);
 
-  EXPECT_EQ(tracking_hook->before_hint_, "test_hint_value");
-  EXPECT_EQ(tracking_hook->after_hint_, "test_hint_value");
-  EXPECT_EQ(tracking_hook->finally_hint_, "test_hint_value");
+  EXPECT_EQ(tracking_hook->GetBeforeHint(), "test_hint_value");
+  EXPECT_EQ(tracking_hook->GetAfterHint(), "test_hint_value");
+  EXPECT_EQ(tracking_hook->GetFinallyHint(), "test_hint_value");
 }
 
 // Test that an error in Before skips resolution and executes Error and Finally

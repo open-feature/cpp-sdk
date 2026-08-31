@@ -703,6 +703,11 @@ TEST_F(ClientAPITest, ParallelProviderSwapRaceCondition) {
       }));
 
   EXPECT_CALL(*not_ready_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+  EXPECT_CALL(*not_ready_provider, GetHooks())
+      .WillRepeatedly(
+          Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{}));
+  EXPECT_CALL(*not_ready_provider, GetMetadata())
+      .WillRepeatedly(Return(Metadata{"not-ready-mock"}));
   EXPECT_CALL(*not_ready_provider, Shutdown())
       .Times(testing::AtMost(1))
       .WillOnce(Return(absl::OkStatus()));
@@ -1409,11 +1414,23 @@ TEST_F(ClientAPITest,
 }
 
 // Test that when provider is in kNotReady status, Error and Finally hooks
-// execute with kProviderNotReady
+// execute across all tiers (including provider hooks) with kProviderNotReady
 TEST_F(ClientAPITest, ProviderNotReadyTriggersErrorAndFinallyHooks) {
   std::string domain = "not-ready-hooks-domain";
   auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
   EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+
+  std::vector<std::string> execution_log;
+  auto client_hook =
+      std::make_shared<OrderTrackingHook>("client", execution_log);
+  auto provider_hook =
+      std::make_shared<OrderTrackingHook>("provider", execution_log);
+
+  ON_CALL(*mock_provider, GetHooks())
+      .WillByDefault(
+          Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{
+              provider_hook}));
+
   repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
                     true);
 
@@ -1421,29 +1438,38 @@ TEST_F(ClientAPITest, ProviderNotReadyTriggersErrorAndFinallyHooks) {
   ASSERT_NE(status_manager, nullptr);
   status_manager->SetStatus(ProviderStatus::kNotReady);
 
-  std::vector<std::string> execution_log;
-  auto tracking_hook =
-      std::make_shared<OrderTrackingHook>("tracker", execution_log);
-
   ClientAPI client(repo_, domain);
-  client.AddHook(tracking_hook);
+  client.AddHook(client_hook);
 
   auto details = client.GetBooleanDetails("test_flag", false);
   EXPECT_FALSE(details.GetValue());
   EXPECT_EQ(details.GetReason(), Reason::kError);
   EXPECT_EQ(details.GetErrorCode(), ErrorCode::kProviderNotReady);
 
-  std::vector<std::string> expected_log = {"before:tracker", "error:tracker",
-                                           "finally:tracker"};
+  std::vector<std::string> expected_log = {
+      "before:client", "before:provider",  "error:provider",
+      "error:client",  "finally:provider", "finally:client"};
   EXPECT_EQ(execution_log, expected_log);
 }
 
 // Test that when provider is in kFatal status, Error and Finally hooks execute
-// with kProviderFatal
+// across all tiers (including provider hooks) with kProviderFatal
 TEST_F(ClientAPITest, ProviderFatalTriggersErrorAndFinallyHooks) {
   std::string domain = "fatal-hooks-domain";
   auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
   EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+
+  std::vector<std::string> execution_log;
+  auto client_hook =
+      std::make_shared<OrderTrackingHook>("client", execution_log);
+  auto provider_hook =
+      std::make_shared<OrderTrackingHook>("provider", execution_log);
+
+  ON_CALL(*mock_provider, GetHooks())
+      .WillByDefault(
+          Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{
+              provider_hook}));
+
   repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
                     true);
 
@@ -1451,19 +1477,16 @@ TEST_F(ClientAPITest, ProviderFatalTriggersErrorAndFinallyHooks) {
   ASSERT_NE(status_manager, nullptr);
   status_manager->SetStatus(ProviderStatus::kFatal);
 
-  std::vector<std::string> execution_log;
-  auto tracking_hook =
-      std::make_shared<OrderTrackingHook>("tracker", execution_log);
-
   ClientAPI client(repo_, domain);
-  client.AddHook(tracking_hook);
+  client.AddHook(client_hook);
 
   auto details = client.GetBooleanDetails("test_flag", false);
   EXPECT_FALSE(details.GetValue());
   EXPECT_EQ(details.GetReason(), Reason::kError);
   EXPECT_EQ(details.GetErrorCode(), ErrorCode::kProviderFatal);
 
-  std::vector<std::string> expected_log = {"before:tracker", "error:tracker",
-                                           "finally:tracker"};
+  std::vector<std::string> expected_log = {
+      "before:client", "before:provider",  "error:provider",
+      "error:client",  "finally:provider", "finally:client"};
   EXPECT_EQ(execution_log, expected_log);
 }

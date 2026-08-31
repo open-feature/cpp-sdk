@@ -324,11 +324,8 @@ std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
       provider_repository_.GetFeatureProviderStatusManager(domain_);
   ProviderStatus provider_status =
       manager ? manager->GetStatus() : ProviderStatus::kNotReady;
-  bool is_provider_ready =
-      (manager != nullptr && provider_status != ProviderStatus::kNotReady &&
-       provider_status != ProviderStatus::kFatal);
   std::shared_ptr<FeatureProvider> provider =
-      (is_provider_ready && manager) ? manager->GetProvider() : nullptr;
+      manager ? manager->GetProvider() : nullptr;
 
   // Collect hooks in order of increasing specificity
   std::vector<std::shared_ptr<GeneralHook>> forward_hooks =

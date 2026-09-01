@@ -1,6 +1,9 @@
 #ifndef CPP_SDK_INCLUDE_OPENFEATURE_ERROR_CODE_H_
 #define CPP_SDK_INCLUDE_OPENFEATURE_ERROR_CODE_H_
 
+#include <ostream>
+#include <string_view>
+
 namespace openfeature {
 
 // Represents a standardized error code returned when flag evaluation fails.
@@ -24,8 +27,30 @@ enum class ErrorCode {
   kGeneral         // The error was for a reason not enumerated above.
 };
 
-// TODO: Implement a function to convert ErrorCode to string representation if
-// needed.
+constexpr std::string_view ToString(ErrorCode code) noexcept {
+  switch (code) {
+    case ErrorCode::kProviderNotReady:
+      return "PROVIDER_NOT_READY";
+    case ErrorCode::kFlagNotFound:
+      return "FLAG_NOT_FOUND";
+    case ErrorCode::kParseError:
+      return "PARSE_ERROR";
+    case ErrorCode::kTypeMismatch:
+      return "TYPE_MISMATCH";
+    case ErrorCode::kTargetingKeyMissing:
+      return "TARGETING_KEY_MISSING";
+    case ErrorCode::kInvalidContext:
+      return "INVALID_CONTEXT";
+    case ErrorCode::kProviderFatal:
+      return "PROVIDER_FATAL";
+    case ErrorCode::kGeneral:
+      return "GENERAL";
+  }
+  return "GENERAL";
+}
+inline std::ostream& operator<<(std::ostream& os, ErrorCode code) {
+  return os << ToString(code);
+}
 
 }  // namespace openfeature
 

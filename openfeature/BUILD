@@ -104,6 +104,7 @@ cc_library(
         ":reason",
         ":resolution_details",
         ":value",
+        "//openfeature/exceptions:open_feature_exceptions"
     ],
 )
 
@@ -118,6 +119,9 @@ cc_library(
     hdrs = ["evaluation_context.h"],
     srcs = ["evaluation_context.cpp"],
     include_prefix = "openfeature",
+    deps = [
+        ":value",
+    ],
 )
 
 cc_library(

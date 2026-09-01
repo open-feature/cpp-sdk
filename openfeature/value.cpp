@@ -1,6 +1,8 @@
 #include "openfeature/value.h"
 
 #include <cmath>
+#include <ostream>
+#include <sstream>
 
 namespace openfeature {
 
@@ -169,5 +171,47 @@ bool operator==(const Value& lhs, const Value& rhs) {
 }
 
 bool operator!=(const Value& lhs, const Value& rhs) { return !(lhs == rhs); }
+
+std::string Value::ToString() const {
+  if (IsNull()) return "null";
+  if (IsBool()) return AsBool().value() ? "true" : "false";
+  if (IsNumber()) {
+    if (auto i = AsInt()) return std::to_string(*i);
+    if (auto d = AsDouble()) return std::to_string(*d);
+  }
+  if (IsString()) return "\"" + AsString().value() + "\"";
+  if (IsList()) {
+    std::ostringstream ss;
+    ss << "[";
+    const auto* list = AsList();
+    if (list) {
+      for (size_t i = 0; i < list->size(); ++i) {
+        if (i > 0) ss << ", ";
+        ss << (*list)[i].ToString();
+      }
+    }
+    ss << "]";
+    return ss.str();
+  }
+  if (IsStructure()) {
+    std::ostringstream ss;
+    ss << "{";
+    const auto* map = AsStructure();
+    if (map) {
+      bool first = true;
+      for (const auto& [k, v] : *map) {
+        if (!first) ss << ", ";
+        first = false;
+        ss << "\"" << k << "\": " << v.ToString();
+      }
+    }
+    ss << "}";
+    return ss.str();
+  }
+  return "unknown";
+}
+std::ostream& operator<<(std::ostream& os, const Value& val) {
+  return os << val.ToString();
+}
 
 }  // namespace openfeature

@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <ostream>
 #include <string>
 #include <variant>
 #include <vector>
@@ -53,6 +54,10 @@ class Value {
   const std::map<std::string, Value>* AsStructure() const;
   const std::vector<Value>* AsList() const;
 
+  // Returns a JSON-formatted or human-readable string representation of the
+  // value.
+  std::string ToString() const;
+
  private:
   using InternalVariant =
       std::variant<std::monostate, bool, int64_t, double, std::string,
@@ -65,6 +70,7 @@ class Value {
 
 bool operator==(const Value& lhs, const Value& rhs);
 bool operator!=(const Value& lhs, const Value& rhs);
+std::ostream& operator<<(std::ostream& os, const Value& value);
 
 }  // namespace openfeature
 

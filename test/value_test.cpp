@@ -370,4 +370,27 @@ TEST(ValueTest, MoveConstructorAndAssignmentDefaulted) {
   EXPECT_EQ(target_val.AsStructure()->at("key").AsInt(), 100LL);
 }
 
+TEST(ValueTest, ToStringAndStreamOperator) {
+  // Null
+  EXPECT_EQ(Value().ToString(), "null");
+  // Boolean
+  EXPECT_EQ(Value(true).ToString(), "true");
+  EXPECT_EQ(Value(false).ToString(), "false");
+  // Numbers
+  EXPECT_EQ(Value(123).ToString(), "123");
+  EXPECT_EQ(Value(static_cast<int64_t>(456LL)).ToString(), "456");
+  // String
+  EXPECT_EQ(Value("hello").ToString(), "\"hello\"");
+  // List
+  std::vector<Value> list = {Value("item1"), Value(42), Value(true)};
+  EXPECT_EQ(Value(list).ToString(), "[\"item1\", 42, true]");
+  // Structure / Map
+  std::map<std::string, Value> map = {{"key", Value("value")}};
+  EXPECT_EQ(Value(map).ToString(), "{\"key\": \"value\"}");
+  // Stream operator <<
+  std::ostringstream ss;
+  ss << Value("stream_test");
+  EXPECT_EQ(ss.str(), "\"stream_test\"");
+}
+
 }  // namespace openfeature

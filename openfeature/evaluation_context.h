@@ -5,6 +5,8 @@
 #include <any>
 #include <map>
 #include <optional>
+#include <ostream>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -34,6 +36,9 @@ class EvaluationContext {
   static EvaluationContext Merge(
       std::initializer_list<const EvaluationContext*> contexts);
 
+  // Serializes the evaluation context into a human-readable JSON-like string.
+  std::string ToString() const;
+
  private:
   EvaluationContext(std::optional<std::string> targeting_key,
                     std::map<std::string, std::any> attributes);
@@ -57,6 +62,8 @@ class EvaluationContext::Builder {
   std::optional<std::string> targeting_key_;
   std::map<std::string, std::any> attributes_;
 };
+
+std::ostream& operator<<(std::ostream& os, const EvaluationContext& ctx);
 
 }  // namespace openfeature
 

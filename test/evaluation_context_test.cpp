@@ -184,3 +184,34 @@ TEST_F(EvaluationContextTest, StoresStringCorrectly) {
   EXPECT_EQ(val_str->type(), typeid(std::string));
   EXPECT_EQ(std::any_cast<std::string>(*val_str), "v");
 }
+
+TEST_F(EvaluationContextTest, ToStringAndStreamOperator) {
+  // Empty context
+  EvaluationContext empty_ctx = EvaluationContext::Builder().build();
+  EXPECT_EQ(empty_ctx.ToString(), "{}");
+
+  // Context with targeting key only
+  EvaluationContext key_ctx =
+      EvaluationContext::Builder().WithTargetingKey("user-123").build();
+  EXPECT_EQ(key_ctx.ToString(), "{\"targeting_key\": \"user-123\"}");
+
+  // Context with targeting key and attributes
+  EvaluationContext full_ctx = EvaluationContext::Builder()
+                                   .WithTargetingKey("user-123")
+                                   .WithAttribute("env", std::string("prod"))
+                                   .WithAttribute("authenticated", true)
+                                   .WithAttribute("attempts", 3)
+                                   .build();
+
+  std::string full_str = full_ctx.ToString();
+  EXPECT_NE(full_str.find("\"targeting_key\": \"user-123\""),
+            std::string::npos);
+  EXPECT_NE(full_str.find("\"env\": \"prod\""), std::string::npos);
+  EXPECT_NE(full_str.find("\"authenticated\": true"), std::string::npos);
+  EXPECT_NE(full_str.find("\"attempts\": 3"), std::string::npos);
+
+  // Stream operator <<
+  std::ostringstream ss;
+  ss << key_ctx;
+  EXPECT_EQ(ss.str(), "{\"targeting_key\": \"user-123\"}");
+}

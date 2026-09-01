@@ -1,5 +1,10 @@
 #include "evaluation_context.h"
 
+#include <ostream>
+#include <sstream>
+
+#include "openfeature/value.h"
+
 namespace openfeature {
 
 EvaluationContext::EvaluationContext(std::optional<std::string> targeting_key,
@@ -57,6 +62,42 @@ EvaluationContext EvaluationContext::Merge(
   }
 
   return builder.build();
+}
+
+std::string EvaluationContext::ToString() const {
+  std::ostringstream ss;
+  ss << "{";
+  bool first = true;
+  if (auto key = GetTargetingKey(); key.has_value()) {
+    ss << "\"targeting_key\": \"" << *key << "\"";
+    first = false;
+  }
+  for (const auto& [k, v] : GetAttributes()) {
+    if (!first) ss << ", ";
+    first = false;
+    ss << "\"" << k << "\": ";
+    if (v.type() == typeid(std::string)) {
+      ss << "\"" << std::any_cast<std::string>(v) << "\"";
+    } else if (v.type() == typeid(bool)) {
+      ss << (std::any_cast<bool>(v) ? "true" : "false");
+    } else if (v.type() == typeid(int)) {
+      ss << std::any_cast<int>(v);
+    } else if (v.type() == typeid(int64_t)) {
+      ss << std::any_cast<int64_t>(v);
+    } else if (v.type() == typeid(double)) {
+      ss << std::any_cast<double>(v);
+    } else if (v.type() == typeid(Value)) {
+      ss << std::any_cast<Value>(v);
+    } else {
+      ss << "\"<any>\"";
+    }
+  }
+  ss << "}";
+  return ss.str();
+}
+
+std::ostream& operator<<(std::ostream& os, const EvaluationContext& ctx) {
+  return os << ctx.ToString();
 }
 
 EvaluationContext::Builder& EvaluationContext::Builder::WithTargetingKey(

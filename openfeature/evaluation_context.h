@@ -55,15 +55,16 @@ class EvaluationContext::Builder {
   // Overload for const char* to ensure implicit conversion to std::string
   Builder& WithAttribute(std::string key, const char* value);
 
-  // The build() method creates the final, immutable EvaluationContext object.
-  EvaluationContext build() const;
+  // The Build() method creates the final, immutable EvaluationContext object.
+  EvaluationContext Build() const;
 
  private:
   std::optional<std::string> targeting_key_;
   std::map<std::string, std::any> attributes_;
 };
 
-std::ostream& operator<<(std::ostream& os, const EvaluationContext& ctx);
+std::ostream& operator<<(std::ostream& output_stream,
+                         const EvaluationContext& context);
 
 }  // namespace openfeature
 

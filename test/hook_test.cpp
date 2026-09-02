@@ -112,7 +112,7 @@ class HookTest : public ::testing::Test {
  protected:
   HookTest()
       : initial_ctx_(
-            EvaluationContext::Builder().WithTargetingKey("user-123").build()),
+            EvaluationContext::Builder().WithTargetingKey("user-123").Build()),
         hook_data_(std::make_shared<HookData>()) {}
 
   EvaluationContext initial_ctx_;
@@ -210,7 +210,7 @@ TEST_F(HookTest, OverriddenBeforeCanModifyAndReturnEvaluationContext) {
       EvaluationContext::Builder()
           .WithTargetingKey("mutated-user")
           .WithAttribute("region", std::string("us-east"))
-          .build();
+          .Build();
   hook.SetReturnContext(modified_ctx);
 
   std::optional<EvaluationContext> result = hook.Before(ctx, hints);

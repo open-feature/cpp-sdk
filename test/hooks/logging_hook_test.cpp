@@ -59,7 +59,7 @@ class LoggingHookTest : public ::testing::Test {
             EvaluationContext::Builder()
                 .WithTargetingKey(std::string(kTargetingKey))
                 .WithAttribute(std::string(kAttrKey), std::string(kAttrValue))
-                .build()),
+                .Build()),
         client_metadata_{std::string(kClientName)},
         provider_metadata_{std::string(kProviderName)},
         hook_data_(std::make_shared<HookData>()) {}
@@ -220,7 +220,7 @@ TEST_F(LoggingHookTest, ErrorStageLogsWithContextWhenOptedIn) {
                          std::string(kAttrValueEmail))
           .WithAttribute(std::string(kAttrKeyAge), kAttrValueAge)
           .WithAttribute(std::string(kAttrKeyVersion), kAttrValueVersion)
-          .build();
+          .Build();
 
   IntHookContext ctx(std::string(kIntFlagKey), FlagValueType::kInteger,
                      kDefaultIntValue, custom_context, client_metadata_,

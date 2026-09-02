@@ -22,7 +22,7 @@ class OpenFeatureAPITest : public ::testing::Test {
   void SetUp() override {}
   void TearDown() override {
     api_.Shutdown();
-    api_.SetEvaluationContext(EvaluationContext::Builder().build());
+    api_.SetEvaluationContext(EvaluationContext::Builder().Build());
   }
 
   OpenFeatureAPI& api_ = OpenFeatureAPI::GetInstance();
@@ -215,7 +215,7 @@ TEST_F(OpenFeatureAPITest, SetAndGetGlobalEvaluationContext) {
           .WithTargetingKey("global-user-123")
           .WithAttribute("environment", std::string("production"))
           .WithAttribute("app_version", std::string("2.1.0"))
-          .build();
+          .Build();
 
   api_.SetEvaluationContext(new_ctx);
 
@@ -235,13 +235,13 @@ TEST_F(OpenFeatureAPITest, SetAndGetGlobalEvaluationContext) {
 // Test overwriting an existing global evaluation context.
 TEST_F(OpenFeatureAPITest, OverwriteGlobalEvaluationContext) {
   EvaluationContext first_ctx =
-      EvaluationContext::Builder().WithTargetingKey("user-initial").build();
+      EvaluationContext::Builder().WithTargetingKey("user-initial").Build();
   api_.SetEvaluationContext(first_ctx);
   EXPECT_EQ(api_.GetEvaluationContext().GetTargetingKey().value(),
             "user-initial");
 
   EvaluationContext updated_ctx =
-      EvaluationContext::Builder().WithTargetingKey("user-updated").build();
+      EvaluationContext::Builder().WithTargetingKey("user-updated").Build();
   api_.SetEvaluationContext(updated_ctx);
   EXPECT_EQ(api_.GetEvaluationContext().GetTargetingKey().value(),
             "user-updated");

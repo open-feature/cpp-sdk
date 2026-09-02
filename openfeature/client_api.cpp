@@ -12,7 +12,7 @@ namespace openfeature {
 ClientAPI::ClientAPI(ProviderRepository& repository, std::string_view domain)
     : provider_repository_(repository),
       domain_(domain),
-      evaluation_context_(EvaluationContext::Builder().build()) {}
+      evaluation_context_(EvaluationContext::Builder().Build()) {}
 
 Metadata ClientAPI::GetMetadata() { return Metadata{domain_}; }
 

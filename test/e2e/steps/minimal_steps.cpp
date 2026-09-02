@@ -258,7 +258,7 @@ WHEN(setup_context,
                                            .WithAttribute(field2, value2)
                                            .WithAttribute(field3, value3)
                                            .WithAttribute(field4, value4)
-                                           .build();
+                                           .Build();
 
   state.context = std::make_unique<openfeature::EvaluationContext>(ctx);
 }
@@ -292,7 +292,7 @@ THEN(check_resolved_flag_empty_ctx,
   auto& state = cuke::context<openfeature_e2e::State>();
 
   openfeature::EvaluationContext empty_ctx =
-      openfeature::EvaluationContext::Builder().build();
+      openfeature::EvaluationContext::Builder().Build();
   std::string actual =
       state.client->GetStringValue("context-aware", "EXTERNAL", empty_ctx);
 

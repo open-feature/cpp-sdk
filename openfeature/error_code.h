@@ -1,6 +1,7 @@
 #ifndef CPP_SDK_INCLUDE_OPENFEATURE_ERROR_CODE_H_
 #define CPP_SDK_INCLUDE_OPENFEATURE_ERROR_CODE_H_
 
+#include <cstdint>
 #include <ostream>
 #include <string_view>
 
@@ -11,7 +12,7 @@ namespace openfeature {
 // The ErrorCode enum provides a set of predefined error types that can be
 // returned in the Provider Evaluation of a failed flag evaluation. This allows
 // application authors to programmatically handle specific types of failures.
-enum class ErrorCode {
+enum class ErrorCode : std::uint8_t {
   kProviderNotReady,  // The value was resolved before the provider was
                       // initialized.
   kFlagNotFound,      // The flag could not be found.
@@ -48,8 +49,8 @@ constexpr std::string_view ToString(ErrorCode code) noexcept {
   }
   return "GENERAL";
 }
-inline std::ostream& operator<<(std::ostream& os, ErrorCode code) {
-  return os << ToString(code);
+inline std::ostream& operator<<(std::ostream& output_stream, ErrorCode code) {
+  return output_stream << ToString(code);
 }
 
 }  // namespace openfeature

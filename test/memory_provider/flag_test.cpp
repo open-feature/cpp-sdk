@@ -43,7 +43,7 @@ TEST(FlagTest, InitializesAndReturnsPropertiesCorrectly) {
   const auto& got_evaluator = flag.GetContextEvaluator();
   ASSERT_TRUE(got_evaluator != nullptr);
   absl::StatusOr<std::string> eval_result =
-      got_evaluator(flag, EvaluationContext::Builder().build());
+      got_evaluator(flag, EvaluationContext::Builder().Build());
   ASSERT_TRUE(eval_result.ok());
   EXPECT_EQ(*eval_result, "evaluated");
 
@@ -86,13 +86,13 @@ TEST(FlagTest, EvaluatorUsesTargetingKey) {
   const auto& eval_func = flag.GetContextEvaluator();
 
   EvaluationContext beta_ctx =
-      EvaluationContext::Builder().WithTargetingKey("beta_tester").build();
+      EvaluationContext::Builder().WithTargetingKey("beta_tester").Build();
   absl::StatusOr<bool> beta_res = eval_func(flag, beta_ctx);
   ASSERT_TRUE(beta_res.ok());
   EXPECT_TRUE(*beta_res);
 
   EvaluationContext normal_ctx =
-      EvaluationContext::Builder().WithTargetingKey("regular_user").build();
+      EvaluationContext::Builder().WithTargetingKey("regular_user").Build();
   absl::StatusOr<bool> normal_res = eval_func(flag, normal_ctx);
   ASSERT_TRUE(normal_res.ok());
   EXPECT_FALSE(*normal_res);
@@ -119,13 +119,13 @@ TEST(FlagTest, EvaluatorUsesContextAttributes) {
   const auto& eval_func = flag.GetContextEvaluator();
 
   EvaluationContext premium_ctx =
-      EvaluationContext::Builder().WithAttribute("tier", "premium").build();
+      EvaluationContext::Builder().WithAttribute("tier", "premium").Build();
   absl::StatusOr<int> premium_res = eval_func(flag, premium_ctx);
   ASSERT_TRUE(premium_res.ok());
   EXPECT_EQ(*premium_res, 100);
 
   EvaluationContext standard_ctx =
-      EvaluationContext::Builder().WithAttribute("tier", "standard").build();
+      EvaluationContext::Builder().WithAttribute("tier", "standard").Build();
   absl::StatusOr<int> standard_res = eval_func(flag, standard_ctx);
   ASSERT_TRUE(standard_res.ok());
   EXPECT_EQ(*standard_res, 10);
@@ -140,7 +140,7 @@ TEST(FlagTest, EvaluatorReturnsErrorStatus) {
 
   Flag<double> flag({}, "default", evaluator, FlagMetadata{});
 
-  EvaluationContext empty_ctx = EvaluationContext::Builder().build();
+  EvaluationContext empty_ctx = EvaluationContext::Builder().Build();
   absl::StatusOr<double> result = flag.GetContextEvaluator()(flag, empty_ctx);
 
   EXPECT_FALSE(result.ok());

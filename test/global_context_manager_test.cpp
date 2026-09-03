@@ -58,8 +58,10 @@ TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
   });
 
   // Reader Threads: Continuously read the context.
+  constexpr int kReaderThreadCount = 10;
   std::vector<std::thread> readers;
-  for (int i = 0; i < 10; ++i) {
+  readers.reserve(kReaderThreadCount);
+  for (int index = 0; index < kReaderThreadCount; ++index) {
     readers.emplace_back([&]() {
       while (!stop) {
         // Just calling the getter to ensure locks work and no race conditions
@@ -74,12 +76,13 @@ TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
   }
 
   // Let the chaos run for a short duration.
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  constexpr int kChaosDurationMs = 100;
+  std::this_thread::sleep_for(std::chrono::milliseconds(kChaosDurationMs));
 
   stop = true;
   writer.join();
-  for (auto& t : readers) {
-    t.join();
+  for (auto& reader_thread : readers) {
+    reader_thread.join();
   }
 }
 }  // namespace openfeature

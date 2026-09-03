@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-using namespace openfeature;
+namespace openfeature {
 
 class EvaluationContextTest : public ::testing::Test {
  protected:
@@ -42,15 +42,18 @@ TEST_F(EvaluationContextTest, BuilderSetsTargetingKey) {
 
 // Test setting and retrieving various attribute types.
 TEST_F(EvaluationContextTest, BuilderSetsAttributesOfVariousTypes) {
+  constexpr int kIntValue = 42;
+  constexpr double kDoubleValue = 3.14;
+  constexpr size_t kExpectedAttrCount = 4;
   EvaluationContext ctx = EvaluationContext::Builder()
                               .WithAttribute("str_attr", std::string("test"))
-                              .WithAttribute("int_attr", 42)
+                              .WithAttribute("int_attr", kIntValue)
                               .WithAttribute("bool_attr", true)
-                              .WithAttribute("double_attr", 3.14)
+                              .WithAttribute("double_attr", kDoubleValue)
                               .Build();
 
   const auto& attrs = ctx.GetAttributes();
-  EXPECT_EQ(attrs.size(), 4);
+  EXPECT_EQ(attrs.size(), kExpectedAttrCount);
 
   const std::any* str_val = ctx.GetValue("str_attr");
   ASSERT_NE(str_val, nullptr);
@@ -58,7 +61,7 @@ TEST_F(EvaluationContextTest, BuilderSetsAttributesOfVariousTypes) {
 
   const std::any* int_val = ctx.GetValue("int_attr");
   ASSERT_NE(int_val, nullptr);
-  EXPECT_EQ(std::any_cast<int>(*int_val), 42);
+  EXPECT_EQ(std::any_cast<int>(*int_val), kIntValue);
 
   const std::any* bool_val = ctx.GetValue("bool_attr");
   ASSERT_NE(bool_val, nullptr);
@@ -66,7 +69,7 @@ TEST_F(EvaluationContextTest, BuilderSetsAttributesOfVariousTypes) {
 
   const std::any* double_val = ctx.GetValue("double_attr");
   ASSERT_NE(double_val, nullptr);
-  EXPECT_DOUBLE_EQ(std::any_cast<double>(*double_val), 3.14);
+  EXPECT_DOUBLE_EQ(std::any_cast<double>(*double_val), kDoubleValue);
 }
 
 // Test behavior when requesting a non-existent attribute.
@@ -81,33 +84,38 @@ TEST_F(EvaluationContextTest, GetValueReturnsNullForMissingKey) {
 // Test that setting the same attribute key twice overwrites the previous value
 // within the same builder chain.
 TEST_F(EvaluationContextTest, BuilderOverwritesDuplicateKeys) {
+  constexpr int kInitialValue = 100;
+  constexpr int kOverwrittenValue = 200;
   EvaluationContext ctx = EvaluationContext::Builder()
-                              .WithAttribute("key", 100)
-                              .WithAttribute("key", 200)
+                              .WithAttribute("key", kInitialValue)
+                              .WithAttribute("key", kOverwrittenValue)
                               .Build();
 
   const std::any* val = ctx.GetValue("key");
   ASSERT_NE(val, nullptr);
-  EXPECT_EQ(std::any_cast<int>(*val), 200);
+  EXPECT_EQ(std::any_cast<int>(*val), kOverwrittenValue);
 }
 
 // Test merging attributes with precedence.
 TEST_F(EvaluationContextTest, MergeAttributesWithPrecedence) {
+  constexpr int kCommonVal1 = 1;
+  constexpr int kCommonVal2 = 2;
+  constexpr size_t kExpectedAttrCount = 3;
   EvaluationContext ctx1 = EvaluationContext::Builder()
-                               .WithAttribute("common", 1)
+                               .WithAttribute("common", kCommonVal1)
                                .WithAttribute("ctx1", std::string("A"))
                                .Build();
 
   EvaluationContext ctx2 = EvaluationContext::Builder()
-                               .WithAttribute("common", 2)
+                               .WithAttribute("common", kCommonVal2)
                                .WithAttribute("ctx2", std::string("B"))
                                .Build();
 
   EvaluationContext merged = EvaluationContext::Merge({&ctx1, &ctx2});
 
-  EXPECT_EQ(merged.GetAttributes().size(), 3);
+  EXPECT_EQ(merged.GetAttributes().size(), kExpectedAttrCount);
 
-  EXPECT_EQ(std::any_cast<int>(*merged.GetValue("common")), 2);
+  EXPECT_EQ(std::any_cast<int>(*merged.GetValue("common")), kCommonVal2);
   EXPECT_EQ(std::any_cast<std::string>(*merged.GetValue("ctx1")), "A");
   EXPECT_EQ(std::any_cast<std::string>(*merged.GetValue("ctx2")), "B");
 }
@@ -135,6 +143,7 @@ TEST_F(EvaluationContextTest, MergeTargetingKeyWithPrecedence) {
 
 // Test Merging: Complex scenario with attributes and keys.
 TEST_F(EvaluationContextTest, MergeComplexScenario) {
+  constexpr int kRequestId = 123;
   EvaluationContext base = EvaluationContext::Builder()
                                .WithTargetingKey("base-user")
                                .WithAttribute("env", std::string("prod"))
@@ -145,7 +154,7 @@ TEST_F(EvaluationContextTest, MergeComplexScenario) {
       EvaluationContext::Builder()
           .WithTargetingKey("req-user")
           .WithAttribute("region", std::string("us-west"))
-          .WithAttribute("request_id", 123)
+          .WithAttribute("request_id", kRequestId)
           .Build();
 
   EvaluationContext merged = EvaluationContext::Merge({&base, &request});
@@ -154,7 +163,7 @@ TEST_F(EvaluationContextTest, MergeComplexScenario) {
 
   EXPECT_EQ(std::any_cast<std::string>(*merged.GetValue("env")), "prod");
   EXPECT_EQ(std::any_cast<std::string>(*merged.GetValue("region")), "us-west");
-  EXPECT_EQ(std::any_cast<int>(*merged.GetValue("request_id")), 123);
+  EXPECT_EQ(std::any_cast<int>(*merged.GetValue("request_id")), kRequestId);
 }
 
 // The merged context should only reflect non-null inputs.
@@ -196,11 +205,12 @@ TEST_F(EvaluationContextTest, ToStringAndStreamOperator) {
   EXPECT_EQ(key_ctx.ToString(), "{\"targeting_key\": \"user-123\"}");
 
   // Context with targeting key and attributes
+  constexpr int kAttempts = 3;
   EvaluationContext full_ctx = EvaluationContext::Builder()
                                    .WithTargetingKey("user-123")
                                    .WithAttribute("env", std::string("prod"))
                                    .WithAttribute("authenticated", true)
-                                   .WithAttribute("attempts", 3)
+                                   .WithAttribute("attempts", kAttempts)
                                    .Build();
 
   std::string full_str = full_ctx.ToString();
@@ -211,7 +221,8 @@ TEST_F(EvaluationContextTest, ToStringAndStreamOperator) {
   EXPECT_NE(full_str.find("\"attempts\": 3"), std::string::npos);
 
   // Stream operator <<
-  std::ostringstream ss;
-  ss << key_ctx;
-  EXPECT_EQ(ss.str(), "{\"targeting_key\": \"user-123\"}");
+  std::ostringstream stream;
+  stream << key_ctx;
+  EXPECT_EQ(stream.str(), "{\"targeting_key\": \"user-123\"}");
 }
+}  // namespace openfeature

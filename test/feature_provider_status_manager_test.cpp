@@ -10,7 +10,8 @@
 #include "openfeature/evaluation_context.h"
 #include "openfeature/provider_status.h"
 
-using namespace openfeature;
+namespace openfeature {
+
 using ::testing::_;
 using ::testing::Return;
 using ::testing::Test;
@@ -48,7 +49,7 @@ class FeatureProviderStatusManagerInitTest
       public WithParamInterface<std::tuple<absl::Status, ProviderStatus>> {};
 
 TEST_P(FeatureProviderStatusManagerInitTest, InitSetsCorrectStatus) {
-  auto [provider_init_status, expected_manager_status] = GetParam();
+  const auto& [provider_init_status, expected_manager_status] = GetParam();
 
   EXPECT_CALL(*mock_provider_, Init(_)).WillOnce(Return(provider_init_status));
   manager_->Init(ctx_);
@@ -69,7 +70,7 @@ class FeatureProviderStatusManagerShutdownTest
 TEST_P(FeatureProviderStatusManagerShutdownTest,
        ShutdownAlwaysSetsStatusToNotReady) {
   manager_->SetStatus(ProviderStatus::kReady);
-  auto provider_shutdown_status = GetParam();
+  const auto& provider_shutdown_status = GetParam();
   EXPECT_CALL(*mock_provider_, Shutdown())
       .WillOnce(Return(provider_shutdown_status));
   manager_->Shutdown();
@@ -108,3 +109,4 @@ int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+}  // namespace openfeature

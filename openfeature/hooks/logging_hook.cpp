@@ -25,9 +25,9 @@ LoggingHook::LoggingHook(bool include_eval_context, LogCallback logger)
     // Default logger prints to stderr/stdout
     logger_ = [](LogLevel level, const std::string& msg) {
       if (level == LogLevel::kError) {
-        std::cerr << "[ERROR] " << msg << std::endl;
+        std::cerr << "[ERROR] " << msg << '\n';
       } else {
-        std::cout << "[DEBUG] " << msg << std::endl;
+        std::cout << "[DEBUG] " << msg << '\n';
       }
     };
   }
@@ -41,38 +41,41 @@ void LoggingHook::Log(LogLevel level, const std::string& msg) const {
 
 std::optional<EvaluationContext> LoggingHook::Before(
     const GeneralHookContext& ctx, const HookHints& hints) {
-  std::ostringstream ss;
-  ss << "stage=before"
-     << ", domain=\"" << ctx.GetClientMetadata().name << "\""
-     << ", provider_name=\"" << ctx.GetProviderMetadata().name << "\""
-     << ", flag_key=\"" << ctx.GetFlagKey() << "\""
-     << ", default_value=" << ctx.GetDefaultValueAsValue().ToString();
+  std::ostringstream log_stream;
+  log_stream << "stage=before"
+             << ", domain=\"" << ctx.GetClientMetadata().name << "\""
+             << ", provider_name=\"" << ctx.GetProviderMetadata().name << "\""
+             << ", flag_key=\"" << ctx.GetFlagKey() << "\""
+             << ", default_value=" << ctx.GetDefaultValueAsValue().ToString();
 
   if (include_eval_context_) {
-    ss << ", evaluation_context=" << ctx.GetEvaluationContext().ToString();
+    log_stream << ", evaluation_context="
+               << ctx.GetEvaluationContext().ToString();
   }
 
-  Log(LogLevel::kDebug, ss.str());
+  Log(LogLevel::kDebug, log_stream.str());
   return std::nullopt;
 }
 
 void LoggingHook::After(const GeneralHookContext& ctx,
                         const GeneralFlagEvaluationDetails& details,
                         const HookHints& hints) {
-  std::ostringstream ss;
-  ss << "stage=after"
-     << ", domain=\"" << ctx.GetClientMetadata().name << "\""
-     << ", provider_name=\"" << ctx.GetProviderMetadata().name << "\""
-     << ", flag_key=\"" << ctx.GetFlagKey() << "\""
-     << ", default_value=" << ctx.GetDefaultValueAsValue().ToString()
-     << ", reason=\"" << ToString(details.GetReason()) << "\""
-     << ", variant="
-     << (details.GetVariant() ? ("\"" + *details.GetVariant() + "\"") : "null")
-     << ", value=" << details.GetValueAsValue().ToString();
+  std::ostringstream log_stream;
+  log_stream << "stage=after"
+             << ", domain=\"" << ctx.GetClientMetadata().name << "\""
+             << ", provider_name=\"" << ctx.GetProviderMetadata().name << "\""
+             << ", flag_key=\"" << ctx.GetFlagKey() << "\""
+             << ", default_value=" << ctx.GetDefaultValueAsValue().ToString()
+             << ", reason=\"" << ToString(details.GetReason()) << "\""
+             << ", variant="
+             << (details.GetVariant() ? ("\"" + *details.GetVariant() + "\"")
+                                      : "null")
+             << ", value=" << details.GetValueAsValue().ToString();
   if (include_eval_context_) {
-    ss << ", evaluation_context=" << ctx.GetEvaluationContext().ToString();
+    log_stream << ", evaluation_context="
+               << ctx.GetEvaluationContext().ToString();
   }
-  Log(LogLevel::kDebug, ss.str());
+  Log(LogLevel::kDebug, log_stream.str());
 }
 
 void LoggingHook::Error(const GeneralHookContext& ctx,
@@ -81,19 +84,20 @@ void LoggingHook::Error(const GeneralHookContext& ctx,
   if (const auto* of_err = dynamic_cast<const OpenFeatureException*>(&error)) {
     code = of_err->GetErrorCode();
   }
-  std::ostringstream ss;
-  ss << "stage=error"
-     << ", domain=\"" << ctx.GetClientMetadata().name << "\""
-     << ", provider_name=\"" << ctx.GetProviderMetadata().name << "\""
-     << ", flag_key=\"" << ctx.GetFlagKey() << "\""
-     << ", default_value=" << ctx.GetDefaultValueAsValue().ToString()
-     << ", error_code=\"" << ToString(code) << "\""
-     << ", error_message=\"" << error.what() << "\"";
+  std::ostringstream log_stream;
+  log_stream << "stage=error"
+             << ", domain=\"" << ctx.GetClientMetadata().name << "\""
+             << ", provider_name=\"" << ctx.GetProviderMetadata().name << "\""
+             << ", flag_key=\"" << ctx.GetFlagKey() << "\""
+             << ", default_value=" << ctx.GetDefaultValueAsValue().ToString()
+             << ", error_code=\"" << ToString(code) << "\""
+             << ", error_message=\"" << error.what() << "\"";
 
   if (include_eval_context_) {
-    ss << ", evaluation_context=" << ctx.GetEvaluationContext().ToString();
+    log_stream << ", evaluation_context="
+               << ctx.GetEvaluationContext().ToString();
   }
-  Log(LogLevel::kError, ss.str());
+  Log(LogLevel::kError, log_stream.str());
 }
 
 void LoggingHook::Finally(const GeneralHookContext& ctx,

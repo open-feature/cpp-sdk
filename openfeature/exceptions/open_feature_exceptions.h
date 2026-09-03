@@ -11,9 +11,10 @@ namespace openfeature {
 
 class OpenFeatureException : public std::runtime_error {
  public:
-  explicit OpenFeatureException(ErrorCode error_code, std::string message = "")
+  explicit OpenFeatureException(ErrorCode error_code,
+                                const std::string& message = "")
       : std::runtime_error(message.empty() ? std::string(ToString(error_code))
-                                           : std::move(message)),
+                                           : message),
         error_code_(error_code) {}
 
   ErrorCode GetErrorCode() const noexcept { return error_code_; }

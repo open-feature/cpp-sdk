@@ -24,7 +24,8 @@ using LogCallback =
 // error stages, respectively.
 class LoggingHook : public GeneralHook {
  public:
-  LoggingHook(bool include_eval_context = false, LogCallback logger = nullptr);
+  explicit LoggingHook(bool include_eval_context = false,
+                       LogCallback logger = nullptr);
 
   std::optional<EvaluationContext> Before(const GeneralHookContext& ctx,
                                           const HookHints& hints) override;

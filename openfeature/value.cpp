@@ -17,8 +17,8 @@ Value::Value(double value) : inner_value_(value) {}
 
 Value::Value(std::string value) : inner_value_(std::move(value)) {}
 
-Value::Value(const char* value) : inner_value_() {
-  if (value) {
+Value::Value(const char* value) {
+  if (value != nullptr) {
     inner_value_ = std::string(value);
   }
 }
@@ -34,12 +34,12 @@ Value::Value(std::chrono::system_clock::time_point value)
 
 Value::Value(const Value& other) {
   if (other.IsStructure()) {
-    auto& ptr = std::get<std::unique_ptr<std::map<std::string, Value>>>(
+    const auto& ptr = std::get<std::unique_ptr<std::map<std::string, Value>>>(
         other.inner_value_);
     inner_value_ = ptr ? std::make_unique<std::map<std::string, Value>>(*ptr)
                        : std::unique_ptr<std::map<std::string, Value>>(nullptr);
   } else if (other.IsList()) {
-    auto& ptr =
+    const auto& ptr =
         std::get<std::unique_ptr<std::vector<Value>>>(other.inner_value_);
     inner_value_ = ptr ? std::make_unique<std::vector<Value>>(*ptr)
                        : std::unique_ptr<std::vector<Value>>(nullptr);

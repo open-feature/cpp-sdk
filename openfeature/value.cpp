@@ -92,48 +92,53 @@ bool Value::IsDateTime() const {
 }
 
 std::optional<bool> Value::AsBool() const {
-  if (auto* v = std::get_if<bool>(&inner_value_)) return *v;
+  if (const auto* val = std::get_if<bool>(&inner_value_)) return *val;
   return std::nullopt;
 }
 
 std::optional<std::string> Value::AsString() const {
-  if (auto* v = std::get_if<std::string>(&inner_value_)) return *v;
+  if (const auto* val = std::get_if<std::string>(&inner_value_)) return *val;
   return std::nullopt;
 }
 
 std::optional<int64_t> Value::AsInt() const {
-  if (auto* v = std::get_if<int64_t>(&inner_value_)) return *v;
-  if (auto* v = std::get_if<double>(&inner_value_))
-    return static_cast<int64_t>(std::floor(*v + 0.5));
+  if (const auto* val = std::get_if<int64_t>(&inner_value_)) return *val;
+  if (const auto* val = std::get_if<double>(&inner_value_)) {
+    constexpr double kRoundingOffset = 0.5;
+    return static_cast<int64_t>(std::floor(*val + kRoundingOffset));
+  }
   return std::nullopt;
 }
 
 std::optional<double> Value::AsDouble() const {
-  if (auto* v = std::get_if<double>(&inner_value_)) return *v;
-  if (auto* v = std::get_if<int64_t>(&inner_value_))
-    return static_cast<double>(*v);
+  if (const auto* val = std::get_if<double>(&inner_value_)) return *val;
+  if (const auto* val = std::get_if<int64_t>(&inner_value_)) {
+    return static_cast<double>(*val);
+  }
   return std::nullopt;
 }
 
 std::optional<std::chrono::system_clock::time_point> Value::AsDateTime() const {
-  if (auto* v =
-          std::get_if<std::chrono::system_clock::time_point>(&inner_value_))
-    return *v;
+  if (const auto* val =
+          std::get_if<std::chrono::system_clock::time_point>(&inner_value_)) {
+    return *val;
+  }
   return std::nullopt;
 }
 
 const std::map<std::string, Value>* Value::AsStructure() const {
-  if (auto* v = std::get_if<std::unique_ptr<std::map<std::string, Value>>>(
-          &inner_value_)) {
-    return v->get();
+  if (const auto* val =
+          std::get_if<std::unique_ptr<std::map<std::string, Value>>>(
+              &inner_value_)) {
+    return val->get();
   }
   return nullptr;
 }
 
 const std::vector<Value>* Value::AsList() const {
-  if (auto* v =
+  if (const auto* val =
           std::get_if<std::unique_ptr<std::vector<Value>>>(&inner_value_)) {
-    return v->get();
+    return val->get();
   }
   return nullptr;
 }
@@ -176,42 +181,42 @@ std::string Value::ToString() const {
   if (IsNull()) return "null";
   if (IsBool()) return AsBool().value() ? "true" : "false";
   if (IsNumber()) {
-    if (auto i = AsInt()) return std::to_string(*i);
-    if (auto d = AsDouble()) return std::to_string(*d);
+    if (const auto int_val = AsInt()) return std::to_string(*int_val);
+    if (const auto double_val = AsDouble()) return std::to_string(*double_val);
   }
   if (IsString()) return "\"" + AsString().value() + "\"";
   if (IsList()) {
-    std::ostringstream ss;
-    ss << "[";
+    std::ostringstream stream;
+    stream << "[";
     const auto* list = AsList();
     if (list) {
-      for (size_t i = 0; i < list->size(); ++i) {
-        if (i > 0) ss << ", ";
-        ss << (*list)[i].ToString();
+      for (size_t index = 0; index < list->size(); ++index) {
+        if (index > 0) stream << ", ";
+        stream << (*list)[index].ToString();
       }
     }
-    ss << "]";
-    return ss.str();
+    stream << "]";
+    return stream.str();
   }
   if (IsStructure()) {
-    std::ostringstream ss;
-    ss << "{";
+    std::ostringstream stream;
+    stream << "{";
     const auto* map = AsStructure();
     if (map) {
       bool first = true;
-      for (const auto& [k, v] : *map) {
-        if (!first) ss << ", ";
+      for (const auto& [key, value] : *map) {
+        if (!first) stream << ", ";
         first = false;
-        ss << "\"" << k << "\": " << v.ToString();
+        stream << "\"" << key << "\": " << value.ToString();
       }
     }
-    ss << "}";
-    return ss.str();
+    stream << "}";
+    return stream.str();
   }
   return "unknown";
 }
-std::ostream& operator<<(std::ostream& os, const Value& val) {
-  return os << val.ToString();
+std::ostream& operator<<(std::ostream& output_stream, const Value& val) {
+  return output_stream << val.ToString();
 }
 
 }  // namespace openfeature

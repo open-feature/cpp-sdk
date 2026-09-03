@@ -70,7 +70,7 @@ class Value {
 
 bool operator==(const Value& lhs, const Value& rhs);
 bool operator!=(const Value& lhs, const Value& rhs);
-std::ostream& operator<<(std::ostream& os, const Value& value);
+std::ostream& operator<<(std::ostream& output_stream, const Value& value);
 
 }  // namespace openfeature
 

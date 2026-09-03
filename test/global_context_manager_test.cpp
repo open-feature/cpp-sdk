@@ -8,7 +8,7 @@
 
 #include "openfeature/evaluation_context.h"
 
-using namespace openfeature;
+namespace openfeature {
 
 class GlobalContextManagerTest : public ::testing::Test {
  protected:
@@ -82,3 +82,4 @@ TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
     t.join();
   }
 }
+}  // namespace openfeature

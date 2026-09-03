@@ -104,9 +104,4 @@ TEST_F(FeatureProviderStatusManagerTest, GetProviderReturnsCorrectProvider) {
   manager_->SetStatus(ProviderStatus::kReady);
   EXPECT_EQ(manager_->GetProvider(), mock_provider_);
 }
-
-int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
 }  // namespace openfeature

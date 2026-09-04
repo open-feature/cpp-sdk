@@ -24,7 +24,7 @@ using ::testing::Optional;
 
 class InMemoryProviderTest : public ::testing::Test {
  protected:
-  EvaluationContext empty_ctx_ = EvaluationContext::Builder().build();
+  EvaluationContext empty_ctx_ = EvaluationContext::Builder().Build();
 
   // Helper method to create a generic flag for testing.
   template <typename T>
@@ -372,7 +372,7 @@ class ContextAwareProviderTest : public InMemoryProviderTest {
 
 TEST_F(ContextAwareProviderTest, AdminUserMatchesTargeting) {
   EvaluationContext admin_ctx =
-      EvaluationContext::Builder().WithAttribute("user_is_admin", true).build();
+      EvaluationContext::Builder().WithAttribute("user_is_admin", true).Build();
   absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_or =
       provider_.GetBooleanEvaluation("admin_flag", false, admin_ctx);
   ASSERT_TRUE(res_or.ok());
@@ -386,7 +386,7 @@ TEST_F(ContextAwareProviderTest, AdminUserMatchesTargeting) {
 TEST_F(ContextAwareProviderTest, NonAdminUserMatchesTargeting) {
   EvaluationContext non_admin_ctx = EvaluationContext::Builder()
                                         .WithAttribute("user_is_admin", false)
-                                        .build();
+                                        .Build();
   absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_or =
       provider_.GetBooleanEvaluation("admin_flag", true, non_admin_ctx);
   ASSERT_TRUE(res_or.ok());
@@ -412,7 +412,7 @@ TEST_F(ContextAwareProviderTest, WrongAttributeTypeFallsBackToDefaultVariant) {
   EvaluationContext wrong_type_ctx =
       EvaluationContext::Builder()
           .WithAttribute("user_is_admin", std::string("true"))
-          .build();
+          .Build();
   absl::StatusOr<std::unique_ptr<BoolResolutionDetails>> res_or =
       provider_.GetBooleanEvaluation("admin_flag", true, wrong_type_ctx);
   ASSERT_TRUE(res_or.ok());

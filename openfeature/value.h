@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <ostream>
 #include <string>
 #include <variant>
 #include <vector>
@@ -17,15 +18,15 @@ namespace openfeature {
 class Value {
  public:
   Value();
-  Value(bool value);
-  Value(int64_t value);
-  Value(int value);
-  Value(double value);
-  Value(std::string value);
-  Value(const char* value);
-  Value(const std::map<std::string, Value>& value);
-  Value(const std::vector<Value>& value);
-  Value(std::chrono::system_clock::time_point value);
+  explicit Value(bool value);
+  explicit Value(int64_t value);
+  explicit Value(int value);
+  explicit Value(double value);
+  explicit Value(std::string value);
+  explicit Value(const char* value);
+  explicit Value(const std::map<std::string, Value>& value);
+  explicit Value(const std::vector<Value>& value);
+  explicit Value(std::chrono::system_clock::time_point value);
 
   Value(const Value& other);
   Value& operator=(const Value& other);
@@ -53,6 +54,10 @@ class Value {
   const std::map<std::string, Value>* AsStructure() const;
   const std::vector<Value>* AsList() const;
 
+  // Returns a JSON-formatted or human-readable string representation of the
+  // value.
+  std::string ToString() const;
+
  private:
   using InternalVariant =
       std::variant<std::monostate, bool, int64_t, double, std::string,
@@ -65,6 +70,7 @@ class Value {
 
 bool operator==(const Value& lhs, const Value& rhs);
 bool operator!=(const Value& lhs, const Value& rhs);
+std::ostream& operator<<(std::ostream& output_stream, const Value& value);
 
 }  // namespace openfeature
 

@@ -122,21 +122,21 @@ openfeature::OpenFeatureAPI& api = openfeature::OpenFeatureAPI::GetInstance();
 // Set a global evaluation context
 openfeature::EvaluationContext global_ctx = openfeature::EvaluationContext::Builder()
     .WithAttribute("region", "us-east-1")
-    .build();
+    .Build();
 api.SetEvaluationContext(global_ctx);
 
 // Set a client-level evaluation context
 std::shared_ptr<openfeature::Client> client = api.GetClient();
 openfeature::EvaluationContext client_ctx = openfeature::EvaluationContext::Builder()
     .WithAttribute("app_version", "1.0.5")
-    .build();
+    .Build();
 client->SetEvaluationContext(client_ctx);
 
 // Provide an invocation-level evaluation context
 openfeature::EvaluationContext req_ctx = openfeature::EvaluationContext::Builder()
     .WithTargetingKey("session-id-12345")
     .WithAttribute("email", "user@example.com")
-    .build();
+    .Build();
 
 bool flag_value = client->GetBooleanValue("some-flag", false, req_ctx);
 ```

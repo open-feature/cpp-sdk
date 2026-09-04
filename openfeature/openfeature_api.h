@@ -10,6 +10,7 @@
 #include "openfeature/evaluation_context.h"
 #include "openfeature/general_hook.h"
 #include "openfeature/global_context_manager.h"
+#include "openfeature/global_hook_manager.h"
 #include "openfeature/metadata.h"
 #include "openfeature/openfeature.h"
 #include "openfeature/provider.h"
@@ -85,8 +86,6 @@ class OpenFeatureAPI : public OpenFeature {
 
  private:
   ProviderRepository provider_repository_;
-  mutable std::shared_mutex hooks_mutex_;
-  std::vector<std::shared_ptr<GeneralHook>> hooks_;
 
   OpenFeatureAPI();
 };

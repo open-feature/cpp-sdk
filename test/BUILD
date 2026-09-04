@@ -21,7 +21,9 @@ cc_test(
         ":mock_feature_provider",
         "//openfeature:client_api",
         "//openfeature:flag_evaluation_details",
+        "//openfeature:global_hook_manager",
         "//openfeature:hook",
+        "//openfeature:hook_support",
         "@googletest//:gtest_main",
     ],
 )
@@ -99,6 +101,17 @@ cc_test(
     srcs = ["global_context_manager_test.cpp"],
     deps = [
         "//openfeature:global_context_manager",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "global_hook_manager_test",
+    srcs = ["global_hook_manager_test.cpp"],
+    deps = [
+        "//openfeature:general_hook",
+        "//openfeature:global_hook_manager",
+        "//openfeature:hook",
         "@googletest//:gtest_main",
     ],
 )

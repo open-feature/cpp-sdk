@@ -8,14 +8,14 @@
 
 #include "openfeature/evaluation_context.h"
 
-using namespace openfeature;
+namespace openfeature {
 
 class GlobalContextManagerTest : public ::testing::Test {
  protected:
   // Reset to a clean state before every test.
   void SetUp() override {
     GlobalContextManager::GetInstance().SetGlobalEvaluationContext(
-        EvaluationContext::Builder().build());
+        EvaluationContext::Builder().Build());
   }
 };
 
@@ -28,7 +28,7 @@ TEST_F(GlobalContextManagerTest, ReturnsSameInstance) {
 
 TEST_F(GlobalContextManagerTest, SetAndGetContext) {
   GlobalContextManager& manager = GlobalContextManager::GetInstance();
-  EvaluationContext input_ctx = EvaluationContext::Builder().build();
+  EvaluationContext input_ctx = EvaluationContext::Builder().Build();
 
   EXPECT_NO_THROW(manager.SetGlobalEvaluationContext(input_ctx));
 
@@ -50,7 +50,7 @@ TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
   // Writer Thread: Continuously updates the context.
   std::thread writer([&]() {
     while (!stop) {
-      EvaluationContext ctx = EvaluationContext::Builder().build();
+      EvaluationContext ctx = EvaluationContext::Builder().Build();
       // In a real scenario, we would populate ctx with different data here.
       manager.SetGlobalEvaluationContext(ctx);
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -58,8 +58,10 @@ TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
   });
 
   // Reader Threads: Continuously read the context.
+  constexpr int kReaderThreadCount = 10;
   std::vector<std::thread> readers;
-  for (int i = 0; i < 10; ++i) {
+  readers.reserve(kReaderThreadCount);
+  for (int index = 0; index < kReaderThreadCount; ++index) {
     readers.emplace_back([&]() {
       while (!stop) {
         // Just calling the getter to ensure locks work and no race conditions
@@ -74,11 +76,13 @@ TEST_F(GlobalContextManagerTest, ThreadSafetyStressTest) {
   }
 
   // Let the chaos run for a short duration.
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  constexpr int kChaosDurationMs = 100;
+  std::this_thread::sleep_for(std::chrono::milliseconds(kChaosDurationMs));
 
   stop = true;
   writer.join();
-  for (auto& t : readers) {
-    t.join();
+  for (auto& reader_thread : readers) {
+    reader_thread.join();
   }
 }
+}  // namespace openfeature

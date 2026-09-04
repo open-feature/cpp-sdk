@@ -18,7 +18,7 @@ using ::openfeature::Value;
 class NoopProviderTest : public ::testing::Test {
  protected:
   NoopProvider provider_;
-  EvaluationContext ctx_ = EvaluationContext::Builder().build();
+  EvaluationContext ctx_ = EvaluationContext::Builder().Build();
 };
 
 // Test to verify the metadata returned by the provider.

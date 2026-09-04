@@ -1,19 +1,32 @@
 #ifndef CPP_SDK_INCLUDE_OPENFEATURE_CLIENT_API_H_
 #define CPP_SDK_INCLUDE_OPENFEATURE_CLIENT_API_H_
 
+#include <algorithm>
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <shared_mutex>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "openfeature/client.h"
 #include "openfeature/evaluation_context.h"
+#include "openfeature/evaluation_options.h"
+#include "openfeature/exceptions/open_feature_exceptions.h"
 #include "openfeature/features.h"
 #include "openfeature/flag_evaluation_details.h"
+#include "openfeature/flag_type_value.h"
 #include "openfeature/general_hook.h"
 #include "openfeature/global_context_manager.h"
+#include "openfeature/global_hook_manager.h"
+#include "openfeature/hook_context.h"
+#include "openfeature/hook_data.h"
+#include "openfeature/hook_hints.h"
+#include "openfeature/hook_support.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
 #include "openfeature/provider_repository.h"
@@ -178,6 +191,7 @@ class ClientAPI : public Client {
   template <typename ResolutionDetailsType, typename ValueType,
             typename ProviderCallable>
   std::unique_ptr<ResolutionDetailsType> EvaluateFlag(
+      std::string_view flag_key, FlagValueType flag_type,
       ValueType default_value, const std::optional<EvaluationContext>& ctx,
       const std::optional<EvaluationOptions>& options,
       ProviderCallable provider_call);
@@ -210,6 +224,17 @@ class ClientAPI : public Client {
   EvaluationContext MergeContexts(
       const std::optional<EvaluationContext>& invocation_ctx);
 
+  template <typename ValueType, typename ProviderCallable>
+  void ResolveProvider(
+      const std::shared_ptr<FeatureProvider>& provider,
+      const std::shared_ptr<FeatureProviderStatusManager>& manager,
+      ProviderStatus provider_status, const EvaluationContext& merged_context,
+      std::string_view flag_key, ProviderCallable& provider_call,
+      std::unique_ptr<FlagEvaluationDetails<ValueType>>& evaluation_details,
+      std::optional<ErrorCode>& error_code, std::string& error_message,
+      std::unique_ptr<std::exception>& captured_exception,
+      bool& has_error) const;
+
   ProviderRepository& provider_repository_;
   std::string domain_;
   EvaluationContext evaluation_context_;
@@ -218,65 +243,179 @@ class ClientAPI : public Client {
   std::vector<std::shared_ptr<GeneralHook>> hooks_;
 };
 
+template <typename ValueType, typename ProviderCallable>
+void ClientAPI::ResolveProvider(
+    const std::shared_ptr<FeatureProvider>& provider,
+    const std::shared_ptr<FeatureProviderStatusManager>& manager,
+    ProviderStatus provider_status, const EvaluationContext& merged_context,
+    std::string_view flag_key, ProviderCallable& provider_call,
+    std::unique_ptr<FlagEvaluationDetails<ValueType>>& evaluation_details,
+    std::optional<ErrorCode>& error_code, std::string& error_message,
+    std::unique_ptr<std::exception>& captured_exception,
+    bool& has_error) const {
+  if (!manager) {
+    has_error = true;
+    error_code = ErrorCode::kGeneral;
+    error_message = "Provider status manager not found for domain";
+    captured_exception = std::make_unique<OpenFeatureException>(
+        error_code.value_or(ErrorCode::kGeneral), error_message);
+  } else if (provider_status == ProviderStatus::kNotReady) {
+    has_error = true;
+    error_code = ErrorCode::kProviderNotReady;
+    error_message = "Provider is not ready";
+    captured_exception = std::make_unique<OpenFeatureException>(
+        error_code.value_or(ErrorCode::kGeneral), error_message);
+  } else if (provider_status == ProviderStatus::kFatal) {
+    has_error = true;
+    error_code = ErrorCode::kProviderFatal;
+    error_message = "Provider is in fatal error state";
+    captured_exception = std::make_unique<OpenFeatureException>(
+        error_code.value_or(ErrorCode::kGeneral), error_message);
+  } else if (!provider) {
+    has_error = true;
+    error_code = ErrorCode::kProviderFatal;
+    error_message = "Provider not found for domain";
+    captured_exception = std::make_unique<OpenFeatureException>(
+        error_code.value_or(ErrorCode::kGeneral), error_message);
+  } else {
+    try {
+      auto result = provider_call(provider, merged_context);
+      if (!result.ok()) {
+        has_error = true;
+        error_code = ErrorCode::kGeneral;
+        error_message = std::string(result.status().message());
+        captured_exception = std::make_unique<OpenFeatureException>(
+            error_code.value_or(ErrorCode::kGeneral), error_message);
+      } else if (*result == nullptr) {
+        has_error = true;
+        error_code = ErrorCode::kGeneral;
+        error_message = "Provider returned null resolution details";
+        captured_exception = std::make_unique<OpenFeatureException>(
+            error_code.value_or(ErrorCode::kGeneral), error_message);
+      } else if ((*result)->GetErrorCode().has_value()) {
+        has_error = true;
+        error_code = (*result)->GetErrorCode();
+        error_message = (*result)->GetErrorMessage().value_or("Provider error");
+        captured_exception = std::make_unique<OpenFeatureException>(
+            error_code.value_or(ErrorCode::kGeneral), error_message);
+      } else {
+        evaluation_details = std::make_unique<FlagEvaluationDetails<ValueType>>(
+            std::string(flag_key), **result);
+      }
+    } catch (const std::exception& exception) {
+      has_error = true;
+      error_code = ErrorCode::kGeneral;
+      error_message =
+          std::string("Exception during evaluation: ") + exception.what();
+      captured_exception = std::make_unique<OpenFeatureException>(
+          error_code.value_or(ErrorCode::kGeneral), error_message);
+    } catch (...) {
+      has_error = true;
+      error_code = ErrorCode::kGeneral;
+      error_message = "Unknown exception during evaluation";
+      captured_exception = std::make_unique<OpenFeatureException>(
+          error_code.value_or(ErrorCode::kGeneral), error_message);
+    }
+  }
+}
+
 template <typename ResolutionDetailsType, typename ValueType,
           typename ProviderCallable>
 std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
-    ValueType default_value, const std::optional<EvaluationContext>& ctx,
+    std::string_view flag_key, FlagValueType flag_type, ValueType default_value,
+    const std::optional<EvaluationContext>& ctx,
     const std::optional<EvaluationOptions>& options,
     ProviderCallable provider_call) {
   std::shared_ptr<FeatureProviderStatusManager> manager =
       provider_repository_.GetFeatureProviderStatusManager(domain_);
-  if (!manager) {
-    return std::make_unique<ResolutionDetailsType>(
-        default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kGeneral, "Provider status manager not found for domain");
-  }
+  ProviderStatus provider_status =
+      manager ? manager->GetStatus() : ProviderStatus::kNotReady;
+  std::shared_ptr<FeatureProvider> provider =
+      manager ? manager->GetProvider() : nullptr;
 
-  ProviderStatus status = manager->GetStatus();
-  if (status == ProviderStatus::kNotReady) {
-    return std::make_unique<ResolutionDetailsType>(
-        default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kProviderNotReady, "Provider is not ready");
-  }
-  if (status == ProviderStatus::kFatal) {
-    return std::make_unique<ResolutionDetailsType>(
-        default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kProviderFatal, "Provider is in fatal error state");
-  }
+  // Collect hooks in order of increasing specificity
+  std::vector<std::shared_ptr<GeneralHook>> forward_hooks =
+      HookSupport::CollectHooks(GetHooks(), options, provider);
 
-  std::shared_ptr<FeatureProvider> provider = manager->GetProvider();
-  if (!provider) {
-    return std::make_unique<ResolutionDetailsType>(
-        default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kProviderFatal, "Provider not found for domain");
-  }
+  // Reverse list for after, error, and finally stages
+  std::vector<std::shared_ptr<GeneralHook>> reverse_hooks(
+      forward_hooks.rbegin(), forward_hooks.rend());
 
+  HookHints hints = options.has_value() ? options->hook_hints : HookHints{};
+  auto hook_data_map = HookSupport::CreateHookDataMap(forward_hooks);
+
+  Metadata client_metadata = GetMetadata();
+  Metadata provider_metadata =
+      provider ? provider->GetMetadata() : Metadata{""};
+
+  // Initialize merged context: Global -> Client -> Invocation
   EvaluationContext merged_context = MergeContexts(ctx);
 
-  try {
-    auto result = provider_call(provider, merged_context);
+  bool has_error = false;
+  std::string error_message;
+  std::optional<ErrorCode> error_code = std::nullopt;
+  std::unique_ptr<std::exception> captured_exception;
+  std::unique_ptr<FlagEvaluationDetails<ValueType>> evaluation_details;
 
-    if (!result.ok()) {
-      return std::make_unique<ResolutionDetailsType>(
-          default_value, Reason::kError, std::nullopt, FlagMetadata(),
-          ErrorCode::kGeneral, std::string(result.status().message()));
-    }
-    if (*result == nullptr) {
-      return std::make_unique<ResolutionDetailsType>(
-          default_value, Reason::kError, std::nullopt, FlagMetadata(),
-          ErrorCode::kGeneral, "Provider returned null resolution details");
-    }
-    return std::move(*result);
-  } catch (const std::exception& e) {
-    return std::make_unique<ResolutionDetailsType>(
-        default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kGeneral,
-        std::string("Exception during evaluation: ") + e.what());
-  } catch (...) {
-    return std::make_unique<ResolutionDetailsType>(
-        default_value, Reason::kError, std::nullopt, FlagMetadata(),
-        ErrorCode::kGeneral, "Unknown exception during evaluation");
+  // Before Stage
+  if (!HookSupport::ExecuteBeforeHooks(
+          forward_hooks, flag_key, flag_type, default_value, client_metadata,
+          provider_metadata, hints, hook_data_map, merged_context, error_code,
+          error_message, captured_exception)) {
+    has_error = true;
   }
+
+  // Provider Resolution stage (only if no error in Before)
+  if (!has_error) {
+    ResolveProvider(provider, manager, provider_status, merged_context,
+                    flag_key, provider_call, evaluation_details, error_code,
+                    error_message, captured_exception, has_error);
+  }
+
+  // Construct error evaluation_details if error occurred in Before or
+  // Resolution
+  if (has_error && !evaluation_details) {
+    evaluation_details = std::make_unique<FlagEvaluationDetails<ValueType>>(
+        std::string(flag_key), default_value, Reason::kError, std::nullopt,
+        FlagMetadata(), error_code.value_or(ErrorCode::kGeneral),
+        error_message);
+  }
+
+  // After stage (only if no error occurred)
+  if (!has_error && evaluation_details) {
+    HookSupport::ExecuteAfterHooks(
+        reverse_hooks, flag_key, flag_type, default_value, merged_context,
+        client_metadata, provider_metadata, hints, hook_data_map,
+        evaluation_details, error_code, error_message, captured_exception,
+        has_error);
+  }
+
+  // Error stage
+  if (has_error && captured_exception) {
+    HookSupport::ExecuteErrorHooks(reverse_hooks, flag_key, flag_type,
+                                   default_value, merged_context,
+                                   client_metadata, provider_metadata, hints,
+                                   hook_data_map, *captured_exception);
+  }
+
+  // Finally stage (always executed)
+  if (!evaluation_details) {
+    evaluation_details = std::make_unique<FlagEvaluationDetails<ValueType>>(
+        std::string(flag_key), default_value, Reason::kError, std::nullopt,
+        FlagMetadata(), error_code.value_or(ErrorCode::kGeneral),
+        error_message);
+  }
+
+  HookSupport::ExecuteFinallyHooks(reverse_hooks, flag_key, flag_type,
+                                   default_value, merged_context,
+                                   client_metadata, provider_metadata, hints,
+                                   hook_data_map, *evaluation_details);
+
+  return std::make_unique<ResolutionDetailsType>(
+      evaluation_details->GetValue(), evaluation_details->GetReason(),
+      evaluation_details->GetVariant(), evaluation_details->GetFlagMetadata(),
+      evaluation_details->GetErrorCode(),
+      evaluation_details->GetErrorMessage());
 }
 }  // namespace openfeature
 

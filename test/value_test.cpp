@@ -23,7 +23,7 @@ constexpr int64_t kExpectedInt64 = 456LL;
 constexpr int kTestVal5 = 5;
 constexpr int64_t kExpectedInt5 = 5LL;
 constexpr int kTestVal6 = 6;
-constexpr int64_t kExpectedInt64_6 = 6LL;
+constexpr int64_t kExpectedInt6 = 6LL;
 constexpr int kTestVal10 = 10;
 constexpr int64_t kExpectedInt10 = 10LL;
 constexpr int kTestVal11 = 11;
@@ -276,7 +276,7 @@ TEST(ValueTest, AssignmentOperator) {
 
   EXPECT_NE(assigned_map_val, map_val);
   EXPECT_EQ(assigned_map_val.AsStructure()->at("key").AsInt(), kExpectedInt5);
-  EXPECT_EQ(map_val.AsStructure()->at("key").AsInt(), kExpectedInt64_6);
+  EXPECT_EQ(map_val.AsStructure()->at("key").AsInt(), kExpectedInt6);
 }
 
 TEST(ValueTest, IsNumberHandlesIntAndDouble) {
@@ -313,7 +313,7 @@ TEST(ValueTest, AsNumberConversions) {
             kExpectedNegative5);  // Rounds to nearest even
 }
 
-TEST(ValueTest, EqualityOperator_BasicTypes) {
+TEST(ValueTest, EqualityOperatorBasicTypes) {
   EXPECT_TRUE(Value(true) == Value(true));
   EXPECT_FALSE(Value(true) == Value(false));
   EXPECT_TRUE(Value(kTestVal10) == Value(kTestVal10));
@@ -330,7 +330,7 @@ TEST(ValueTest, EqualityOperator_BasicTypes) {
   EXPECT_FALSE(Value(time1) == Value(time2));
 }
 
-TEST(ValueTest, EqualityOperator_NumberCrossTypes) {
+TEST(ValueTest, EqualityOperatorNumberCrossTypes) {
   EXPECT_TRUE(Value(kTestVal5) == Value(kTestDouble50));
   EXPECT_TRUE(Value(kTestDouble50) == Value(kTestVal5));
   EXPECT_FALSE(Value(kTestVal5) == Value(kTestDouble51));
@@ -339,7 +339,7 @@ TEST(ValueTest, EqualityOperator_NumberCrossTypes) {
               Value(static_cast<double>(std::numeric_limits<int64_t>::max())));
 }
 
-TEST(ValueTest, EqualityOperator_DifferentTypes) {
+TEST(ValueTest, EqualityOperatorDifferentTypes) {
   EXPECT_FALSE(Value(true) == Value(1));
   EXPECT_FALSE(Value(kTestVal10) == Value("10"));
   EXPECT_FALSE(Value(kTestDoublePi) == Value(true));
@@ -347,7 +347,7 @@ TEST(ValueTest, EqualityOperator_DifferentTypes) {
   EXPECT_FALSE(Value() == Value(false));
 }
 
-TEST(ValueTest, EqualityOperator_ComplexTypes) {
+TEST(ValueTest, EqualityOperatorComplexTypes) {
   std::map<std::string, Value> map1 = {{"a", Value(1)}, {"b", Value("x")}};
   std::map<std::string, Value> map2 = {{"a", Value(1)}, {"b", Value("x")}};
   std::map<std::string, Value> map3 = {{"a", Value(1)}, {"b", Value("y")}};

@@ -1,5 +1,10 @@
 #include "evaluation_context.h"
 
+#include <ostream>
+#include <sstream>
+
+#include "openfeature/value.h"
+
 namespace openfeature {
 
 EvaluationContext::EvaluationContext(std::optional<std::string> targeting_key,
@@ -15,9 +20,9 @@ std::optional<std::string_view> EvaluationContext::GetTargetingKey() const {
 }
 
 const std::any* EvaluationContext::GetValue(std::string_view key) const {
-  auto it = attributes_.find(std::string(key));
-  if (it != attributes_.end()) {
-    return &it->second;
+  auto iterator = attributes_.find(std::string(key));
+  if (iterator != attributes_.end()) {
+    return &iterator->second;
   }
   return nullptr;
 }
@@ -56,7 +61,44 @@ EvaluationContext EvaluationContext::Merge(
     }
   }
 
-  return builder.build();
+  return builder.Build();
+}
+
+std::string EvaluationContext::ToString() const {
+  std::ostringstream string_stream;
+  string_stream << "{";
+  bool first = true;
+  if (auto key = GetTargetingKey(); key.has_value()) {
+    string_stream << R"("targeting_key": ")" << *key << R"(")";
+    first = false;
+  }
+  for (const auto& [attr_key, attr_value] : GetAttributes()) {
+    if (!first) string_stream << ", ";
+    first = false;
+    string_stream << "\"" << attr_key << "\": ";
+    if (attr_value.type() == typeid(std::string)) {
+      string_stream << "\"" << std::any_cast<std::string>(attr_value) << "\"";
+    } else if (attr_value.type() == typeid(bool)) {
+      string_stream << (std::any_cast<bool>(attr_value) ? "true" : "false");
+    } else if (attr_value.type() == typeid(int)) {
+      string_stream << std::any_cast<int>(attr_value);
+    } else if (attr_value.type() == typeid(int64_t)) {
+      string_stream << std::any_cast<int64_t>(attr_value);
+    } else if (attr_value.type() == typeid(double)) {
+      string_stream << std::any_cast<double>(attr_value);
+    } else if (attr_value.type() == typeid(Value)) {
+      string_stream << std::any_cast<Value>(attr_value);
+    } else {
+      string_stream << "\"<any>\"";
+    }
+  }
+  string_stream << "}";
+  return string_stream.str();
+}
+
+std::ostream& operator<<(std::ostream& output_stream,
+                         const EvaluationContext& ctx) {
+  return output_stream << ctx.ToString();
 }
 
 EvaluationContext::Builder& EvaluationContext::Builder::WithTargetingKey(
@@ -76,8 +118,8 @@ EvaluationContext::Builder& EvaluationContext::Builder::WithAttribute(
   return this->WithAttribute(std::move(key), std::string(value));
 }
 
-EvaluationContext EvaluationContext::Builder::build() const {
-  return EvaluationContext(targeting_key_, attributes_);
+EvaluationContext EvaluationContext::Builder::Build() const {
+  return {targeting_key_, attributes_};
 }
 
 }  // namespace openfeature

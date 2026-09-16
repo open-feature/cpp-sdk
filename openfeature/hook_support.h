@@ -1,5 +1,5 @@
-#ifndef OPENFEATURE_HOOK_SUPPORT_H_
-#define OPENFEATURE_HOOK_SUPPORT_H_
+#ifndef CPP_SDK_INCLUDE_OPENFEATURE_HOOK_SUPPORT_H_
+#define CPP_SDK_INCLUDE_OPENFEATURE_HOOK_SUPPORT_H_
 
 #include <exception>
 #include <memory>
@@ -178,4 +178,4 @@ class HookSupport {
 
 }  // namespace openfeature
 
-#endif  // OPENFEATURE_HOOK_SUPPORT_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_HOOK_SUPPORT_H_

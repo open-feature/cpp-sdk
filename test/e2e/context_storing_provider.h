@@ -18,7 +18,7 @@ namespace openfeature_e2e {
 class ContextStoringProvider : public openfeature::FeatureProvider {
  public:
   mutable openfeature::EvaluationContext last_ctx =
-      openfeature::EvaluationContext::Builder().build();
+      openfeature::EvaluationContext::Builder().Build();
 
   ~ContextStoringProvider() override = default;
 

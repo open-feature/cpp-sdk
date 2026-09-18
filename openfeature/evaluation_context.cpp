@@ -15,9 +15,9 @@ std::optional<std::string_view> EvaluationContext::GetTargetingKey() const {
 }
 
 const std::any* EvaluationContext::GetValue(std::string_view key) const {
-  auto it = attributes_.find(std::string(key));
-  if (it != attributes_.end()) {
-    return &it->second;
+  auto iterator = attributes_.find(std::string(key));
+  if (iterator != attributes_.end()) {
+    return &iterator->second;
   }
   return nullptr;
 }
@@ -56,7 +56,7 @@ EvaluationContext EvaluationContext::Merge(
     }
   }
 
-  return builder.build();
+  return builder.Build();
 }
 
 EvaluationContext::Builder& EvaluationContext::Builder::WithTargetingKey(
@@ -76,8 +76,8 @@ EvaluationContext::Builder& EvaluationContext::Builder::WithAttribute(
   return this->WithAttribute(std::move(key), std::string(value));
 }
 
-EvaluationContext EvaluationContext::Builder::build() const {
-  return EvaluationContext(targeting_key_, attributes_);
+EvaluationContext EvaluationContext::Builder::Build() const {
+  return {targeting_key_, attributes_};
 }
 
 }  // namespace openfeature

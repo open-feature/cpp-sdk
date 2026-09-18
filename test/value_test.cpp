@@ -37,6 +37,7 @@ constexpr int64_t kRoundUpExpected = 124LL;
 constexpr int64_t kRoundDownExpected = 123LL;
 constexpr int64_t kExpectedRoundedUp6 = 6LL;
 constexpr int64_t kExpectedNegative5 = -5LL;
+constexpr int64_t kExpectedNegative6 = -6LL;
 
 constexpr double kTestDouble = 123.45;
 constexpr double kTestDouble123 = 123.0;
@@ -51,6 +52,7 @@ constexpr double kTestDouble51 = 5.1;
 constexpr double kTestDouble57 = 5.7;
 constexpr double kNegative53 = -5.3;
 constexpr double kNegative55 = -5.5;
+constexpr double kTestDouble1e9 = 1e-9;
 
 constexpr size_t kExpectedListSize = 3;
 
@@ -310,7 +312,7 @@ TEST(ValueTest, AsNumberConversions) {
 
   Value double_val_negative_half(kNegative55);
   EXPECT_EQ(double_val_negative_half.AsInt(),
-            kExpectedNegative5);  // Rounds to nearest even
+            kExpectedNegative6);  // Rounds to nearest even
 }
 
 TEST(ValueTest, EqualityOperatorBasicTypes) {
@@ -426,6 +428,9 @@ TEST(ValueTest, ToStringAndStreamOperator) {
   // Numbers
   EXPECT_EQ(Value(static_cast<int>(kTestInt64)).ToString(), "123");
   EXPECT_EQ(Value(kExpectedInt64).ToString(), "456");
+  // Numbers (Doubles)
+  EXPECT_EQ(Value(kTestDouble57).ToString(), "5.7");
+  EXPECT_EQ(Value(kTestDouble1e9).ToString(), "1e-09");
   // String
   EXPECT_EQ(Value("hello").ToString(), "\"hello\"");
   // List

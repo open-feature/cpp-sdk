@@ -1,8 +1,11 @@
 #include "openfeature/value.h"
 
 #include <cmath>
+#include <iomanip>
 #include <ostream>
 #include <sstream>
+
+#include "absl/strings/str_cat.h"
 
 namespace openfeature {
 
@@ -112,8 +115,7 @@ std::optional<int64_t> Value::AsInt() const {
     return *val;
   }
   if (const auto* val = std::get_if<double>(&inner_value_)) {
-    constexpr double kRoundingOffset = 0.5;
-    return static_cast<int64_t>(std::floor(*val + kRoundingOffset));
+    return static_cast<int64_t>(std::round(*val));
   }
   return std::nullopt;
 }
@@ -198,27 +200,27 @@ bool operator!=(const Value& lhs, const Value& rhs) { return !(lhs == rhs); }
 
 namespace {
 
-std::string FormatList(const std::vector<Value>* list) {
+void FormatList(std::ostream& stream, const std::vector<Value>* list) {
   if (list == nullptr) {
-    return "[]";
+    stream << "[]";
+    return;
   }
-  std::ostringstream stream;
   stream << "[";
   for (size_t index = 0; index < list->size(); ++index) {
     if (index > 0) {
       stream << ", ";
     }
-    stream << (*list)[index].ToString();
+    stream << (*list)[index];
   }
   stream << "]";
-  return stream.str();
 }
 
-std::string FormatStructure(const std::map<std::string, Value>* map) {
+void FormatStructure(std::ostream& stream,
+                     const std::map<std::string, Value>* map) {
   if (map == nullptr) {
-    return "{}";
+    stream << "{}";
+    return;
   }
-  std::ostringstream stream;
   stream << "{";
   bool first = true;
   for (const auto& [key, value] : *map) {
@@ -226,41 +228,43 @@ std::string FormatStructure(const std::map<std::string, Value>* map) {
       stream << ", ";
     }
     first = false;
-    stream << "\"" << key << "\": " << value.ToString();
+    stream << std::quoted(key) << ": " << value;
   }
   stream << "}";
-  return stream.str();
 }
 
 }  // namespace
 
-std::string Value::ToString() const {
-  if (IsNull()) {
-    return "null";
-  }
-  if (IsBool()) {
-    return AsBool().value() ? "true" : "false";
-  }
-  if (std::holds_alternative<int64_t>(inner_value_)) {
-    return std::to_string(std::get<int64_t>(inner_value_));
-  }
-  if (std::holds_alternative<double>(inner_value_)) {
-    return std::to_string(std::get<double>(inner_value_));
-  }
-  if (IsString()) {
-    return "\"" + AsString().value() + "\"";
-  }
-  if (IsList()) {
-    return FormatList(AsList());
-  }
-  if (IsStructure()) {
-    return FormatStructure(AsStructure());
-  }
-  return "unknown";
-}
-
 std::ostream& operator<<(std::ostream& output_stream, const Value& value) {
-  return output_stream << value.ToString();
+  if (value.IsNull()) {
+    return output_stream << "null";
+  }
+  if (value.IsBool()) {
+    return output_stream << (value.AsBool().value() ? "true" : "false");
+  }
+  if (std::holds_alternative<int64_t>(value.inner_value_)) {
+    return output_stream << absl::StrCat(std::get<int64_t>(value.inner_value_));
+  }
+  if (std::holds_alternative<double>(value.inner_value_)) {
+    return output_stream << absl::StrCat(std::get<double>(value.inner_value_));
+  }
+  if (value.IsString()) {
+    return output_stream << std::quoted(value.AsString().value());
+  }
+  if (value.IsList()) {
+    FormatList(output_stream, value.AsList());
+    return output_stream;
+  }
+  if (value.IsStructure()) {
+    FormatStructure(output_stream, value.AsStructure());
+    return output_stream;
+  }
+  return output_stream << "\"<unknown>\"";
+}
+std::string Value::ToString() const {
+  std::ostringstream stream;
+  stream << *this;
+  return stream.str();
 }
 
 }  // namespace openfeature

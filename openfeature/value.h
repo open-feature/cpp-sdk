@@ -66,6 +66,9 @@ class Value {
                    std::unique_ptr<std::map<std::string, Value>>>;
 
   InternalVariant inner_value_;
+
+  friend std::ostream& operator<<(std::ostream& output_stream,
+                                  const Value& value);
 };
 
 bool operator==(const Value& lhs, const Value& rhs);

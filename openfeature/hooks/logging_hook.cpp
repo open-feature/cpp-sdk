@@ -2,6 +2,7 @@
 
 #include <any>
 #include <exception>
+#include <iomanip>
 #include <iostream>
 #include <optional>
 #include <sstream>
@@ -43,9 +44,10 @@ std::optional<EvaluationContext> LoggingHook::Before(
     const GeneralHookContext& ctx, const HookHints& hints) {
   std::ostringstream log_stream;
   log_stream << "stage=before"
-             << ", domain=\"" << ctx.GetClientMetadata().name << "\""
-             << ", provider_name=\"" << ctx.GetProviderMetadata().name << "\""
-             << ", flag_key=\"" << ctx.GetFlagKey() << "\""
+             << ", domain=" << std::quoted(ctx.GetClientMetadata().name)
+             << ", provider_name="
+             << std::quoted(ctx.GetProviderMetadata().name)
+             << ", flag_key=" << std::quoted(ctx.GetFlagKey())
              << ", default_value=" << ctx.GetDefaultValueAsValue().ToString();
 
   if (include_eval_context_) {
@@ -62,15 +64,19 @@ void LoggingHook::After(const GeneralHookContext& ctx,
                         const HookHints& hints) {
   std::ostringstream log_stream;
   log_stream << "stage=after"
-             << ", domain=\"" << ctx.GetClientMetadata().name << "\""
-             << ", provider_name=\"" << ctx.GetProviderMetadata().name << "\""
-             << ", flag_key=\"" << ctx.GetFlagKey() << "\""
+             << ", domain=" << std::quoted(ctx.GetClientMetadata().name)
+             << ", provider_name="
+             << std::quoted(ctx.GetProviderMetadata().name)
+             << ", flag_key=" << std::quoted(ctx.GetFlagKey())
              << ", default_value=" << ctx.GetDefaultValueAsValue().ToString()
-             << ", reason=\"" << ToString(details.GetReason()) << "\""
-             << ", variant="
-             << (details.GetVariant() ? ("\"" + *details.GetVariant() + "\"")
-                                      : "null")
-             << ", value=" << details.GetValueAsValue().ToString();
+             << ", reason=" << std::quoted(ToString(details.GetReason()))
+             << ", variant=";
+  if (details.GetVariant().has_value()) {
+    log_stream << std::quoted(*details.GetVariant());
+  } else {
+    log_stream << "null";
+  }
+  log_stream << ", value=" << details.GetValueAsValue().ToString();
   if (include_eval_context_) {
     log_stream << ", evaluation_context="
                << ctx.GetEvaluationContext().ToString();
@@ -86,12 +92,13 @@ void LoggingHook::Error(const GeneralHookContext& ctx,
   }
   std::ostringstream log_stream;
   log_stream << "stage=error"
-             << ", domain=\"" << ctx.GetClientMetadata().name << "\""
-             << ", provider_name=\"" << ctx.GetProviderMetadata().name << "\""
-             << ", flag_key=\"" << ctx.GetFlagKey() << "\""
+             << ", domain=" << std::quoted(ctx.GetClientMetadata().name)
+             << ", provider_name="
+             << std::quoted(ctx.GetProviderMetadata().name)
+             << ", flag_key=" << std::quoted(ctx.GetFlagKey())
              << ", default_value=" << ctx.GetDefaultValueAsValue().ToString()
-             << ", error_code=\"" << ToString(code) << "\""
-             << ", error_message=\"" << error.what() << "\"";
+             << ", error_code=" << std::quoted(ToString(code))
+             << ", error_message=" << std::quoted(error.what());
 
   if (include_eval_context_) {
     log_stream << ", evaluation_context="

@@ -1,5 +1,6 @@
 #include "evaluation_context.h"
 
+#include <iomanip>
 #include <ostream>
 #include <sstream>
 
@@ -69,15 +70,15 @@ std::string EvaluationContext::ToString() const {
   string_stream << "{";
   bool first = true;
   if (auto key = GetTargetingKey(); key.has_value()) {
-    string_stream << R"("targeting_key": ")" << *key << R"(")";
+    string_stream << "\"targeting_key\": " << std::quoted(*key);
     first = false;
   }
   for (const auto& [attr_key, attr_value] : GetAttributes()) {
     if (!first) string_stream << ", ";
     first = false;
-    string_stream << "\"" << attr_key << "\": ";
+    string_stream << std::quoted(attr_key) << ": ";
     if (attr_value.type() == typeid(std::string)) {
-      string_stream << "\"" << std::any_cast<std::string>(attr_value) << "\"";
+      string_stream << std::quoted(std::any_cast<std::string>(attr_value));
     } else if (attr_value.type() == typeid(bool)) {
       string_stream << (std::any_cast<bool>(attr_value) ? "true" : "false");
     } else if (attr_value.type() == typeid(int)) {

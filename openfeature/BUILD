@@ -370,5 +370,6 @@ cc_library(
         ":error_code",
         ":flag_metadata",
         ":reason",
+        "@abseil-cpp//absl/strings",
     ],
 )

@@ -21,7 +21,7 @@ class HookContextTest : public ::testing::Test {
       : initial_ctx_(EvaluationContext::Builder()
                          .WithTargetingKey("initial-user")
                          .WithAttribute("env", std::string("test"))
-                         .build()) {}
+                         .Build()) {}
 
   EvaluationContext initial_ctx_;
   Metadata client_metadata_{"test-client"};
@@ -276,7 +276,7 @@ TEST_F(HookContextTest, SetEvaluationContextUpdatesContext) {
   EvaluationContext updated_ctx = EvaluationContext::Builder()
                                       .WithTargetingKey("updated-user")
                                       .WithAttribute("env", std::string("prod"))
-                                      .build();
+                                      .Build();
 
   hook_ctx.SetEvaluationContext(std::move(updated_ctx));
 

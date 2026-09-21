@@ -2,14 +2,16 @@
 
 #include <mutex>
 
+#include "absl/base/no_destructor.h"
+
 namespace openfeature {
 
 GlobalContextManager::GlobalContextManager()
     : global_evaluation_context_(EvaluationContext::Builder().build()) {}
 
 GlobalContextManager& GlobalContextManager::GetInstance() {
-  static GlobalContextManager instance;
-  return instance;
+  static absl::NoDestructor<GlobalContextManager> instance;
+  return *instance;
 }
 
 void GlobalContextManager::SetGlobalEvaluationContext(

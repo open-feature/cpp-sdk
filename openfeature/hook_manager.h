@@ -5,6 +5,7 @@
 #include <shared_mutex>
 #include <vector>
 
+#include "absl/base/no_destructor.h"
 #include "openfeature/general_hook.h"
 
 namespace openfeature {
@@ -33,6 +34,7 @@ class HookManager {
   void ClearHooks();
 
  private:
+  friend class absl::NoDestructor<HookManager>;
   HookManager();
   mutable std::shared_mutex hooks_mutex_;
   std::shared_ptr<std::vector<std::shared_ptr<GeneralHook>>> hooks_;

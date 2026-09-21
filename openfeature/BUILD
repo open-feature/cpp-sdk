@@ -161,6 +161,7 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         ":evaluation_context",
+        "@abseil-cpp//absl/base:no_destructor",
     ],
 )
 
@@ -171,6 +172,7 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         ":general_hook",
+        "@abseil-cpp//absl/base:no_destructor",
     ],
 )
 

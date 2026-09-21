@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/no_destructor.h"
 #include "openfeature/general_hook.h"
 
 namespace openfeature {
@@ -14,8 +15,8 @@ HookManager::HookManager()
     : hooks_(std::make_shared<std::vector<std::shared_ptr<GeneralHook>>>()) {}
 
 HookManager& HookManager::GetInstance() {
-  static HookManager instance;
-  return instance;
+  static absl::NoDestructor<HookManager> instance;
+  return *instance;
 }
 
 void HookManager::AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) {

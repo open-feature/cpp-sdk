@@ -161,6 +161,18 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         ":evaluation_context",
+        "@abseil-cpp//absl/base:no_destructor",
+    ],
+)
+
+cc_library(
+    name = "hook_manager",
+    srcs = ["hook_manager.cpp"],
+    hdrs = ["hook_manager.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":general_hook",
+        "@abseil-cpp//absl/base:no_destructor",
     ],
 )
 
@@ -227,6 +239,7 @@ cc_library(
         ":client_api",
         ":evaluation_context",
         ":global_context_manager",
+        ":hook_manager",
         ":metadata",
         ":openfeature",
         ":provider",

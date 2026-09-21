@@ -4,6 +4,7 @@
 #include <memory>
 #include <shared_mutex>
 
+#include "absl/base/no_destructor.h"
 #include "openfeature/evaluation_context.h"
 
 namespace openfeature {
@@ -24,6 +25,7 @@ class GlobalContextManager {
   EvaluationContext GetGlobalEvaluationContext() const;
 
  private:
+  friend class absl::NoDestructor<GlobalContextManager>;
   GlobalContextManager();
   EvaluationContext global_evaluation_context_;
   mutable std::shared_mutex context_mutex_;

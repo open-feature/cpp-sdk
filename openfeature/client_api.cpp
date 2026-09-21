@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "openfeature/exceptions/open_feature_exceptions.h"
 #include "openfeature/flag_metadata.h"
 #include "openfeature/flag_type_value.h"
 #include "openfeature/global_context_manager.h"
@@ -416,22 +417,26 @@ void ClientAPI::ResolveProvider(
     has_error = true;
     error_code = ErrorCode::kGeneral;
     error_message = "Provider status manager not found for domain";
-    captured_exception = std::make_unique<std::runtime_error>(error_message);
+    captured_exception = std::make_unique<OpenFeatureException>(
+        error_code.value_or(ErrorCode::kGeneral), error_message);
   } else if (provider_status == ProviderStatus::kNotReady) {
     has_error = true;
     error_code = ErrorCode::kProviderNotReady;
     error_message = "Provider is not ready";
-    captured_exception = std::make_unique<std::runtime_error>(error_message);
+    captured_exception = std::make_unique<OpenFeatureException>(
+        error_code.value_or(ErrorCode::kGeneral), error_message);
   } else if (provider_status == ProviderStatus::kFatal) {
     has_error = true;
     error_code = ErrorCode::kProviderFatal;
     error_message = "Provider is in fatal error state";
-    captured_exception = std::make_unique<std::runtime_error>(error_message);
+    captured_exception = std::make_unique<OpenFeatureException>(
+        error_code.value_or(ErrorCode::kGeneral), error_message);
   } else if (!provider) {
     has_error = true;
     error_code = ErrorCode::kProviderFatal;
     error_message = "Provider not found for domain";
-    captured_exception = std::make_unique<std::runtime_error>(error_message);
+    captured_exception = std::make_unique<OpenFeatureException>(
+        error_code.value_or(ErrorCode::kGeneral), error_message);
   } else {
     try {
       auto result = provider_call(provider, merged_context);
@@ -439,14 +444,14 @@ void ClientAPI::ResolveProvider(
         has_error = true;
         error_code = ErrorCode::kGeneral;
         error_message = std::string(result.status().message());
-        captured_exception =
-            std::make_unique<std::runtime_error>(error_message);
+        captured_exception = std::make_unique<OpenFeatureException>(
+            error_code.value_or(ErrorCode::kGeneral), error_message);
       } else if (*result == nullptr) {
         has_error = true;
         error_code = ErrorCode::kGeneral;
         error_message = "Provider returned null resolution details";
-        captured_exception =
-            std::make_unique<std::runtime_error>(error_message);
+        captured_exception = std::make_unique<OpenFeatureException>(
+            error_code.value_or(ErrorCode::kGeneral), error_message);
       } else {
         evaluation_details = std::make_unique<FlagEvaluationDetails<ValueType>>(
             std::string(flag_key), **result);
@@ -456,8 +461,8 @@ void ClientAPI::ResolveProvider(
           error_code = (*result)->GetErrorCode();
           error_message =
               (*result)->GetErrorMessage().value_or("Provider error");
-          captured_exception =
-              std::make_unique<std::runtime_error>(error_message);
+          captured_exception = std::make_unique<OpenFeatureException>(
+              error_code.value_or(ErrorCode::kGeneral), error_message);
         }
       }
     } catch (const std::exception& exception) {
@@ -465,13 +470,14 @@ void ClientAPI::ResolveProvider(
       error_code = ErrorCode::kGeneral;
       error_message =
           std::string("Exception during evaluation: ") + exception.what();
-      captured_exception =
-          std::make_unique<std::runtime_error>(exception.what());
+      captured_exception = std::make_unique<OpenFeatureException>(
+          error_code.value_or(ErrorCode::kGeneral), error_message);
     } catch (...) {
       has_error = true;
       error_code = ErrorCode::kGeneral;
       error_message = "Unknown exception during evaluation";
-      captured_exception = std::make_unique<std::runtime_error>(error_message);
+      captured_exception = std::make_unique<OpenFeatureException>(
+          error_code.value_or(ErrorCode::kGeneral), error_message);
     }
   }
 }

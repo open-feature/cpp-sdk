@@ -36,6 +36,7 @@ constexpr int64_t kRoundUpExpected = 124LL;
 constexpr int64_t kRoundDownExpected = 123LL;
 constexpr int64_t kExpectedRoundedUp6 = 6LL;
 constexpr int64_t kExpectedNegative5 = -5LL;
+constexpr int64_t kExpectedNegative6 = -6LL;
 
 constexpr double kTestDouble = 123.45;
 constexpr double kTestDouble123 = 123.0;
@@ -50,6 +51,7 @@ constexpr double kTestDouble51 = 5.1;
 constexpr double kTestDouble57 = 5.7;
 constexpr double kNegative53 = -5.3;
 constexpr double kNegative55 = -5.5;
+constexpr double kTestDouble1e9 = 1e-9;
 
 constexpr size_t kExpectedListSize = 3;
 
@@ -309,7 +311,7 @@ TEST(ValueTest, AsNumberConversions) {
 
   Value double_val_negative_half(kNegative55);
   EXPECT_EQ(double_val_negative_half.AsInt(),
-            kExpectedNegative5);  // Rounds to nearest even
+            kExpectedNegative6);  // Rounds to nearest even
 }
 
 TEST(ValueTest, EqualityOperatorBasicTypes) {
@@ -414,6 +416,32 @@ TEST(ValueTest, MoveConstructorAndAssignmentDefaulted) {
   EXPECT_TRUE(target_val.IsStructure());
   EXPECT_NE(target_val.AsStructure(), nullptr);
   EXPECT_EQ(target_val.AsStructure()->at("key").AsInt(), kExpectedInt100);
+}
+
+TEST(ValueTest, ToStringAndStreamOperator) {
+  // Null
+  EXPECT_EQ(Value().ToString(), "null");
+  // Boolean
+  EXPECT_EQ(Value(true).ToString(), "true");
+  EXPECT_EQ(Value(false).ToString(), "false");
+  // Numbers
+  EXPECT_EQ(Value(static_cast<int>(kTestInt64)).ToString(), "123");
+  EXPECT_EQ(Value(kExpectedInt64).ToString(), "456");
+  // Numbers (Doubles)
+  EXPECT_EQ(Value(kTestDouble57).ToString(), "5.7");
+  EXPECT_EQ(Value(kTestDouble1e9).ToString(), "1e-09");
+  // String
+  EXPECT_EQ(Value("hello").ToString(), "\"hello\"");
+  // List
+  std::vector<Value> list = {Value("item1"), Value(kListItem42), Value(true)};
+  EXPECT_EQ(Value(list).ToString(), "[\"item1\", 42, true]");
+  // Structure / Map
+  std::map<std::string, Value> map = {{"key", Value("value")}};
+  EXPECT_EQ(Value(map).ToString(), "{\"key\": \"value\"}");
+  // Stream operator <<
+  std::ostringstream stream;
+  stream << Value("stream_test");
+  EXPECT_EQ(stream.str(), "\"stream_test\"");
 }
 
 }  // namespace openfeature

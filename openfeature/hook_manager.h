@@ -1,5 +1,5 @@
-#ifndef CPP_SDK_INCLUDE_OPENFEATURE_GLOBAL_HOOK_MANAGER_H_
-#define CPP_SDK_INCLUDE_OPENFEATURE_GLOBAL_HOOK_MANAGER_H_
+#ifndef CPP_SDK_INCLUDE_OPENFEATURE_HOOK_MANAGER_H_
+#define CPP_SDK_INCLUDE_OPENFEATURE_HOOK_MANAGER_H_
 
 #include <memory>
 #include <shared_mutex>
@@ -9,14 +9,14 @@
 
 namespace openfeature {
 
-// Manages global hooks for the OpenFeature SDK.
+// Manages hooks for the OpenFeature SDK.
 // Provides thread-safe hook storage and access across the application.
-class GlobalHookManager {
+class HookManager {
  public:
-  static GlobalHookManager& GetInstance();
+  static HookManager& GetInstance();
 
-  GlobalHookManager(const GlobalHookManager&) = delete;
-  GlobalHookManager& operator=(const GlobalHookManager&) = delete;
+  HookManager(const HookManager&) = delete;
+  HookManager& operator=(const HookManager&) = delete;
 
   // Adds one or more global hooks, appending them to existing hooks.
   // Filters out nullptr entries.
@@ -25,18 +25,19 @@ class GlobalHookManager {
   // Adds a single global hook. Filters out nullptr entries.
   void AddHook(std::shared_ptr<GeneralHook> hook);
 
-  // Retrieves all configured global hooks.
-  std::vector<std::shared_ptr<GeneralHook>> GetHooks() const;
+  // Retrieves all configured global hooks as a read-only shared vector.
+  std::shared_ptr<const std::vector<std::shared_ptr<GeneralHook>>> GetHooks()
+      const;
 
   // Clears all configured global hooks.
   void ClearHooks();
 
  private:
-  GlobalHookManager() = default;
+  HookManager();
   mutable std::shared_mutex hooks_mutex_;
-  std::vector<std::shared_ptr<GeneralHook>> hooks_;
+  std::shared_ptr<std::vector<std::shared_ptr<GeneralHook>>> hooks_;
 };
 
 }  // namespace openfeature
 
-#endif  // CPP_SDK_INCLUDE_OPENFEATURE_GLOBAL_HOOK_MANAGER_H_
+#endif  // CPP_SDK_INCLUDE_OPENFEATURE_HOOK_MANAGER_H_

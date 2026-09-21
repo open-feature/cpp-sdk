@@ -165,9 +165,9 @@ cc_library(
 )
 
 cc_library(
-    name = "global_hook_manager",
-    srcs = ["global_hook_manager.cpp"],
-    hdrs = ["global_hook_manager.h"],
+    name = "hook_manager",
+    srcs = ["hook_manager.cpp"],
+    hdrs = ["hook_manager.h"],
     include_prefix = "openfeature",
     deps = [
         ":general_hook",
@@ -237,7 +237,7 @@ cc_library(
         ":client_api",
         ":evaluation_context",
         ":global_context_manager",
-        ":global_hook_manager",
+        ":hook_manager",
         ":metadata",
         ":openfeature",
         ":provider",

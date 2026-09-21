@@ -2,7 +2,7 @@
 
 #include "openfeature/client_api.h"
 #include "openfeature/global_context_manager.h"
-#include "openfeature/global_hook_manager.h"
+#include "openfeature/hook_manager.h"
 
 namespace openfeature {
 
@@ -87,20 +87,20 @@ ProviderStatus OpenFeatureAPI::GetProviderStatus(
 }
 
 void OpenFeatureAPI::AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) {
-  GlobalHookManager::GetInstance().AddHooks(std::move(hooks));
+  HookManager::GetInstance().AddHooks(std::move(hooks));
 }
 
 void OpenFeatureAPI::AddHook(std::shared_ptr<GeneralHook> hook) {
-  GlobalHookManager::GetInstance().AddHook(std::move(hook));
+  HookManager::GetInstance().AddHook(std::move(hook));
 }
 
 std::vector<std::shared_ptr<GeneralHook>> OpenFeatureAPI::GetHooks() const {
-  return GlobalHookManager::GetInstance().GetHooks();
+  return *HookManager::GetInstance().GetHooks();
 }
 
 void OpenFeatureAPI::Shutdown() {
   provider_repository_.Shutdown();
-  GlobalHookManager::GetInstance().ClearHooks();
+  HookManager::GetInstance().ClearHooks();
 }
 
 }  // namespace openfeature

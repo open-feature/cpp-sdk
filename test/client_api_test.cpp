@@ -16,8 +16,8 @@
 #include "openfeature/evaluation_context.h"
 #include "openfeature/evaluation_options.h"
 #include "openfeature/global_context_manager.h"
-#include "openfeature/global_hook_manager.h"
 #include "openfeature/hook.h"
+#include "openfeature/hook_manager.h"
 #include "openfeature/hook_support.h"
 #include "openfeature/provider_status.h"
 
@@ -30,7 +30,7 @@ using ::openfeature::EvaluationContext;
 using ::openfeature::EvaluationOptions;
 using ::openfeature::FlagMetadata;
 using ::openfeature::GlobalContextManager;
-using ::openfeature::GlobalHookManager;
+using ::openfeature::HookManager;
 using ::openfeature::HookSupport;
 using ::openfeature::IntFlagEvaluationDetails;
 using ::openfeature::Metadata;
@@ -54,10 +54,10 @@ class ClientAPITest : public ::testing::Test {
     // Reset Global Context and Global Hooks to clean states before each test.
     GlobalContextManager::GetInstance().SetGlobalEvaluationContext(
         EvaluationContext::Builder().build());
-    GlobalHookManager::GetInstance().ClearHooks();
+    HookManager::GetInstance().ClearHooks();
   }
 
-  void TearDown() override { GlobalHookManager::GetInstance().ClearHooks(); }
+  void TearDown() override { HookManager::GetInstance().ClearHooks(); }
 
   ProviderRepository repo_;
 };
@@ -1022,7 +1022,7 @@ TEST_F(ClientAPITest, HooksExecuteInCorrectOrderOnSuccess) {
   repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
                     true);
 
-  GlobalHookManager::GetInstance().AddHook(api_hook);
+  HookManager::GetInstance().AddHook(api_hook);
 
   ClientAPI client(repo_, domain);
   client.AddHook(client_hook);
@@ -1311,7 +1311,7 @@ TEST_F(ClientAPITest, CollectHooksAggregatesAllTiersInPrecedenceOrder) {
           Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{
               provider_hook}));
 
-  GlobalHookManager::GetInstance().AddHook(api_hook);
+  HookManager::GetInstance().AddHook(api_hook);
 
   ClientAPI client(repo_, domain);
   client.AddHook(client_hook);
@@ -1342,7 +1342,7 @@ TEST_F(ClientAPITest, CollectHooksFiltersNullptrsAcrossAllTiers) {
   auto provider_hook =
       std::make_shared<OrderTrackingHook>("provider", execution_log);
 
-  GlobalHookManager::GetInstance().AddHooks({nullptr, api_hook, nullptr});
+  HookManager::GetInstance().AddHooks({nullptr, api_hook, nullptr});
 
   ClientAPI client(repo_, domain);
   client.AddHooks({nullptr, client_hook, nullptr});
@@ -1373,7 +1373,7 @@ TEST_F(ClientAPITest, CollectHooksHandlesNulloptOptionsAndNullProvider) {
   auto client_hook =
       std::make_shared<OrderTrackingHook>("client", execution_log);
 
-  GlobalHookManager::GetInstance().AddHook(api_hook);
+  HookManager::GetInstance().AddHook(api_hook);
 
   ClientAPI client(repo_, domain);
   client.AddHook(client_hook);

@@ -7,19 +7,19 @@ std::vector<std::shared_ptr<GeneralHook>> HookSupport::CollectHooks(
     const std::optional<EvaluationOptions>& options,
     const std::shared_ptr<FeatureProvider>& provider) {
   std::vector<std::shared_ptr<GeneralHook>> forward_hooks;
-  auto api_hooks = GlobalHookManager::GetInstance().GetHooks();
+  auto api_hooks = HookManager::GetInstance().GetHooks();
   auto invocation_hooks = options.has_value()
                               ? options->hooks
                               : std::vector<std::shared_ptr<GeneralHook>>{};
   auto provider_hooks = provider ? provider->GetHooks()
                                  : std::vector<std::shared_ptr<GeneralHook>>{};
 
-  forward_hooks.reserve(api_hooks.size() + client_hooks.size() +
+  forward_hooks.reserve(api_hooks->size() + client_hooks.size() +
                         invocation_hooks.size() + provider_hooks.size());
 
-  for (auto& hook : api_hooks) {
+  for (const auto& hook : *api_hooks) {
     if (hook != nullptr) {
-      forward_hooks.push_back(std::move(hook));
+      forward_hooks.push_back(hook);
     }
   }
   for (const auto& hook : client_hooks) {

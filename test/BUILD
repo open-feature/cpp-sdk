@@ -21,7 +21,7 @@ cc_test(
         ":mock_feature_provider",
         "//openfeature:client_api",
         "//openfeature:flag_evaluation_details",
-        "//openfeature:global_hook_manager",
+        "//openfeature:hook_manager",
         "//openfeature:hook",
         "//openfeature:hook_support",
         "@googletest//:gtest_main",

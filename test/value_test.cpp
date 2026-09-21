@@ -27,7 +27,6 @@ constexpr int64_t kExpectedInt6 = 6LL;
 constexpr int kTestVal10 = 10;
 constexpr int64_t kExpectedInt10 = 10LL;
 constexpr int kTestVal11 = 11;
-constexpr int kListItem42 = 42;
 constexpr int kTestVal100 = 100;
 constexpr int64_t kExpectedInt100 = 100LL;
 constexpr int kTestVal200 = 200;

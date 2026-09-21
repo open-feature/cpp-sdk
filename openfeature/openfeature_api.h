@@ -10,7 +10,7 @@
 #include "openfeature/evaluation_context.h"
 #include "openfeature/general_hook.h"
 #include "openfeature/global_context_manager.h"
-#include "openfeature/global_hook_manager.h"
+#include "openfeature/hook_manager.h"
 #include "openfeature/metadata.h"
 #include "openfeature/openfeature.h"
 #include "openfeature/provider.h"

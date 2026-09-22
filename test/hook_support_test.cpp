@@ -60,7 +60,7 @@ class HookSupportTest : public ::testing::Test {
  protected:
   void SetUp() override {
     GlobalContextManager::GetInstance().SetGlobalEvaluationContext(
-        EvaluationContext::Builder().build());
+        EvaluationContext::Builder().Build());
     HookManager::GetInstance().ClearHooks();
   }
 
@@ -118,7 +118,7 @@ class ContextMutatingHook : public openfeature::BoolHook {
   std::optional<EvaluationContext> Before(
       const openfeature::HookContext<bool>& /*ctx*/,
       const openfeature::HookHints& /*hints*/) override {
-    return EvaluationContext::Builder().WithAttribute(key_, value_).build();
+    return EvaluationContext::Builder().WithAttribute(key_, value_).Build();
   }
 
  private:
@@ -380,7 +380,7 @@ TEST_F(HookSupportTest, HooksExecuteInCorrectOrderOnSuccess) {
           Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{
               provider_hook}));
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   HookManager::GetInstance().AddHook(api_hook);
@@ -409,14 +409,14 @@ TEST_F(HookSupportTest,
   auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
   ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
 
-  EvaluationContext captured_context = EvaluationContext::Builder().build();
+  EvaluationContext captured_context = EvaluationContext::Builder().Build();
   EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _))
       .WillOnce(DoAll(
           SaveArg<2>(&captured_context),
           Return(std::make_unique<BoolResolutionDetails>(
               true, Reason::kTargetingMatch, std::nullopt, FlagMetadata()))));
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   ClientAPI client(repo_, domain);
@@ -449,7 +449,7 @@ TEST_F(HookSupportTest, HookDataIsIsolatedPerHookAndPersistsAcrossStages) {
                 true, Reason::kTargetingMatch, std::nullopt, FlagMetadata());
           }));
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   auto hook_first = std::make_shared<HookDataTestHook>("hook-1");
@@ -480,7 +480,7 @@ TEST_F(HookSupportTest, HookHintsArePropagatedToAllStages) {
                 true, Reason::kTargetingMatch, std::nullopt, FlagMetadata());
           }));
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   auto tracking_hook = std::make_shared<HintsTrackingHook>();
@@ -508,7 +508,7 @@ TEST_F(HookSupportTest,
   ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
   EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   std::vector<std::string> execution_log;
@@ -536,7 +536,7 @@ TEST_F(HookSupportTest,
       .WillOnce(Return(std::make_unique<BoolResolutionDetails>(
           true, Reason::kTargetingMatch, std::nullopt, FlagMetadata())));
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   std::vector<std::string> execution_log;
@@ -561,7 +561,7 @@ TEST_F(HookSupportTest, ExceptionInErrorOrFinallyDoesNotAbortExecution) {
   auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
   ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   std::vector<std::string> execution_log;
@@ -590,7 +590,7 @@ TEST_F(HookSupportTest, TypeSpecificHooksExecuteOnlyForMatchingFlagTypes) {
   auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
   ON_CALL(*mock_provider, Init(_)).WillByDefault(Return(absl::OkStatus()));
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   bool string_hook_called = false;
@@ -744,7 +744,7 @@ TEST_F(HookSupportTest, ProviderNotReadyTriggersErrorAndFinallyHooks) {
           Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{
               provider_hook}));
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   auto status_manager = repo_.GetFeatureProviderStatusManager(domain);
@@ -781,7 +781,7 @@ TEST_F(HookSupportTest, ProviderFatalTriggersErrorAndFinallyHooks) {
           Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{
               provider_hook}));
 
-  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().build(),
+  repo_.SetProvider(domain, mock_provider, EvaluationContext::Builder().Build(),
                     true);
 
   auto status_manager = repo_.GetFeatureProviderStatusManager(domain);

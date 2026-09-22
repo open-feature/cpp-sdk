@@ -16,10 +16,10 @@
 #include "openfeature/flag_evaluation_details.h"
 #include "openfeature/flag_type_value.h"
 #include "openfeature/general_hook.h"
-#include "openfeature/global_hook_manager.h"
 #include "openfeature/hook_context.h"
 #include "openfeature/hook_data.h"
 #include "openfeature/hook_hints.h"
+#include "openfeature/hook_manager.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
 #include "openfeature/reason.h"
@@ -52,13 +52,12 @@ class HookSupport {
       std::unordered_map<const GeneralHook*, std::shared_ptr<HookData>>&
           hook_data_map,
       EvaluationContext& merged_context, std::optional<ErrorCode>& error_code,
-      std::string& error_message,
-      std::unique_ptr<std::exception>& captured_exception) {
+      std::string& error_message) {
     for (const auto& hook : hooks) {
+      HookContext<ValueType> hook_ctx(
+          std::string(flag_key), flag_type, default_value, merged_context,
+          client_metadata, provider_metadata, hook_data_map[hook.get()]);
       try {
-        HookContext<ValueType> hook_ctx(
-            std::string(flag_key), flag_type, default_value, merged_context,
-            client_metadata, provider_metadata, hook_data_map[hook.get()]);
         auto modified_ctx = hook->Before(hook_ctx, hints);
         if (modified_ctx.has_value()) {
           merged_context =
@@ -67,14 +66,10 @@ class HookSupport {
       } catch (const std::exception& exception) {
         error_code = ErrorCode::kGeneral;
         error_message = exception.what();
-        captured_exception =
-            std::make_unique<std::runtime_error>(exception.what());
         return false;
       } catch (...) {
         error_code = ErrorCode::kGeneral;
         error_message = "Unknown exception in before hook";
-        captured_exception =
-            std::make_unique<std::runtime_error>(error_message);
         return false;
       }
     }
@@ -84,7 +79,7 @@ class HookSupport {
   // Executes after hooks in reverse order (Provider -> Invocation -> Client ->
   // API).
   template <typename ValueType>
-  static void ExecuteAfterHooks(
+  static bool ExecuteAfterHooks(
       const std::vector<std::shared_ptr<GeneralHook>>& reverse_hooks,
       std::string_view flag_key, FlagValueType flag_type,
       const ValueType& default_value, const EvaluationContext& merged_context,
@@ -93,38 +88,32 @@ class HookSupport {
       std::unordered_map<const GeneralHook*, std::shared_ptr<HookData>>&
           hook_data_map,
       std::unique_ptr<FlagEvaluationDetails<ValueType>>& evaluation_details,
-      std::optional<ErrorCode>& error_code, std::string& error_message,
-      std::unique_ptr<std::exception>& captured_exception, bool& has_error) {
+      std::optional<ErrorCode>& error_code, std::string& error_message) {
     for (const auto& hook : reverse_hooks) {
+      HookContext<ValueType> hook_ctx(
+          std::string(flag_key), flag_type, default_value, merged_context,
+          client_metadata, provider_metadata, hook_data_map[hook.get()]);
       try {
-        HookContext<ValueType> hook_ctx(
-            std::string(flag_key), flag_type, default_value, merged_context,
-            client_metadata, provider_metadata, hook_data_map[hook.get()]);
         hook->After(hook_ctx, *evaluation_details, hints);
       } catch (const std::exception& exception) {
-        has_error = true;
         error_code = ErrorCode::kGeneral;
         error_message = exception.what();
-        captured_exception =
-            std::make_unique<std::runtime_error>(exception.what());
         evaluation_details = std::make_unique<FlagEvaluationDetails<ValueType>>(
             std::string(flag_key), default_value, Reason::kError, std::nullopt,
             FlagMetadata(), error_code.value_or(ErrorCode::kGeneral),
             error_message);
-        break;
+        return false;
       } catch (...) {
-        has_error = true;
         error_code = ErrorCode::kGeneral;
         error_message = "Unknown exception in after hook";
-        captured_exception =
-            std::make_unique<std::runtime_error>(error_message);
         evaluation_details = std::make_unique<FlagEvaluationDetails<ValueType>>(
             std::string(flag_key), default_value, Reason::kError, std::nullopt,
             FlagMetadata(), error_code.value_or(ErrorCode::kGeneral),
             error_message);
-        break;
+        return false;
       }
     }
+    return true;
   }
 
   // Executes error hooks in reverse order (Provider -> Invocation -> Client ->
@@ -140,13 +129,17 @@ class HookSupport {
           hook_data_map,
       const std::exception& captured_exception) {
     for (const auto& hook : reverse_hooks) {
+      HookContext<ValueType> hook_ctx(
+          std::string(flag_key), flag_type, default_value, merged_context,
+          client_metadata, provider_metadata, hook_data_map[hook.get()]);
       try {
-        HookContext<ValueType> hook_ctx(
-            std::string(flag_key), flag_type, default_value, merged_context,
-            client_metadata, provider_metadata, hook_data_map[hook.get()]);
         hook->Error(hook_ctx, captured_exception, hints);
+      } catch (const std::exception& err) {
+        // evaluation must proceed
+        std::cerr << "[ERROR] Exception in error hook: " << err.what() << "\n";
       } catch (...) {
         // evaluation must proceed
+        std::cerr << "[ERROR] Unknown exception in error hook\n";
       }
     }
   }
@@ -164,13 +157,17 @@ class HookSupport {
           hook_data_map,
       const FlagEvaluationDetails<ValueType>& evaluation_details) {
     for (const auto& hook : reverse_hooks) {
+      HookContext<ValueType> hook_ctx(
+          std::string(flag_key), flag_type, default_value, merged_context,
+          client_metadata, provider_metadata, hook_data_map[hook.get()]);
       try {
-        HookContext<ValueType> hook_ctx(
-            std::string(flag_key), flag_type, default_value, merged_context,
-            client_metadata, provider_metadata, hook_data_map[hook.get()]);
         hook->Finally(hook_ctx, evaluation_details, hints);
+      } catch (const std::exception& err) {
+        // evaluation must proceed
+        std::cerr << "[ERROR] Exception in error hook: " << err.what() << "\n";
       } catch (...) {
         // evaluation must proceed
+        std::cerr << "[ERROR] Unknown exception in error hook\n";
       }
     }
   }

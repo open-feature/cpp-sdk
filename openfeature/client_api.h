@@ -21,10 +21,10 @@
 #include "openfeature/flag_type_value.h"
 #include "openfeature/general_hook.h"
 #include "openfeature/global_context_manager.h"
-#include "openfeature/global_hook_manager.h"
 #include "openfeature/hook_context.h"
 #include "openfeature/hook_data.h"
 #include "openfeature/hook_hints.h"
+#include "openfeature/hook_manager.h"
 #include "openfeature/hook_support.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
@@ -224,15 +224,13 @@ class ClientAPI : public Client {
       const std::optional<EvaluationContext>& invocation_ctx);
 
   template <typename ValueType, typename ProviderCallable>
-  void ResolveProvider(
+  bool ResolveProvider(
       const std::shared_ptr<FeatureProvider>& provider,
       const std::shared_ptr<FeatureProviderStatusManager>& manager,
       ProviderStatus provider_status, const EvaluationContext& merged_context,
       std::string_view flag_key, ProviderCallable& provider_call,
       std::unique_ptr<FlagEvaluationDetails<ValueType>>& evaluation_details,
-      std::optional<ErrorCode>& error_code, std::string& error_message,
-      std::unique_ptr<std::exception>& captured_exception,
-      bool& has_error) const;
+      std::optional<ErrorCode>& error_code, std::string& error_message) const;
 
   ProviderRepository& provider_repository_;
   std::string domain_;

@@ -21,8 +21,19 @@ cc_test(
         ":mock_feature_provider",
         "//openfeature:client_api",
         "//openfeature:flag_evaluation_details",
-        "//openfeature:global_hook_manager",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "hook_support_test",
+    srcs = ["hook_support_test.cpp"],
+    deps = [
+        ":mock_feature_provider",
+        "//openfeature:client_api",
+        "//openfeature:flag_evaluation_details",
         "//openfeature:hook",
+        "//openfeature:hook_manager",
         "//openfeature:hook_support",
         "@googletest//:gtest_main",
     ],

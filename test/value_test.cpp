@@ -37,6 +37,7 @@ constexpr int64_t kRoundDownExpected = 123LL;
 constexpr int64_t kExpectedRoundedUp6 = 6LL;
 constexpr int64_t kExpectedNegative5 = -5LL;
 constexpr int64_t kExpectedNegative6 = -6LL;
+constexpr int kListItem42 = 42;
 
 constexpr double kTestDouble = 123.45;
 constexpr double kTestDouble123 = 123.0;

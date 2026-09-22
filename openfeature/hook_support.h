@@ -134,8 +134,12 @@ class HookSupport {
           client_metadata, provider_metadata, hook_data_map[hook.get()]);
       try {
         hook->Error(hook_ctx, captured_exception, hints);
+      } catch (const std::exception& err) {
+        // evaluation must proceed
+        std::cerr << "[ERROR] Exception in error hook: " << err.what() << "\n";
       } catch (...) {
         // evaluation must proceed
+        std::cerr << "[ERROR] Unknown exception in error hook\n";
       }
     }
   }
@@ -158,8 +162,12 @@ class HookSupport {
           client_metadata, provider_metadata, hook_data_map[hook.get()]);
       try {
         hook->Finally(hook_ctx, evaluation_details, hints);
+      } catch (const std::exception& err) {
+        // evaluation must proceed
+        std::cerr << "[ERROR] Exception in error hook: " << err.what() << "\n";
       } catch (...) {
         // evaluation must proceed
+        std::cerr << "[ERROR] Unknown exception in error hook\n";
       }
     }
   }

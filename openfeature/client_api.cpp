@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "openfeature/exceptions/open_feature_exceptions.h"
 #include "openfeature/flag_metadata.h"
 #include "openfeature/flag_type_value.h"
 #include "openfeature/global_context_manager.h"
@@ -541,7 +542,8 @@ std::unique_ptr<ResolutionDetailsType> ClientAPI::EvaluateFlag(
 
   // Error stage
   if (has_error) {
-    std::runtime_error error(error_message);
+    OpenFeatureException error(error_code.value_or(ErrorCode::kGeneral),
+                               error_message);
     HookSupport::ExecuteErrorHooks(
         reverse_hooks, flag_key, flag_type, default_value, merged_context,
         client_metadata, provider_metadata, hints, hook_data_map, error);

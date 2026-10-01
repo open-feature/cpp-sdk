@@ -121,6 +121,7 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         ":value",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -373,5 +374,6 @@ cc_library(
         ":flag_metadata",
         ":reason",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/time",
     ],
 )

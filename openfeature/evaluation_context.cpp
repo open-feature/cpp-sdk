@@ -1,9 +1,9 @@
 #include "evaluation_context.h"
 
-#include <iomanip>
 #include <ostream>
 #include <sstream>
 
+#include "absl/strings/escaping.h"
 #include "openfeature/value.h"
 
 namespace openfeature {
@@ -70,7 +70,8 @@ std::string EvaluationContext::ToString() const {
   string_stream << "{";
   bool first = true;
   if (auto key = GetTargetingKey(); key.has_value()) {
-    string_stream << std::quoted("targeting_key") << ": " << std::quoted(*key);
+    string_stream << "\"targeting_key\": \"" << absl::Utf8SafeCEscape(*key)
+                  << "\"";
     first = false;
   }
   for (const auto& [attr_key, attr_value] : GetAttributes()) {
@@ -78,10 +79,12 @@ std::string EvaluationContext::ToString() const {
       string_stream << ", ";
     }
     first = false;
-    string_stream << std::quoted(attr_key) << ": ";
+    string_stream << "\"" << absl::Utf8SafeCEscape(attr_key) << "\": ";
     if (attr_value.type() == typeid(std::string)) {
-      string_stream << std::quoted(
-          std::any_cast<const std::string&>(attr_value));
+      string_stream << "\""
+                    << absl::Utf8SafeCEscape(
+                           std::any_cast<const std::string&>(attr_value))
+                    << "\"";
     } else if (attr_value.type() == typeid(bool)) {
       string_stream << (std::any_cast<bool>(attr_value) ? "true" : "false");
     } else if (attr_value.type() == typeid(int)) {

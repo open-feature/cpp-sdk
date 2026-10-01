@@ -24,8 +24,12 @@ using LogCallback =
 // error stages, respectively.
 class LoggingHook : public GeneralHook {
  public:
-  explicit LoggingHook(bool include_eval_context = false,
-                       LogCallback logger = nullptr);
+  // Constructs a LoggingHook.
+  // If `logger` is nullptr, a default logger is used that writes error logs to
+  // std::cerr and debug logs to std::cout (filtered by `default_log_level`).
+  explicit LoggingHook(LogCallback logger = nullptr,
+                       bool include_eval_context = false,
+                       LogLevel default_log_level = LogLevel::kError);
 
   std::optional<EvaluationContext> Before(const GeneralHookContext& ctx,
                                           const HookHints& hints) override;

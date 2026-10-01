@@ -1,11 +1,12 @@
 #include "openfeature/value.h"
 
 #include <cmath>
-#include <iomanip>
 #include <ostream>
 #include <sstream>
 
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/time/time.h"
 
 namespace openfeature {
 
@@ -202,7 +203,7 @@ namespace {
 
 void FormatList(std::ostream& stream, const std::vector<Value>* list) {
   if (list == nullptr) {
-    stream << "[]";
+    stream << "null";
     return;
   }
   stream << "[";
@@ -218,7 +219,7 @@ void FormatList(std::ostream& stream, const std::vector<Value>* list) {
 void FormatStructure(std::ostream& stream,
                      const std::map<std::string, Value>* map) {
   if (map == nullptr) {
-    stream << "{}";
+    stream << "null";
     return;
   }
   stream << "{";
@@ -228,38 +229,44 @@ void FormatStructure(std::ostream& stream,
       stream << ", ";
     }
     first = false;
-    stream << std::quoted(key) << ": " << value;
+    stream << "\"" << absl::Utf8SafeCEscape(key) << "\": " << value;
   }
   stream << "}";
 }
 
+struct ValueFormatter {
+  std::ostream& stream;
+
+  void operator()(std::monostate) const { stream << "null"; }
+  void operator()(bool val) const { stream << (val ? "true" : "false"); }
+  void operator()(int64_t val) const { stream << absl::StrCat(val); }
+  void operator()(double val) const { stream << absl::StrCat(val); }
+  void operator()(const std::string& val) const {
+    stream << "\"" << absl::Utf8SafeCEscape(val) << "\"";
+  }
+  void operator()(std::chrono::system_clock::time_point val) const {
+    stream << "\""
+           << absl::FormatTime(absl::RFC3339_full, absl::FromChrono(val),
+                               absl::UTCTimeZone())
+           << "\"";
+  }
+  void operator()(const std::unique_ptr<std::vector<Value>>& val) const {
+    FormatList(stream, val.get());
+  }
+  void operator()(
+      const std::unique_ptr<std::map<std::string, Value>>& val) const {
+    FormatStructure(stream, val.get());
+  }
+  // Fallback for any other type not explicitly listed above:
+  template <typename T>
+  void operator()(const T&) const = delete;
+};
+
 }  // namespace
 
 std::ostream& operator<<(std::ostream& output_stream, const Value& value) {
-  if (value.IsNull()) {
-    return output_stream << "null";
-  }
-  if (value.IsBool()) {
-    return output_stream << (value.AsBool().value() ? "true" : "false");
-  }
-  if (std::holds_alternative<int64_t>(value.inner_value_)) {
-    return output_stream << absl::StrCat(std::get<int64_t>(value.inner_value_));
-  }
-  if (std::holds_alternative<double>(value.inner_value_)) {
-    return output_stream << absl::StrCat(std::get<double>(value.inner_value_));
-  }
-  if (value.IsString()) {
-    return output_stream << std::quoted(value.AsString().value());
-  }
-  if (value.IsList()) {
-    FormatList(output_stream, value.AsList());
-    return output_stream;
-  }
-  if (value.IsStructure()) {
-    FormatStructure(output_stream, value.AsStructure());
-    return output_stream;
-  }
-  return output_stream << "\"<unknown>\"";
+  std::visit(ValueFormatter{output_stream}, value.inner_value_);
+  return output_stream;
 }
 std::string Value::ToString() const {
   std::ostringstream stream;

@@ -433,12 +433,15 @@ TEST(ValueTest, ToStringAndStreamOperator) {
   EXPECT_EQ(Value(kTestDouble1e9).ToString(), "1e-09");
   // String
   EXPECT_EQ(Value("hello").ToString(), "\"hello\"");
+  EXPECT_EQ(Value("hello\n\"world\"").ToString(), "\"hello\\n\\\"world\\\"\"");
   // List
   std::vector<Value> list = {Value("item1"), Value(kListItem42), Value(true)};
   EXPECT_EQ(Value(list).ToString(), "[\"item1\", 42, true]");
   // Structure / Map
   std::map<std::string, Value> map = {{"key", Value("value")}};
   EXPECT_EQ(Value(map).ToString(), "{\"key\": \"value\"}");
+  std::map<std::string, Value> escaped_map = {{"key\n1", Value("val\n1")}};
+  EXPECT_EQ(Value(escaped_map).ToString(), "{\"key\\n1\": \"val\\n1\"}");
   // Stream operator <<
   std::ostringstream stream;
   stream << Value("stream_test");

@@ -224,5 +224,15 @@ TEST_F(EvaluationContextTest, ToStringAndStreamOperator) {
   std::ostringstream stream;
   stream << key_ctx;
   EXPECT_EQ(stream.str(), "{\"targeting_key\": \"user-123\"}");
+
+  // Escaping special characters
+  EvaluationContext escaped_ctx =
+      EvaluationContext::Builder()
+          .WithTargetingKey("user\n123")
+          .WithAttribute("key\n1", std::string("val\n\"1\""))
+          .Build();
+  EXPECT_EQ(
+      escaped_ctx.ToString(),
+      "{\"targeting_key\": \"user\\n123\", \"key\\n1\": \"val\\n\\\"1\\\"\"}");
 }
 }  // namespace openfeature

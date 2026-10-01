@@ -26,5 +26,6 @@ cc_library(
         "//openfeature:hook_hints",
         "//openfeature:reason",
         "//openfeature:value",
+        "@abseil-cpp//absl/strings",
     ],
 )

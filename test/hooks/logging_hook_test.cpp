@@ -79,7 +79,7 @@ class LoggingHookTest : public ::testing::Test {
 
 TEST_F(LoggingHookTest, BeforeStageLogsWithoutContextByDefault) {
   std::vector<LogEntry> logs;
-  LoggingHook hook(false, CreateCapturingLogger(logs));
+  LoggingHook hook(CreateCapturingLogger(logs), false, LogLevel::kError);
 
   BoolHookContext ctx(std::string(kBoolFlagKey), FlagValueType::kBoolean,
                       kDefaultBoolValue, context_, client_metadata_,
@@ -105,7 +105,7 @@ TEST_F(LoggingHookTest, BeforeStageLogsWithoutContextByDefault) {
 
 TEST_F(LoggingHookTest, BeforeStageLogsWithContextWhenOptedIn) {
   std::vector<LogEntry> logs;
-  LoggingHook hook(true, CreateCapturingLogger(logs));
+  LoggingHook hook(CreateCapturingLogger(logs), true, LogLevel::kError);
 
   BoolHookContext ctx(std::string(kBoolFlagKey), FlagValueType::kBoolean,
                       kDefaultBoolValue, context_, client_metadata_,
@@ -122,7 +122,7 @@ TEST_F(LoggingHookTest, BeforeStageLogsWithContextWhenOptedIn) {
 
 TEST_F(LoggingHookTest, AfterStageLogsEvaluationOutcome) {
   std::vector<LogEntry> logs;
-  LoggingHook hook(false, CreateCapturingLogger(logs));
+  LoggingHook hook(CreateCapturingLogger(logs), false, LogLevel::kError);
 
   StringHookContext ctx(std::string(kStringFlagKey), FlagValueType::kString,
                         std::string(kDefaultStringValue), context_,
@@ -153,7 +153,7 @@ TEST_F(LoggingHookTest, AfterStageLogsEvaluationOutcome) {
 
 TEST_F(LoggingHookTest, AfterStageLogsWithContextWhenOptedIn) {
   std::vector<LogEntry> logs;
-  LoggingHook hook(true, CreateCapturingLogger(logs));
+  LoggingHook hook(CreateCapturingLogger(logs), true, LogLevel::kError);
 
   StringHookContext ctx(std::string(kStringFlagKey), FlagValueType::kString,
                         std::string(kDefaultStringValue), context_,
@@ -173,7 +173,7 @@ TEST_F(LoggingHookTest, AfterStageLogsWithContextWhenOptedIn) {
 
 TEST_F(LoggingHookTest, AfterStageLogsNullVariantWhenNotSet) {
   std::vector<LogEntry> logs;
-  LoggingHook hook(false, CreateCapturingLogger(logs));
+  LoggingHook hook(CreateCapturingLogger(logs), false, LogLevel::kError);
   StringHookContext ctx(std::string(kStringFlagKey), FlagValueType::kString,
                         std::string(kDefaultStringValue), context_,
                         client_metadata_, provider_metadata_, hook_data_);
@@ -189,7 +189,7 @@ TEST_F(LoggingHookTest, AfterStageLogsNullVariantWhenNotSet) {
 
 TEST_F(LoggingHookTest, ErrorStageLogsExceptionAtErrorLevel) {
   std::vector<LogEntry> logs;
-  LoggingHook hook(false, CreateCapturingLogger(logs));
+  LoggingHook hook(CreateCapturingLogger(logs), false, LogLevel::kError);
 
   IntHookContext ctx(std::string(kIntFlagKey), FlagValueType::kInteger,
                      kDefaultIntValue, context_, client_metadata_,
@@ -211,7 +211,7 @@ TEST_F(LoggingHookTest, ErrorStageLogsExceptionAtErrorLevel) {
 
 TEST_F(LoggingHookTest, ErrorStageLogsWithContextWhenOptedIn) {
   std::vector<LogEntry> logs;
-  LoggingHook hook(true, CreateCapturingLogger(logs));
+  LoggingHook hook(CreateCapturingLogger(logs), true, LogLevel::kError);
 
   EvaluationContext custom_context =
       EvaluationContext::Builder()
@@ -249,14 +249,13 @@ TEST_F(LoggingHookTest, ErrorStageLogsWithContextWhenOptedIn) {
 
 TEST_F(LoggingHookTest, ErrorStageLogsGeneralErrorForStandardException) {
   std::vector<LogEntry> logs;
-  LoggingHook hook(false, CreateCapturingLogger(logs));
+  LoggingHook hook(CreateCapturingLogger(logs), false, LogLevel::kError);
   IntHookContext ctx(std::string(kIntFlagKey), FlagValueType::kInteger,
                      kDefaultIntValue, context_, client_metadata_,
                      provider_metadata_, hook_data_);
   std::runtime_error error("unexpected network failure");
   hook.Error(ctx, error, hints_);
 
-  ASSERT_EQ(logs.size(), 1);
   ASSERT_EQ(logs.size(), 1);
   EXPECT_EQ(logs[0].level, LogLevel::kError);
   EXPECT_NE(logs[0].message.find("stage=error"), std::string::npos);
@@ -268,7 +267,7 @@ TEST_F(LoggingHookTest, ErrorStageLogsGeneralErrorForStandardException) {
 
 TEST_F(LoggingHookTest, FinallyStageIsNoOp) {
   std::vector<LogEntry> logs;
-  LoggingHook hook(true, CreateCapturingLogger(logs));
+  LoggingHook hook(CreateCapturingLogger(logs), true, LogLevel::kError);
 
   BoolHookContext ctx(std::string(kBoolFlagKey), FlagValueType::kBoolean,
                       kDefaultBoolValue, context_, client_metadata_,
@@ -290,6 +289,19 @@ TEST_F(LoggingHookTest, DefaultConstructorInitializesSuccessfully) {
                         provider_metadata_, hook_data_);
     default_hook.Before(ctx, hints_);
   });
+}
+
+TEST_F(LoggingHookTest, LogLevelFiltering) {
+  LoggingHook debug_hook(nullptr, true, LogLevel::kDebug);
+  BoolHookContext ctx(std::string(kBoolFlagKey), FlagValueType::kBoolean,
+                      kDefaultBoolValue, context_, client_metadata_,
+                      provider_metadata_, hook_data_);
+
+  testing::internal::CaptureStdout();
+  debug_hook.Before(ctx, hints_);
+  std::string stdout_output = testing::internal::GetCapturedStdout();
+  EXPECT_NE(stdout_output.find("[DEBUG]"), std::string::npos);
+  EXPECT_NE(stdout_output.find("stage=before"), std::string::npos);
 }
 
 }  // namespace openfeature

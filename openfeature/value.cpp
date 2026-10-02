@@ -237,7 +237,7 @@ void FormatStructure(std::ostream& stream,
 struct ValueFormatter {
   std::ostream& stream;
 
-  void operator()(std::monostate) const { stream << "null"; }
+  void operator()(std::monostate /*unused*/) const { stream << "null"; }
   void operator()(bool val) const { stream << (val ? "true" : "false"); }
   void operator()(int64_t val) const { stream << absl::StrCat(val); }
   void operator()(double val) const { stream << absl::StrCat(val); }
@@ -259,7 +259,7 @@ struct ValueFormatter {
   }
   // Fallback for any other type not explicitly listed above:
   template <typename T>
-  void operator()(const T&) const = delete;
+  void operator()(const T& /*unused*/) const = delete;
 };
 
 }  // namespace

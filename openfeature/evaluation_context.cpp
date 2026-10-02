@@ -70,7 +70,7 @@ std::string EvaluationContext::ToString() const {
   string_stream << "{";
   bool first = true;
   if (auto key = GetTargetingKey(); key.has_value()) {
-    string_stream << "\"targeting_key\": \"" << absl::Utf8SafeCEscape(*key)
+    string_stream << R"("targeting_key": ")" << absl::Utf8SafeCEscape(*key)
                   << "\"";
     first = false;
   }

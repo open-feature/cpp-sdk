@@ -1,13 +1,17 @@
 #ifndef CPP_SDK_INCLUDE_OPENFEATURE_REASON_H_
 #define CPP_SDK_INCLUDE_OPENFEATURE_REASON_H_
 
+#include <cstdint>
+#include <ostream>
+#include <string_view>
+
 namespace openfeature {
 
 // Represents the reason for a particular flag evaluation result.
 //
 // The Reason enum provides a standardized explanation for the
 // value returned by a flag evaluation.
-enum class Reason {
+enum class Reason : std::uint8_t {
   kStatic,   // The resolved value is static (no dynamic evaluation).
   kDefault,  // The resolved value fell back to a pre-configured value (no
              // dynamic evaluation occurred or dynamic evaluation yielded no
@@ -23,8 +27,32 @@ enum class Reason {
   kError      // The resolved value was the result of an error.
 };
 
-// TODO: Implement a function to convert Reason to string representation if
-// needed.
+constexpr std::string_view ToString(Reason reason) noexcept {
+  switch (reason) {
+    case Reason::kStatic:
+      return "STATIC";
+    case Reason::kDefault:
+      return "DEFAULT";
+    case Reason::kTargetingMatch:
+      return "TARGETING_MATCH";
+    case Reason::kSplit:
+      return "SPLIT";
+    case Reason::kCached:
+      return "CACHED";
+    case Reason::kDisabled:
+      return "DISABLED";
+    case Reason::kUnknown:
+      return "UNKNOWN";
+    case Reason::kStale:
+      return "STALE";
+    case Reason::kError:
+      return "ERROR";
+  }
+  return "UNKNOWN";
+}
+inline std::ostream& operator<<(std::ostream& output_stream, Reason reason) {
+  return output_stream << ToString(reason);
+}
 
 }  // namespace openfeature
 

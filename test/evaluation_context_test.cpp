@@ -17,7 +17,6 @@ class EvaluationContextTest : public ::testing::Test {
   }
 };
 
-// Test that a context built with no properties returns expected defaults.
 TEST_F(EvaluationContextTest, DefaultBuilderCreatesEmptyContext) {
   EvaluationContext ctx = EvaluationContext::Builder().Build();
 
@@ -29,7 +28,6 @@ TEST_F(EvaluationContextTest, DefaultBuilderCreatesEmptyContext) {
   EXPECT_TRUE(ctx.GetAttributes().empty());
 }
 
-// Test setting and retrieving the targeting key.
 TEST_F(EvaluationContextTest, BuilderSetsTargetingKey) {
   std::string expected_key = "user-12345";
   EvaluationContext ctx =
@@ -40,7 +38,6 @@ TEST_F(EvaluationContextTest, BuilderSetsTargetingKey) {
   EXPECT_EQ(key.value(), expected_key);
 }
 
-// Test setting and retrieving various attribute types.
 TEST_F(EvaluationContextTest, BuilderSetsAttributesOfVariousTypes) {
   constexpr int kIntValue = 42;
   constexpr double kDoubleValue = 3.14;
@@ -72,7 +69,6 @@ TEST_F(EvaluationContextTest, BuilderSetsAttributesOfVariousTypes) {
   EXPECT_DOUBLE_EQ(std::any_cast<double>(*double_val), kDoubleValue);
 }
 
-// Test behavior when requesting a non-existent attribute.
 TEST_F(EvaluationContextTest, GetValueReturnsNullForMissingKey) {
   EvaluationContext ctx =
       EvaluationContext::Builder().WithAttribute("exists", 1).Build();
@@ -81,8 +77,6 @@ TEST_F(EvaluationContextTest, GetValueReturnsNullForMissingKey) {
   EXPECT_EQ(ctx.GetValue("does_not_exist"), nullptr);
 }
 
-// Test that setting the same attribute key twice overwrites the previous value
-// within the same builder chain.
 TEST_F(EvaluationContextTest, BuilderOverwritesDuplicateKeys) {
   constexpr int kInitialValue = 100;
   constexpr int kOverwrittenValue = 200;
@@ -96,7 +90,6 @@ TEST_F(EvaluationContextTest, BuilderOverwritesDuplicateKeys) {
   EXPECT_EQ(std::any_cast<int>(*val), kOverwrittenValue);
 }
 
-// Test merging attributes with precedence.
 TEST_F(EvaluationContextTest, MergeAttributesWithPrecedence) {
   constexpr int kCommonVal1 = 1;
   constexpr int kCommonVal2 = 2;
@@ -120,8 +113,6 @@ TEST_F(EvaluationContextTest, MergeAttributesWithPrecedence) {
   EXPECT_EQ(std::any_cast<std::string>(*merged.GetValue("ctx2")), "B");
 }
 
-// Test that the last context in the list with a valid and non-empty targeting
-// key remains as the final result.
 TEST_F(EvaluationContextTest, MergeTargetingKeyWithPrecedence) {
   EvaluationContext ctx_no_key = EvaluationContext::Builder().Build();
   EvaluationContext ctx_key_a =
@@ -141,7 +132,6 @@ TEST_F(EvaluationContextTest, MergeTargetingKeyWithPrecedence) {
   EXPECT_EQ(res3.GetTargetingKey().value(), "KeyB");
 }
 
-// Test Merging: Complex scenario with attributes and keys.
 TEST_F(EvaluationContextTest, MergeComplexScenario) {
   constexpr int kRequestId = 123;
   EvaluationContext base = EvaluationContext::Builder()
@@ -166,7 +156,6 @@ TEST_F(EvaluationContextTest, MergeComplexScenario) {
   EXPECT_EQ(std::any_cast<int>(*merged.GetValue("request_id")), kRequestId);
 }
 
-// The merged context should only reflect non-null inputs.
 TEST_F(EvaluationContextTest, MergeIgnoresNullPointers) {
   EvaluationContext ctx =
       EvaluationContext::Builder().WithTargetingKey("valid").Build();
@@ -176,7 +165,6 @@ TEST_F(EvaluationContextTest, MergeIgnoresNullPointers) {
   EXPECT_EQ(merged.GetTargetingKey().value(), "valid");
 }
 
-// Test that string literals and std::string are stored and retrieved correctly.
 TEST_F(EvaluationContextTest, StoresStringCorrectly) {
   EvaluationContext ctx_char =
       EvaluationContext::Builder().WithAttribute("k", "v").Build();
@@ -194,17 +182,18 @@ TEST_F(EvaluationContextTest, StoresStringCorrectly) {
   EXPECT_EQ(std::any_cast<std::string>(*val_str), "v");
 }
 
-TEST_F(EvaluationContextTest, ToStringAndStreamOperator) {
-  // Empty context
+TEST_F(EvaluationContextTest, ToStringEmptyContext) {
   EvaluationContext empty_ctx = EvaluationContext::Builder().Build();
   EXPECT_EQ(empty_ctx.ToString(), "{}");
+}
 
-  // Context with targeting key only
+TEST_F(EvaluationContextTest, ToStringWithTargetingKeyOnly) {
   EvaluationContext key_ctx =
       EvaluationContext::Builder().WithTargetingKey("user-123").Build();
   EXPECT_EQ(key_ctx.ToString(), "{\"targeting_key\": \"user-123\"}");
+}
 
-  // Context with targeting key and attributes
+TEST_F(EvaluationContextTest, ToStringWithTargetingKeyAndAttributes) {
   constexpr int kAttempts = 3;
   EvaluationContext full_ctx = EvaluationContext::Builder()
                                    .WithTargetingKey("user-123")
@@ -219,13 +208,17 @@ TEST_F(EvaluationContextTest, ToStringAndStreamOperator) {
   EXPECT_NE(full_str.find("\"env\": \"prod\""), std::string::npos);
   EXPECT_NE(full_str.find("\"authenticated\": true"), std::string::npos);
   EXPECT_NE(full_str.find("\"attempts\": 3"), std::string::npos);
+}
 
-  // Stream operator <<
+TEST_F(EvaluationContextTest, StreamOperatorFormatsContext) {
+  EvaluationContext key_ctx =
+      EvaluationContext::Builder().WithTargetingKey("user-123").Build();
   std::ostringstream stream;
   stream << key_ctx;
   EXPECT_EQ(stream.str(), "{\"targeting_key\": \"user-123\"}");
+}
 
-  // Escaping special characters
+TEST_F(EvaluationContextTest, ToStringEscapesSpecialCharacters) {
   EvaluationContext escaped_ctx =
       EvaluationContext::Builder()
           .WithTargetingKey("user\n123")

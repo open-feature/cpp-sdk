@@ -15,8 +15,6 @@ namespace openfeature {
 using namespace std::chrono_literals;
 
 namespace {
-
-// Test constants to avoid magic numbers
 constexpr int kTestInt = 456;
 constexpr int64_t kTestInt64 = 123LL;
 constexpr int64_t kExpectedInt64 = 456LL;
@@ -55,7 +53,6 @@ constexpr double kNegative55 = -5.5;
 constexpr double kTestDouble1e9 = 1e-9;
 
 constexpr size_t kExpectedListSize = 3;
-
 }  // namespace
 
 TEST(ValueTest, DefaultConstructorIsNull) {
@@ -109,7 +106,7 @@ TEST(ValueTest, DoubleConstructorAndAccessors) {
   EXPECT_FALSE(double_val.IsNull());
   EXPECT_TRUE(double_val.IsNumber());
   EXPECT_EQ(double_val.AsDouble(), kTestDouble);
-  EXPECT_EQ(double_val.AsInt(), kExpectedRoundedInt);  // Should round
+  EXPECT_EQ(double_val.AsInt(), kExpectedRoundedInt);
   EXPECT_FALSE(double_val.AsBool().has_value());
 
   Value double_round_up(kRoundUpInput);
@@ -305,14 +302,11 @@ TEST(ValueTest, AsNumberConversions) {
   EXPECT_EQ(double_val.AsDouble(), kTestDouble57);
 
   Value double_val_negative(kNegative53);
-  EXPECT_EQ(double_val_negative.AsInt(),
-            kExpectedNegative5);  // Rounds to nearest even on .5, otherwise
-                                  // standard rounding
+  EXPECT_EQ(double_val_negative.AsInt(), kExpectedNegative5);
   EXPECT_EQ(double_val_negative.AsDouble(), kNegative53);
 
   Value double_val_negative_half(kNegative55);
-  EXPECT_EQ(double_val_negative_half.AsInt(),
-            kExpectedNegative6);  // Rounds to nearest even
+  EXPECT_EQ(double_val_negative_half.AsInt(), kExpectedNegative6);
 }
 
 TEST(ValueTest, EqualityOperatorBasicTypes) {
@@ -420,29 +414,28 @@ TEST(ValueTest, MoveConstructorAndAssignmentDefaulted) {
 }
 
 TEST(ValueTest, ToStringAndStreamOperator) {
-  // Null
   EXPECT_EQ(Value().ToString(), "null");
-  // Boolean
+
   EXPECT_EQ(Value(true).ToString(), "true");
   EXPECT_EQ(Value(false).ToString(), "false");
-  // Numbers
+
   EXPECT_EQ(Value(static_cast<int>(kTestInt64)).ToString(), "123");
   EXPECT_EQ(Value(kExpectedInt64).ToString(), "456");
-  // Numbers (Doubles)
+
   EXPECT_EQ(Value(kTestDouble57).ToString(), "5.7");
   EXPECT_EQ(Value(kTestDouble1e9).ToString(), "1e-09");
-  // String
+
   EXPECT_EQ(Value("hello").ToString(), "\"hello\"");
   EXPECT_EQ(Value("hello\n\"world\"").ToString(), "\"hello\\n\\\"world\\\"\"");
-  // List
+
   std::vector<Value> list = {Value("item1"), Value(kListItem42), Value(true)};
   EXPECT_EQ(Value(list).ToString(), "[\"item1\", 42, true]");
-  // Structure / Map
+
   std::map<std::string, Value> map = {{"key", Value("value")}};
   EXPECT_EQ(Value(map).ToString(), "{\"key\": \"value\"}");
   std::map<std::string, Value> escaped_map = {{"key\n1", Value("val\n1")}};
   EXPECT_EQ(Value(escaped_map).ToString(), "{\"key\\n1\": \"val\\n1\"}");
-  // Stream operator <<
+
   std::ostringstream stream;
   stream << Value("stream_test");
   EXPECT_EQ(stream.str(), "\"stream_test\"");

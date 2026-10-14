@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "openfeature/evaluation_context.h"
-#include "openfeature/exceptions/open_feature_exceptions.h"
 #include "openfeature/flag_evaluation_details.h"
 #include "openfeature/flag_metadata.h"
 #include "openfeature/flag_type_value.h"
 #include "openfeature/hook_context.h"
 #include "openfeature/hook_data.h"
 #include "openfeature/hook_hints.h"
+#include "openfeature/hooks/hook_error.h"
 #include "openfeature/hooks/log_level.h"
 #include "openfeature/reason.h"
 #include "openfeature/value.h"
@@ -194,8 +194,7 @@ TEST_F(LoggingHookTest, ErrorStageLogsExceptionAtErrorLevel) {
   IntHookContext ctx(std::string(kIntFlagKey), FlagValueType::kInteger,
                      kDefaultIntValue, context_, client_metadata_,
                      provider_metadata_, hook_data_);
-  OpenFeatureException error(ErrorCode::kFlagNotFound,
-                             std::string(kErrorMessage));
+  HookError error{ErrorCode::kFlagNotFound, std::string(kErrorMessage)};
 
   hook.Error(ctx, error, hints_);
 
@@ -225,8 +224,7 @@ TEST_F(LoggingHookTest, ErrorStageLogsWithContextWhenOptedIn) {
   IntHookContext ctx(std::string(kIntFlagKey), FlagValueType::kInteger,
                      kDefaultIntValue, custom_context, client_metadata_,
                      provider_metadata_, hook_data_);
-  OpenFeatureException error(ErrorCode::kFlagNotFound,
-                             std::string(kErrorMessage));
+  HookError error{ErrorCode::kFlagNotFound, std::string(kErrorMessage)};
 
   hook.Error(ctx, error, hints_);
 
@@ -245,24 +243,6 @@ TEST_F(LoggingHookTest, ErrorStageLogsWithContextWhenOptedIn) {
             std::string::npos);
   EXPECT_NE(logs[0].message.find(kAttrValueVersion ? "true" : "false"),
             std::string::npos);
-}
-
-TEST_F(LoggingHookTest, ErrorStageLogsGeneralErrorForStandardException) {
-  std::vector<LogEntry> logs;
-  LoggingHook hook(CreateCapturingLogger(logs), false, LogLevel::kError);
-  IntHookContext ctx(std::string(kIntFlagKey), FlagValueType::kInteger,
-                     kDefaultIntValue, context_, client_metadata_,
-                     provider_metadata_, hook_data_);
-  std::runtime_error error("unexpected network failure");
-  hook.Error(ctx, error, hints_);
-
-  ASSERT_EQ(logs.size(), 1);
-  EXPECT_EQ(logs[0].level, LogLevel::kError);
-  EXPECT_NE(logs[0].message.find("stage=error"), std::string::npos);
-  EXPECT_NE(logs[0].message.find("error_code=\"GENERAL\""), std::string::npos);
-  EXPECT_NE(
-      logs[0].message.find("error_message=\"unexpected network failure\""),
-      std::string::npos);
 }
 
 TEST_F(LoggingHookTest, FinallyStageIsNoOp) {

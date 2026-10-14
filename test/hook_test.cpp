@@ -9,12 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "openfeature/error_code.h"
 #include "openfeature/evaluation_context.h"
 #include "openfeature/flag_metadata.h"
 #include "openfeature/general_flag_evaluation_details.h"
 #include "openfeature/general_hook.h"
 #include "openfeature/hook_context.h"
 #include "openfeature/hook_hints.h"
+#include "openfeature/hooks/hook_error.h"
 #include "openfeature/value.h"
 
 namespace openfeature {
@@ -48,11 +50,11 @@ class TrackingHook : public Hook<T> {
     }
   }
 
-  void Error(const HookContext<T>& ctx, const std::exception& error,
+  void Error(const HookContext<T>& ctx, const HookError& error,
              const HookHints& hints) override {
     error_called = true;
     last_flag_key = ctx.GetFlagKey();
-    last_error_message = error.what();
+    last_error_message = error.error_message;
     if (auto it_hints = hints.find("error_hint"); it_hints != hints.end()) {
       last_hint_value = std::any_cast<std::string>(it_hints->second);
     }
@@ -191,7 +193,7 @@ TEST_F(HookTest, DefaultAfterErrorAndFinallyAreNoOpsWithoutThrowing) {
   BoolFlagEvaluationDetails details("bool-flag", kBoolValue, Reason::kStatic,
                                     std::nullopt, FlagMetadata());
   HookHints hints;
-  std::runtime_error error("simulated error");
+  HookError error{ErrorCode::kGeneral, "simulated error"};
 
   EXPECT_NO_THROW(hook.After(ctx, details, hints));
   EXPECT_NO_THROW(hook.Error(ctx, error, hints));
@@ -248,7 +250,7 @@ TEST_F(HookTest, OverriddenErrorReceivesExceptionAndHints) {
   IntHookContext ctx("int-flag", FlagValueType::kInteger, kIntValue,
                      initial_ctx_, client_metadata_, provider_metadata_,
                      hook_data_);
-  std::runtime_error error("provider timeout error");
+  HookError error{ErrorCode::kGeneral, "provider timeout error"};
   HookHints hints{{"error_hint", std::any(std::string("error-data"))}};
 
   hook.Error(ctx, error, hints);

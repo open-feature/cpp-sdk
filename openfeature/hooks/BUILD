@@ -5,6 +5,15 @@ package(
 )
 
 cc_library(
+    name = "hook_error",
+    hdrs = ["hook_error.h"],
+    include_prefix = "openfeature/hooks",
+    deps = [
+        "//openfeature:error_code",
+    ],
+)
+
+cc_library(
     name = "log_level",
     hdrs = ["log_level.h"],
     include_prefix = "openfeature/hooks",
@@ -16,10 +25,10 @@ cc_library(
     hdrs = ["logging_hook.h"],
     include_prefix = "openfeature/hooks",
     deps = [
+        ":hook_error",
         ":log_level",
         "//openfeature:error_code",
         "//openfeature:evaluation_context",
-        "//openfeature/exceptions:open_feature_exceptions",
         "//openfeature:general_flag_evaluation_details",
         "//openfeature:general_hook",
         "//openfeature:general_hook_context",

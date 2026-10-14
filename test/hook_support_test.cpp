@@ -29,6 +29,7 @@
 #include "openfeature/hook_context.h"
 #include "openfeature/hook_hints.h"
 #include "openfeature/hook_manager.h"
+#include "openfeature/hooks/hook_error.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider_repository.h"
 #include "openfeature/provider_status.h"
@@ -93,7 +94,7 @@ class OrderTrackingHook : public openfeature::BoolHook {
   }
 
   void Error(const openfeature::HookContext<bool>& /*ctx*/,
-             const std::exception& /*exception*/,
+             const openfeature::HookError& /*error*/,
              const openfeature::HookHints& /*hints*/) override {
     execution_log_.emplace_back("error:" + name_);
   }
@@ -246,7 +247,7 @@ class ThrowingHook : public openfeature::BoolHook {
   }
 
   void Error(const openfeature::HookContext<bool>& /*ctx*/,
-             const std::exception& /*exception*/,
+             const openfeature::HookError& /*error*/,
              const openfeature::HookHints& /*hints*/) override {
     execution_log_.emplace_back("error");
     if (stage_ == ThrowStage::kError) {

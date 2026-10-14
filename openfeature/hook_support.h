@@ -20,6 +20,7 @@
 #include "openfeature/hook_data.h"
 #include "openfeature/hook_hints.h"
 #include "openfeature/hook_manager.h"
+#include "openfeature/hooks/hook_error.h"
 #include "openfeature/metadata.h"
 #include "openfeature/provider.h"
 #include "openfeature/reason.h"
@@ -127,13 +128,13 @@ class HookSupport {
       const HookHints& hints,
       std::unordered_map<const GeneralHook*, std::shared_ptr<HookData>>&
           hook_data_map,
-      const std::exception& captured_exception) {
+      const HookError& captured_error) {
     for (const auto& hook : reverse_hooks) {
       HookContext<ValueType> hook_ctx(
           std::string(flag_key), flag_type, default_value, merged_context,
           client_metadata, provider_metadata, hook_data_map[hook.get()]);
       try {
-        hook->Error(hook_ctx, captured_exception, hints);
+        hook->Error(hook_ctx, captured_error, hints);
       } catch (const std::exception& err) {
         // evaluation must proceed
         std::cerr << "[ERROR] Exception in error hook: " << err.what() << "\n";

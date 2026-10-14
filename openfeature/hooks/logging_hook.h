@@ -11,6 +11,7 @@
 #include "openfeature/general_hook.h"
 #include "openfeature/general_hook_context.h"
 #include "openfeature/hook_hints.h"
+#include "openfeature/hooks/hook_error.h"
 #include "openfeature/hooks/log_level.h"
 
 namespace openfeature {
@@ -36,7 +37,7 @@ class LoggingHook : public GeneralHook {
   void After(const GeneralHookContext& ctx,
              const GeneralFlagEvaluationDetails& details,
              const HookHints& hints) override;
-  void Error(const GeneralHookContext& ctx, const std::exception& error,
+  void Error(const GeneralHookContext& ctx, const HookError& error,
              const HookHints& hints) override;
   void Finally(const GeneralHookContext& ctx,
                const GeneralFlagEvaluationDetails& details,

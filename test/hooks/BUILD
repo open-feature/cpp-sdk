@@ -13,7 +13,7 @@ cc_test(
         "//openfeature:hook_hints",
         "//openfeature:reason",
         "//openfeature:value",
-        "//openfeature/exceptions:open_feature_exceptions",
+        "//openfeature/hooks:hook_error",
         "//openfeature/hooks:log_level",
         "//openfeature/hooks:logging_hook",
         "@googletest//:gtest_main",

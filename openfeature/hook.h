@@ -13,6 +13,7 @@
 #include "openfeature/general_hook_context.h"
 #include "openfeature/hook_context.h"
 #include "openfeature/hook_hints.h"
+#include "openfeature/hooks/hook_error.h"
 #include "openfeature/value.h"
 
 namespace openfeature {
@@ -56,7 +57,7 @@ class Hook : public GeneralHook {
 
   // Runs if an error occurs during flag evaluation or in `Before`/`After`
   // stages.
-  void Error(const GeneralHookContext& ctx, const std::exception& error,
+  void Error(const GeneralHookContext& ctx, const HookError& error,
              const HookHints& hints) final {
     if (auto* typed_ctx = dynamic_cast<const HookContext<T>*>(&ctx)) {
       Error(*typed_ctx, error, hints);
@@ -84,7 +85,7 @@ class Hook : public GeneralHook {
   virtual void After(const HookContext<T>& ctx,
                      const FlagEvaluationDetails<T>& details,
                      const HookHints& hints) {}
-  virtual void Error(const HookContext<T>& ctx, const std::exception& error,
+  virtual void Error(const HookContext<T>& ctx, const HookError& error,
                      const HookHints& hints) {}
   virtual void Finally(const HookContext<T>& ctx,
                        const FlagEvaluationDetails<T>& details,

@@ -39,6 +39,7 @@ cc_library(
         ":general_hook_context",
         ":hook_hints",
         ":value",
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -74,6 +75,7 @@ cc_library(
         ":metadata",
         ":provider",
         ":reason",
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -104,7 +106,7 @@ cc_library(
         ":reason",
         ":resolution_details",
         ":value",
-        "//openfeature/exceptions:open_feature_exceptions"
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -253,6 +255,7 @@ cc_library(
         ":hook_context",
         ":hook_hints",
         ":value",
+        "//openfeature/hooks:hook_error",
     ],
 )
 

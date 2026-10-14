@@ -10,11 +10,11 @@
 
 #include "absl/strings/escaping.h"
 #include "openfeature/evaluation_context.h"
-#include "openfeature/exceptions/open_feature_exceptions.h"
 #include "openfeature/general_flag_evaluation_details.h"
 #include "openfeature/general_hook.h"
 #include "openfeature/general_hook_context.h"
 #include "openfeature/hook_hints.h"
+#include "openfeature/hooks/hook_error.h"
 #include "openfeature/hooks/log_level.h"
 #include "openfeature/reason.h"
 #include "openfeature/value.h"
@@ -101,12 +101,8 @@ void LoggingHook::After(const GeneralHookContext& ctx,
   Log(LogLevel::kDebug, log_stream.str());
 }
 
-void LoggingHook::Error(const GeneralHookContext& ctx,
-                        const std::exception& error, const HookHints& hints) {
-  ErrorCode code = ErrorCode::kGeneral;
-  if (const auto* of_err = dynamic_cast<const OpenFeatureException*>(&error)) {
-    code = of_err->GetErrorCode();
-  }
+void LoggingHook::Error(const GeneralHookContext& ctx, const HookError& error,
+                        const HookHints& hints) {
   std::ostringstream log_stream;
   log_stream << "stage=error"
              << ", domain=\""
@@ -116,10 +112,10 @@ void LoggingHook::Error(const GeneralHookContext& ctx,
              << ", flag_key=\"" << absl::Utf8SafeCEscape(ctx.GetFlagKey())
              << "\""
              << ", default_value=" << ctx.GetDefaultValueAsValue().ToString()
-             << ", error_code=\"" << absl::Utf8SafeCEscape(ToString(code))
-             << "\""
-             << ", error_message=\"" << absl::Utf8SafeCEscape(error.what())
-             << "\"";
+             << ", error_code=\""
+             << absl::Utf8SafeCEscape(ToString(error.error_code)) << "\""
+             << ", error_message=\""
+             << absl::Utf8SafeCEscape(error.error_message) << "\"";
 
   if (include_eval_context_) {
     log_stream << ", evaluation_context="

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.5](https://github.com/open-feature/cpp-sdk/compare/v0.1.4...v0.1.5) (2026-10-16)
+
+
+### Features
+
+* Create GlobalHookManager. ([#134](https://github.com/open-feature/cpp-sdk/issues/134)) ([a1bb723](https://github.com/open-feature/cpp-sdk/commit/a1bb7234f9322d42dbe6ca684cf8c295d7729644))
+* hook execution lifecycle ([#136](https://github.com/open-feature/cpp-sdk/issues/136)) ([b6e7086](https://github.com/open-feature/cpp-sdk/commit/b6e70866c35f4abfdf9f1487b169d51655f61e57))
+* Logging Hook ([#139](https://github.com/open-feature/cpp-sdk/issues/139)) ([d085278](https://github.com/open-feature/cpp-sdk/commit/d085278fdc8e61537d9ca7f2813c262a81c65b86))
+
 ## [0.1.4](https://github.com/open-feature/cpp-sdk/compare/v0.1.3...v0.1.4) (2026-08-24)
 
 

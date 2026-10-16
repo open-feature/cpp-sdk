@@ -35,6 +35,7 @@ cc_test(
         "//openfeature:hook",
         "//openfeature:hook_manager",
         "//openfeature:hook_support",
+        "//openfeature/hooks:hook_error",
         "@googletest//:gtest_main",
     ],
 )
@@ -162,12 +163,14 @@ cc_test(
     srcs = ["hook_test.cpp"],
     deps = [
         "//openfeature:general_hook",
+        "//openfeature:error_code",
         "//openfeature:evaluation_context",
         "//openfeature:flag_evaluation_details",
         "//openfeature:flag_metadata",
         "//openfeature:hook",
         "//openfeature:hook_context",
         "//openfeature:hook_hints",
+        "//openfeature/hooks:hook_error",
         "//openfeature:value",
         "@googletest//:gtest_main",
     ],

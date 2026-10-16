@@ -1,6 +1,12 @@
 #include "openfeature/value.h"
 
 #include <cmath>
+#include <ostream>
+#include <sstream>
+
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+#include "absl/time/time.h"
 
 namespace openfeature {
 
@@ -110,8 +116,7 @@ std::optional<int64_t> Value::AsInt() const {
     return *val;
   }
   if (const auto* val = std::get_if<double>(&inner_value_)) {
-    constexpr double kRoundingOffset = 0.5;
-    return static_cast<int64_t>(std::floor(*val + kRoundingOffset));
+    return static_cast<int64_t>(std::round(*val));
   }
   return std::nullopt;
 }
@@ -193,5 +198,80 @@ bool operator==(const Value& lhs, const Value& rhs) {
 }
 
 bool operator!=(const Value& lhs, const Value& rhs) { return !(lhs == rhs); }
+
+namespace {
+
+void FormatList(std::ostream& stream, const std::vector<Value>* list) {
+  if (list == nullptr) {
+    stream << "null";
+    return;
+  }
+  stream << "[";
+  for (size_t index = 0; index < list->size(); ++index) {
+    if (index > 0) {
+      stream << ", ";
+    }
+    stream << (*list)[index];
+  }
+  stream << "]";
+}
+
+void FormatStructure(std::ostream& stream,
+                     const std::map<std::string, Value>* map) {
+  if (map == nullptr) {
+    stream << "null";
+    return;
+  }
+  stream << "{";
+  bool first = true;
+  for (const auto& [key, value] : *map) {
+    if (!first) {
+      stream << ", ";
+    }
+    first = false;
+    stream << "\"" << absl::Utf8SafeCEscape(key) << "\": " << value;
+  }
+  stream << "}";
+}
+
+struct ValueFormatter {
+  std::ostream& stream;
+
+  void operator()(std::monostate /*unused*/) const { stream << "null"; }
+  void operator()(bool val) const { stream << (val ? "true" : "false"); }
+  void operator()(int64_t val) const { stream << absl::StrCat(val); }
+  void operator()(double val) const { stream << absl::StrCat(val); }
+  void operator()(const std::string& val) const {
+    stream << "\"" << absl::Utf8SafeCEscape(val) << "\"";
+  }
+  void operator()(std::chrono::system_clock::time_point val) const {
+    stream << "\""
+           << absl::FormatTime(absl::RFC3339_full, absl::FromChrono(val),
+                               absl::UTCTimeZone())
+           << "\"";
+  }
+  void operator()(const std::unique_ptr<std::vector<Value>>& val) const {
+    FormatList(stream, val.get());
+  }
+  void operator()(
+      const std::unique_ptr<std::map<std::string, Value>>& val) const {
+    FormatStructure(stream, val.get());
+  }
+  // Fallback for any other type not explicitly listed above:
+  template <typename T>
+  void operator()(const T& /*unused*/) const = delete;
+};
+
+}  // namespace
+
+std::ostream& operator<<(std::ostream& output_stream, const Value& value) {
+  std::visit(ValueFormatter{output_stream}, value.inner_value_);
+  return output_stream;
+}
+std::string Value::ToString() const {
+  std::ostringstream stream;
+  stream << *this;
+  return stream.str();
+}
 
 }  // namespace openfeature

@@ -1,5 +1,11 @@
 #include "evaluation_context.h"
 
+#include <ostream>
+#include <sstream>
+
+#include "absl/strings/escaping.h"
+#include "openfeature/value.h"
+
 namespace openfeature {
 
 EvaluationContext::EvaluationContext(std::optional<std::string> targeting_key,
@@ -57,6 +63,49 @@ EvaluationContext EvaluationContext::Merge(
   }
 
   return builder.Build();
+}
+
+std::string EvaluationContext::ToString() const {
+  std::ostringstream string_stream;
+  string_stream << "{";
+  bool first = true;
+  if (auto key = GetTargetingKey(); key.has_value()) {
+    string_stream << R"("targeting_key": ")" << absl::Utf8SafeCEscape(*key)
+                  << "\"";
+    first = false;
+  }
+  for (const auto& [attr_key, attr_value] : GetAttributes()) {
+    if (!first) {
+      string_stream << ", ";
+    }
+    first = false;
+    string_stream << "\"" << absl::Utf8SafeCEscape(attr_key) << "\": ";
+    if (attr_value.type() == typeid(std::string)) {
+      string_stream << "\""
+                    << absl::Utf8SafeCEscape(
+                           std::any_cast<const std::string&>(attr_value))
+                    << "\"";
+    } else if (attr_value.type() == typeid(bool)) {
+      string_stream << (std::any_cast<bool>(attr_value) ? "true" : "false");
+    } else if (attr_value.type() == typeid(int)) {
+      string_stream << std::any_cast<int>(attr_value);
+    } else if (attr_value.type() == typeid(int64_t)) {
+      string_stream << std::any_cast<int64_t>(attr_value);
+    } else if (attr_value.type() == typeid(double)) {
+      string_stream << std::any_cast<double>(attr_value);
+    } else if (attr_value.type() == typeid(Value)) {
+      string_stream << std::any_cast<Value>(attr_value);
+    } else {
+      string_stream << "\"<any>\"";
+    }
+  }
+  string_stream << "}";
+  return string_stream.str();
+}
+
+std::ostream& operator<<(std::ostream& output_stream,
+                         const EvaluationContext& ctx) {
+  return output_stream << ctx.ToString();
 }
 
 EvaluationContext::Builder& EvaluationContext::Builder::WithTargetingKey(

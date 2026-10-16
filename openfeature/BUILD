@@ -39,6 +39,7 @@ cc_library(
         ":general_hook_context",
         ":hook_hints",
         ":value",
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -74,6 +75,7 @@ cc_library(
         ":metadata",
         ":provider",
         ":reason",
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -104,6 +106,7 @@ cc_library(
         ":reason",
         ":resolution_details",
         ":value",
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -118,6 +121,10 @@ cc_library(
     hdrs = ["evaluation_context.h"],
     srcs = ["evaluation_context.cpp"],
     include_prefix = "openfeature",
+    deps = [
+        ":value",
+        "@abseil-cpp//absl/strings",
+    ],
 )
 
 cc_library(
@@ -248,6 +255,7 @@ cc_library(
         ":hook_context",
         ":hook_hints",
         ":value",
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -368,5 +376,7 @@ cc_library(
         ":error_code",
         ":flag_metadata",
         ":reason",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/time",
     ],
 )

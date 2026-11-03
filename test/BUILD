@@ -21,7 +21,21 @@ cc_test(
         ":mock_feature_provider",
         "//openfeature:client_api",
         "//openfeature:flag_evaluation_details",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "hook_support_test",
+    srcs = ["hook_support_test.cpp"],
+    deps = [
+        ":mock_feature_provider",
+        "//openfeature:client_api",
+        "//openfeature:flag_evaluation_details",
         "//openfeature:hook",
+        "//openfeature:hook_manager",
+        "//openfeature:hook_support",
+        "//openfeature/hooks:hook_error",
         "@googletest//:gtest_main",
     ],
 )
@@ -104,6 +118,17 @@ cc_test(
 )
 
 cc_test(
+    name = "hook_manager_test",
+    srcs = ["hook_manager_test.cpp"],
+    deps = [
+        "//openfeature:general_hook",
+        "//openfeature:hook_manager",
+        "//openfeature:hook",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "value_test",
     srcs = ["value_test.cpp"],
     deps = [
@@ -138,12 +163,14 @@ cc_test(
     srcs = ["hook_test.cpp"],
     deps = [
         "//openfeature:general_hook",
+        "//openfeature:error_code",
         "//openfeature:evaluation_context",
         "//openfeature:flag_evaluation_details",
         "//openfeature:flag_metadata",
         "//openfeature:hook",
         "//openfeature:hook_context",
         "//openfeature:hook_hints",
+        "//openfeature/hooks:hook_error",
         "//openfeature:value",
         "@googletest//:gtest_main",
     ],

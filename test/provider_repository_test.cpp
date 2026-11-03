@@ -24,7 +24,7 @@ class ProviderRepositoryTest : public ::testing::Test {
  protected:
   static constexpr std::chrono::milliseconds kWaitDuration{100};
   ProviderRepository repo_;
-  EvaluationContext ctx_ = EvaluationContext::Builder().build();
+  EvaluationContext ctx_ = EvaluationContext::Builder().Build();
 };
 
 // Test to verify the constructor initializes with a NoopProvider.

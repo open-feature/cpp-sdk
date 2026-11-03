@@ -39,6 +39,7 @@ cc_library(
         ":general_hook_context",
         ":hook_hints",
         ":value",
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -56,6 +57,29 @@ cc_library(
 )
 
 cc_library(
+    name = "hook_support",
+    srcs = ["hook_support.cpp"],
+    hdrs = ["hook_support.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":error_code",
+        ":evaluation_context",
+        ":evaluation_options",
+        ":flag_evaluation_details",
+        ":flag_type_value",
+        ":general_hook",
+        ":hook_manager",
+        ":hook_context",
+        ":hook_data",
+        ":hook_hints",
+        ":metadata",
+        ":provider",
+        ":reason",
+        "//openfeature/hooks:hook_error",
+    ],
+)
+
+cc_library(
     name = "client_api",
     srcs = ["client_api.cpp"],
     hdrs = ["client_api.h"],
@@ -63,11 +87,18 @@ cc_library(
     deps = [
         ":client",
         ":evaluation_context",
+        ":evaluation_options",
         ":features",
         ":flag_evaluation_details",
         ":flag_metadata",
+        ":flag_type_value",
         ":general_hook",
         ":global_context_manager",
+        ":hook_manager",
+        ":hook_context",
+        ":hook_data",
+        ":hook_hints",
+        ":hook_support",
         ":metadata",
         ":provider",
         ":provider_repository",
@@ -75,6 +106,7 @@ cc_library(
         ":reason",
         ":resolution_details",
         ":value",
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -89,6 +121,10 @@ cc_library(
     hdrs = ["evaluation_context.h"],
     srcs = ["evaluation_context.cpp"],
     include_prefix = "openfeature",
+    deps = [
+        ":value",
+        "@abseil-cpp//absl/strings",
+    ],
 )
 
 cc_library(
@@ -161,6 +197,18 @@ cc_library(
     include_prefix = "openfeature",
     deps = [
         ":evaluation_context",
+        "@abseil-cpp//absl/base:no_destructor",
+    ],
+)
+
+cc_library(
+    name = "hook_manager",
+    srcs = ["hook_manager.cpp"],
+    hdrs = ["hook_manager.h"],
+    include_prefix = "openfeature",
+    deps = [
+        ":general_hook",
+        "@abseil-cpp//absl/base:no_destructor",
     ],
 )
 
@@ -207,6 +255,7 @@ cc_library(
         ":hook_context",
         ":hook_hints",
         ":value",
+        "//openfeature/hooks:hook_error",
     ],
 )
 
@@ -227,6 +276,7 @@ cc_library(
         ":client_api",
         ":evaluation_context",
         ":global_context_manager",
+        ":hook_manager",
         ":metadata",
         ":openfeature",
         ":provider",
@@ -326,5 +376,7 @@ cc_library(
         ":error_code",
         ":flag_metadata",
         ":reason",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/time",
     ],
 )

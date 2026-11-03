@@ -2,6 +2,7 @@
 
 #include "openfeature/client_api.h"
 #include "openfeature/global_context_manager.h"
+#include "openfeature/hook_manager.h"
 
 namespace openfeature {
 
@@ -86,30 +87,20 @@ ProviderStatus OpenFeatureAPI::GetProviderStatus(
 }
 
 void OpenFeatureAPI::AddHooks(std::vector<std::shared_ptr<GeneralHook>> hooks) {
-  std::unique_lock lock(hooks_mutex_);
-  hooks_.reserve(hooks_.size() + hooks.size());
-  for (auto& hook : hooks) {
-    if (hook != nullptr) {
-      hooks_.push_back(std::move(hook));
-    }
-  }
+  HookManager::GetInstance().AddHooks(std::move(hooks));
 }
 
 void OpenFeatureAPI::AddHook(std::shared_ptr<GeneralHook> hook) {
-  if (hook == nullptr) return;
-  std::unique_lock lock(hooks_mutex_);
-  hooks_.push_back(std::move(hook));
+  HookManager::GetInstance().AddHook(std::move(hook));
 }
 
 std::vector<std::shared_ptr<GeneralHook>> OpenFeatureAPI::GetHooks() const {
-  std::shared_lock lock(hooks_mutex_);
-  return hooks_;
+  return *HookManager::GetInstance().GetHooks();
 }
 
 void OpenFeatureAPI::Shutdown() {
   provider_repository_.Shutdown();
-  std::unique_lock lock(hooks_mutex_);
-  hooks_.clear();
+  HookManager::GetInstance().ClearHooks();
 }
 
 }  // namespace openfeature

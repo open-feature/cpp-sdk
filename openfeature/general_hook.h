@@ -9,6 +9,7 @@
 #include "openfeature/general_flag_evaluation_details.h"
 #include "openfeature/general_hook_context.h"
 #include "openfeature/hook_hints.h"
+#include "openfeature/hooks/hook_error.h"
 #include "openfeature/value.h"
 
 namespace openfeature {
@@ -35,7 +36,7 @@ class GeneralHook {
                      const GeneralFlagEvaluationDetails& details,
                      const HookHints& hints) {}
   // 3. Error: Runs if an error occurs during evaluation or in Before/After.
-  virtual void Error(const GeneralHookContext& ctx, const std::exception& error,
+  virtual void Error(const GeneralHookContext& ctx, const HookError& error,
                      const HookHints& hints) {}
   // 4. Finally: Runs after evaluation occurs, regardless of success or error.
   virtual void Finally(const GeneralHookContext& ctx,

@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <future>
 #include <memory>
 #include <string>
@@ -15,7 +16,6 @@
 #include "openfeature/evaluation_context.h"
 #include "openfeature/evaluation_options.h"
 #include "openfeature/global_context_manager.h"
-#include "openfeature/hook.h"
 #include "openfeature/provider_status.h"
 
 using ::openfeature::BoolFlagEvaluationDetails;
@@ -46,10 +46,11 @@ using ::testing::StrictMock;
 class ClientAPITest : public ::testing::Test {
  protected:
   void SetUp() override {
-    // Reset the Global Context to a clean state before each test.
+    // Reset Global Context to a clean state before each test.
     GlobalContextManager::GetInstance().SetGlobalEvaluationContext(
-        EvaluationContext::Builder().build());
+        EvaluationContext::Builder().Build());
   }
+
   ProviderRepository repo_;
 };
 
@@ -77,7 +78,7 @@ TEST_F(ClientAPITest, GetProviderStatusDefaultsToReady) {
 // Test setting and getting the EvaluationContext.
 TEST_F(ClientAPITest, SetAndGetEvaluationContext) {
   ClientAPI client(repo_, "test-domain");
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
 
   // Verify we can set the context without error.
   EXPECT_NO_THROW(client.SetEvaluationContext(ctx));
@@ -131,7 +132,7 @@ TEST_F(ClientAPITest, GetObjectValueReturnsDefaultWithNoopProvider) {
 // Test GetBooleanValue with an EvaluationContext passed in.
 TEST_F(ClientAPITest, GetBooleanValueWithContextReturnsDefault) {
   ClientAPI client(repo_, "test-domain");
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   std::string flag_key = "my-boolean-flag";
 
   EXPECT_TRUE(client.GetBooleanValue(flag_key, true, ctx));
@@ -141,7 +142,7 @@ TEST_F(ClientAPITest, GetBooleanValueWithContextReturnsDefault) {
 // Test GetStringValue with an EvaluationContext passed in.
 TEST_F(ClientAPITest, GetStringValueWithContextReturnsDefault) {
   ClientAPI client(repo_, "test-domain");
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   std::string flag_key = "my-string-flag";
   EXPECT_EQ(client.GetStringValue(flag_key, "default", ctx), "default");
 }
@@ -149,7 +150,7 @@ TEST_F(ClientAPITest, GetStringValueWithContextReturnsDefault) {
 // Test that GetIntegerValue with an EvaluationContext passed in.
 TEST_F(ClientAPITest, GetIntegerValueWithContextReturnsDefault) {
   ClientAPI client(repo_, "test-domain");
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   std::string flag_key = "my-integer-flag";
   EXPECT_EQ(client.GetIntegerValue(flag_key, kDefaultIntValue, ctx),
             kDefaultIntValue);
@@ -158,7 +159,7 @@ TEST_F(ClientAPITest, GetIntegerValueWithContextReturnsDefault) {
 // Test that GetDoubleValue with an EvaluationContext passed in.
 TEST_F(ClientAPITest, GetDoubleValueWithContextReturnsDefault) {
   ClientAPI client(repo_, "test-domain");
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   std::string flag_key = "my-double-flag";
   EXPECT_DOUBLE_EQ(client.GetDoubleValue(flag_key, kDefaultDoubleValue, ctx),
                    kDefaultDoubleValue);
@@ -167,7 +168,7 @@ TEST_F(ClientAPITest, GetDoubleValueWithContextReturnsDefault) {
 // Test that GetObjectValue with an EvaluationContext passed in.
 TEST_F(ClientAPITest, GetObjectValueWithContextReturnsDefault) {
   ClientAPI client(repo_, "test-domain");
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   std::string flag_key = "my-object-flag";
   EXPECT_EQ(client.GetObjectValue(flag_key, Value(1), ctx), Value(1));
 }
@@ -181,7 +182,7 @@ TEST_F(ClientAPITest, GetBooleanValueWithOptionsReturnsDefault) {
   EXPECT_TRUE(client.GetBooleanValue(flag_key, true, options));
   EXPECT_FALSE(client.GetBooleanValue(flag_key, false, options));
 
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EXPECT_TRUE(client.GetBooleanValue(flag_key, true, ctx, options));
   EXPECT_FALSE(client.GetBooleanValue(flag_key, false, ctx, options));
 }
@@ -194,7 +195,7 @@ TEST_F(ClientAPITest, GetStringValueWithOptionsReturnsDefault) {
 
   EXPECT_EQ(client.GetStringValue(flag_key, "default", options), "default");
 
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EXPECT_EQ(client.GetStringValue(flag_key, "default", ctx, options),
             "default");
 }
@@ -208,7 +209,7 @@ TEST_F(ClientAPITest, GetIntegerValueWithOptionsReturnsDefault) {
   EXPECT_EQ(client.GetIntegerValue(flag_key, kDefaultIntValue, options),
             kDefaultIntValue);
 
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EXPECT_EQ(client.GetIntegerValue(flag_key, kDefaultIntValue, ctx, options),
             kDefaultIntValue);
 }
@@ -223,7 +224,7 @@ TEST_F(ClientAPITest, GetDoubleValueWithOptionsReturnsDefault) {
       client.GetDoubleValue(flag_key, kDefaultDoubleValue, options),
       kDefaultDoubleValue);
 
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EXPECT_DOUBLE_EQ(
       client.GetDoubleValue(flag_key, kDefaultDoubleValue, ctx, options),
       kDefaultDoubleValue);
@@ -237,7 +238,7 @@ TEST_F(ClientAPITest, GetObjectValueWithOptionsReturnsDefault) {
 
   EXPECT_EQ(client.GetObjectValue(flag_key, Value(1), options), Value(1));
 
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EXPECT_EQ(client.GetObjectValue(flag_key, Value(1), ctx, options), Value(1));
 }
 
@@ -245,7 +246,7 @@ TEST_F(ClientAPITest, GetObjectValueWithOptionsReturnsDefault) {
 TEST_F(ClientAPITest, GetBooleanDetailsReturnsDetailsWithNoopProvider) {
   ClientAPI client(repo_, "test-domain");
   std::string flag_key = "my-boolean-flag";
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EvaluationOptions options;
 
   auto details1 = client.GetBooleanDetails(flag_key, true);
@@ -274,7 +275,7 @@ TEST_F(ClientAPITest, GetBooleanDetailsReturnsDetailsWithNoopProvider) {
 TEST_F(ClientAPITest, GetStringDetailsReturnsDetailsWithNoopProvider) {
   ClientAPI client(repo_, "test-domain");
   std::string flag_key = "my-string-flag";
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EvaluationOptions options;
 
   auto details1 = client.GetStringDetails(flag_key, "default_val");
@@ -301,7 +302,7 @@ TEST_F(ClientAPITest, GetStringDetailsReturnsDetailsWithNoopProvider) {
 TEST_F(ClientAPITest, GetIntegerDetailsReturnsDetailsWithNoopProvider) {
   ClientAPI client(repo_, "test-domain");
   std::string flag_key = "my-integer-flag";
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EvaluationOptions options;
 
   auto details1 = client.GetIntegerDetails(flag_key, kDefaultIntValue);
@@ -328,7 +329,7 @@ TEST_F(ClientAPITest, GetIntegerDetailsReturnsDetailsWithNoopProvider) {
 TEST_F(ClientAPITest, GetDoubleDetailsReturnsDetailsWithNoopProvider) {
   ClientAPI client(repo_, "test-domain");
   std::string flag_key = "my-double-flag";
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EvaluationOptions options;
 
   auto details1 = client.GetDoubleDetails(flag_key, kDefaultDoubleValue);
@@ -356,7 +357,7 @@ TEST_F(ClientAPITest, GetDoubleDetailsReturnsDetailsWithNoopProvider) {
 TEST_F(ClientAPITest, GetObjectDetailsReturnsDetailsWithNoopProvider) {
   ClientAPI client(repo_, "test-domain");
   std::string flag_key = "my-object-flag";
-  EvaluationContext ctx = EvaluationContext::Builder().build();
+  EvaluationContext ctx = EvaluationContext::Builder().Build();
   EvaluationOptions options;
 
   auto details1 =
@@ -390,15 +391,15 @@ TEST_F(ClientAPITest, ContextMergingPrecedence) {
           .WithAttribute("global_attr", "global_value")
           .WithAttribute("shared_attr_gc", "global_shared_gc")
           .WithAttribute("shared_attr_gci", "global_shared_gci")
-          .build());
+          .Build());
 
-  std::shared_ptr<StrictMock<MockFeatureProvider>> mock_provider =
-      std::make_shared<StrictMock<MockFeatureProvider>>();
+  std::shared_ptr<NiceMock<MockFeatureProvider>> mock_provider =
+      std::make_shared<NiceMock<MockFeatureProvider>>();
 
   EXPECT_CALL(*mock_provider, Init(_)).WillOnce(Return(absl::OkStatus()));
   EXPECT_CALL(*mock_provider, Shutdown()).WillOnce(Return(absl::OkStatus()));
 
-  EvaluationContext provider_init_ctx = EvaluationContext::Builder().build();
+  EvaluationContext provider_init_ctx = EvaluationContext::Builder().Build();
   repo_.SetProvider("test-domain", mock_provider, provider_init_ctx, true);
 
   ClientAPI client(repo_, "test-domain");
@@ -408,20 +409,20 @@ TEST_F(ClientAPITest, ContextMergingPrecedence) {
           .WithAttribute("client_attr", "client_value")
           .WithAttribute("shared_attr_gc", "client_shared_gc")
           .WithAttribute("shared_attr_gci", "client_shared_gci")
-          .build());
+          .Build());
 
   EvaluationContext invocation_ctx =
       EvaluationContext::Builder()
           .WithTargetingKey("invocation-target")
           .WithAttribute("invocation_attr", "invocation_value")
           .WithAttribute("shared_attr_gci", "invocation_shared_gci")
-          .build();
+          .Build();
 
   std::string flag_key = "my-test-flag";
   bool default_value = false;
   bool expected_value = true;
 
-  EvaluationContext captured_merged_ctx = EvaluationContext::Builder().build();
+  EvaluationContext captured_merged_ctx = EvaluationContext::Builder().Build();
 
   // Expect the provider's GetBooleanEvaluation to be called with the merged
   // context.
@@ -485,7 +486,7 @@ TEST_F(ClientAPITest, EvaluateFlagHandlesProviderErrorStatus) {
           }));
 
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
   ClientAPI client(repo_, "test-domain");
 
   EXPECT_FALSE(client.GetBooleanValue("flag", false));
@@ -502,7 +503,7 @@ TEST_F(ClientAPITest, GetDetailsPropagatesProviderVariantAndMetadata) {
           true, Reason::kTargetingMatch, "variant_a", metadata)));
 
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
   ClientAPI client(repo_, "test-domain");
 
   auto details = client.GetBooleanDetails("flag", false);
@@ -524,7 +525,7 @@ TEST_F(ClientAPITest, GetDetailsHandlesProviderErrors) {
       .WillOnce(Return(absl::InternalError("Provider failed")));
 
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
   ClientAPI client(repo_, "test-domain");
 
   auto details = client.GetBooleanDetails("flag", false);
@@ -547,7 +548,7 @@ TEST_F(ClientAPITest, EvaluateFlagHandlesProviderNullResolutionDetails) {
           }));
 
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
   ClientAPI client(repo_, "test-domain");
 
   EXPECT_FALSE(client.GetBooleanValue("flag", false));
@@ -567,7 +568,7 @@ TEST_F(ClientAPITest, EvaluateFlagHandlesProviderStdException) {
           }));
 
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
   ClientAPI client(repo_, "test-domain");
 
   EXPECT_FALSE(client.GetBooleanValue("flag", false));
@@ -587,7 +588,7 @@ TEST_F(ClientAPITest, EvaluateFlagHandlesProviderUnknownException) {
           }));
 
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
   ClientAPI client(repo_, "test-domain");
 
   EXPECT_FALSE(client.GetBooleanValue("flag", false));
@@ -598,7 +599,7 @@ TEST_F(ClientAPITest, EvaluateFlagBlocksWhenProviderNotReady) {
   auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
   EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
 
   auto status_manager = repo_.GetFeatureProviderStatusManager("test-domain");
   ASSERT_NE(status_manager, nullptr);
@@ -613,7 +614,7 @@ TEST_F(ClientAPITest, EvaluateFlagBlocksWhenProviderFatal) {
   auto mock_provider = std::make_shared<NiceMock<MockFeatureProvider>>();
   EXPECT_CALL(*mock_provider, GetBooleanEvaluation(_, _, _)).Times(0);
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
 
   auto status_manager = repo_.GetFeatureProviderStatusManager("test-domain");
   ASSERT_NE(status_manager, nullptr);
@@ -629,7 +630,7 @@ TEST_F(ClientAPITest, EvaluateFlagProceedsWhenProviderInErrorState) {
       .WillOnce(Return(std::make_unique<BoolResolutionDetails>(
           true, Reason::kCached, std::nullopt, FlagMetadata())));
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
 
   auto status_manager = repo_.GetFeatureProviderStatusManager("test-domain");
   ASSERT_NE(status_manager, nullptr);
@@ -645,7 +646,7 @@ TEST_F(ClientAPITest, EvaluateFlagProceedsWhenProviderInStaleState) {
       .WillOnce(Return(std::make_unique<BoolResolutionDetails>(
           true, Reason::kCached, std::nullopt, FlagMetadata())));
   repo_.SetProvider("test-domain", mock_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
 
   auto status_manager = repo_.GetFeatureProviderStatusManager("test-domain");
   ASSERT_NE(status_manager, nullptr);
@@ -670,7 +671,7 @@ TEST_F(ClientAPITest, ParallelProviderSwapRaceCondition) {
                 true, Reason::kTargetingMatch, std::nullopt, FlagMetadata());
           }));
   repo_.SetProvider(domain, ready_provider,
-                    EvaluationContext::Builder().build(), true);
+                    EvaluationContext::Builder().Build(), true);
 
   std::thread evaluation_thread([&]() {
     while (running) {
@@ -694,12 +695,17 @@ TEST_F(ClientAPITest, ParallelProviderSwapRaceCondition) {
       }));
 
   EXPECT_CALL(*not_ready_provider, GetBooleanEvaluation(_, _, _)).Times(0);
+  EXPECT_CALL(*not_ready_provider, GetHooks())
+      .WillRepeatedly(
+          Return(std::vector<std::shared_ptr<openfeature::GeneralHook>>{}));
+  EXPECT_CALL(*not_ready_provider, GetMetadata())
+      .WillRepeatedly(Return(Metadata{"not-ready-mock"}));
   EXPECT_CALL(*not_ready_provider, Shutdown())
       .Times(testing::AtMost(1))
       .WillOnce(Return(absl::OkStatus()));
 
   repo_.SetProvider(domain, not_ready_provider,
-                    EvaluationContext::Builder().build(), false);
+                    EvaluationContext::Builder().Build(), false);
 
   init_called->get_future().wait();
 
@@ -707,69 +713,4 @@ TEST_F(ClientAPITest, ParallelProviderSwapRaceCondition) {
   running = false;
   evaluation_thread.join();
   proceed_init->set_value();
-}
-
-namespace {
-class DummyHook1 : public openfeature::BoolHook {};
-class DummyHook2 : public openfeature::StringHook {};
-}  // namespace
-
-// Test that client is initialized with empty hooks by default.
-TEST_F(ClientAPITest, InitialStateHasEmptyHooks) {
-  ClientAPI client(repo_, "test-domain");
-  EXPECT_TRUE(client.GetHooks().empty());
-}
-
-// Test adding a single hook via AddHook.
-TEST_F(ClientAPITest, AddHookAppendsSingleHook) {
-  ClientAPI client(repo_, "test-domain");
-  std::shared_ptr<openfeature::GeneralHook> hook1 =
-      std::make_shared<DummyHook1>();
-  client.AddHook(hook1);
-
-  auto hooks = client.GetHooks();
-  ASSERT_EQ(hooks.size(), 1);
-  EXPECT_EQ(hooks[0], hook1);
-}
-
-// Test adding multiple hooks via AddHooks and preserving registration order.
-TEST_F(ClientAPITest, AddHooksAppendsMultipleHooksAndPreservesOrder) {
-  ClientAPI client(repo_, "test-domain");
-  std::shared_ptr<openfeature::GeneralHook> hook1 =
-      std::make_shared<DummyHook1>();
-  std::shared_ptr<openfeature::GeneralHook> hook2 =
-      std::make_shared<DummyHook2>();
-
-  client.AddHooks({hook1, hook2});
-
-  auto hooks = client.GetHooks();
-  ASSERT_EQ(hooks.size(), 2);
-  EXPECT_EQ(hooks[0], hook1);
-  EXPECT_EQ(hooks[1], hook2);
-
-  // Adding another hook appends without clearing existing ones
-  std::shared_ptr<openfeature::GeneralHook> hook3 =
-      std::make_shared<DummyHook1>();
-  client.AddHook(hook3);
-
-  hooks = client.GetHooks();
-  ASSERT_EQ(hooks.size(), 3);
-  EXPECT_EQ(hooks[0], hook1);
-  EXPECT_EQ(hooks[1], hook2);
-  EXPECT_EQ(hooks[2], hook3);
-}
-
-// Test that AddHook and AddHooks filter out nullptr entries.
-TEST_F(ClientAPITest, AddHookAndAddHooksFiltersNullptrs) {
-  ClientAPI client(repo_, "test-domain");
-  client.AddHook(nullptr);
-  EXPECT_TRUE(client.GetHooks().empty());
-
-  std::shared_ptr<openfeature::GeneralHook> valid_hook =
-      std::make_shared<DummyHook1>();
-  client.AddHooks({nullptr, valid_hook, nullptr});
-
-  auto hooks = client.GetHooks();
-  ASSERT_EQ(hooks.size(), 1);
-  EXPECT_EQ(hooks[0], valid_hook);
 }
